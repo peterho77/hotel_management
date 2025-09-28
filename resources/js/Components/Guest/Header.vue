@@ -76,7 +76,7 @@
                         <div class="search-bar"></div>
                         <ul class="nav-list" role="list">
                             <li>
-                                <a href=""><span>Home</span></a>
+                                <Link href="/"><span>Home</span></Link>
                             </li>
                             <li>
                                 <a href=""><span>Rooms</span></a>
@@ -85,7 +85,7 @@
                                 <a href=""><span>Blogs</span></a>
                             </li>
                             <li>
-                                <a href=""><span>About us</span></a>
+                                <Link href="/about"><span>About us</span></Link>
                             </li>
                             <li>
                                 <a href=""><span>Contact</span></a>

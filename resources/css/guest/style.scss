@@ -357,7 +357,7 @@
         &-item {
             border-radius: var(--size-200);
             overflow: hidden;
-            height: var(--bg-item-height, 100%);
+            min-height: 100%;
             position: relative;
 
             &__content {

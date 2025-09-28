@@ -1,5 +1,4 @@
 <script setup>
-import Guest from "../Layouts/Guest.vue";
 import HeroSection from "../Components/Guest/Hero-section.vue";
 import AboutSection from "../Components/Guest/About-section.vue";
 import ServicesSection from "../Components/Guest/Services-section.vue";
@@ -8,18 +7,19 @@ import RoomSection from "../Components/Guest/Room-section.vue";
 </script>
 
 <template>
-    <Guest>
-        <!-- Hero section -->
-        <HeroSection />
+    <!-- Page title -->
+    <Head title="- Home Page" />
 
-        <!-- About section -->
-        <AboutSection />
+    <!-- Hero section -->
+    <HeroSection />
 
-        <!-- Services section -->
-        <ServicesSection />
+    <!-- About section -->
+    <AboutSection />
 
-        <!-- Room section -->
-        <RoomSection />
-        
-    </Guest>
+    <!-- Services section -->
+    <ServicesSection />
+
+    <!-- Room section -->
+    <RoomSection />
+
 </template>
