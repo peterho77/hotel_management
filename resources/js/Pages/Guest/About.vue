@@ -34,30 +34,30 @@ let galleryImageList = ['/img/gallery/gallery-1.jpg', '/img/gallery/gallery-4.jp
     <div class="about-us-page-section | padding-block-600">
         <div class="container">
             <div class="about-us__text | even-columns padding-block-400" style="--custom-gap:3rem">
-                <div class="about-us__title | flow" style="--flow-spacer:1em">
+                <div class="about-us__title | flow text-center flex flex-col justify-center align-center" style="--flow-spacer:1em">
                     <h2 class="fs-secondary-heading">Welcome to Sona.</h2>
                     <p>Built in 1910 during the Belle Epoque period, this hotel is located in the center of Paris,
                         with easy access to the city’s tourist attractions. It offers tastefully decorated rooms.
                     </p>
                 </div>
-                <ul class="about-us__services-list | flow" style="--flow-spacer:.75em">
-                    <li class="align-center">
+                <ul class="about-us__services-list | flow pl-8" style="--flow-spacer:.75em">
+                    <li class="grid grid-cols-[20px_1fr] items-center gap-2">
                         <SvgSprite symbol="check" role="presentation" class="icon service-icon" data-size="small" />
                         <span class="fs-700">20% Off On Accommodation.</span>
                     </li>
-                    <li class="align-center">
+                    <li class="grid grid-cols-[20px_1fr] items-center gap-2">
                         <SvgSprite symbol="check" role="presentation" class="icon service-icon" data-size="small" />
                         <span class="fs-700">Complimentary Daily Breakfast</span>
                     </li>
-                    <li class="align-center">
+                    <li class="grid grid-cols-[20px_1fr] items-center gap-2">
                         <SvgSprite symbol="check" role="presentation" class="icon service-icon" data-size="small" />
                         <span class="fs-700">3 Pcs Laundry Per Day</span>
                     </li>
-                    <li class="align-center">
+                    <li class="grid grid-cols-[20px_1fr] items-center gap-2">
                         <SvgSprite symbol="check" role="presentation" class="icon service-icon" data-size="small" />
                         <span class="fs-700">Free Wifi.</span>
                     </li>
-                    <li class="align-center">
+                    <li class="grid grid-cols-[20px_1fr] items-center gap-2">
                         <SvgSprite symbol="check" role="presentation" class="icon service-icon" data-size="small" />
                         <span class="fs-700">Discount 20% On F&B</span>
                     </li>

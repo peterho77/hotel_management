@@ -55,7 +55,6 @@
 
                                 <Button type="submit" label="Check availability" class="w-full mt-4" />
                             </Form>
-
                         </div>
                     </div>
                 </div>
