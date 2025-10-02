@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\RoomType;
+use App\Models\Room;
 use App\Models\Branch;
 
 class RoomTypeController extends Controller
@@ -28,8 +29,8 @@ class RoomTypeController extends Controller
         return Inertia::render('Admin/Room', [
             'roomTypeList' => $roomTypeList,
             'branchList'   => $branchList,
-            'columns'      => $columns,
-            'activeTab'    => 'room_type',
+            'roomTypeColumns'      => $columns,
+            'activeTab'    => 'room-type',
         ]);
     }
 

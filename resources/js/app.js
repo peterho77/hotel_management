@@ -61,5 +61,7 @@ createInertiaApp({
         };
 
         vueApp.mount(el);
+
+        return vueApp;  
     },
 });

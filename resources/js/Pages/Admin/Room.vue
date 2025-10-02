@@ -10,10 +10,10 @@
                         </div>
 
                         <!-- --custom mutiple select tag--  -->
-                        <div class="box">
+                        <!-- <div class="box">
                             <x-utility.multiple-select-tag id="filter-branch-select" :list="$branchList"
                                 placeholder="Chọn chi nhánh" />
-                        </div>
+                        </div> -->
 
                         <form class="filter-status | box | flow" style="--flow-spacer:1em">
                             <label class="label admin-label" for="room-status">Trạng thái</label>
@@ -67,25 +67,27 @@
                     </nav>
 
                     <!-- tabs -->
-                    <Tabs v-model="currentTab">
+                    <Tabs>
                         <TabList>
-                            <Tab v-for="tab in tabs" :key="tab" :value="tab">{{ capitalizeFirst(tab) }}</Tab>
+                            <Tab v-for="tab in tabs" :key="tab" :value="tab" @click="goToTab(tab)">
+                                {{ capitalizeFirst(tab) }}
+                            </Tab>
                         </TabList>
                         <TabPanels>
-                            <TabPanel value="room">
-                                <DataTable :value="roomList" tableStyle="min-width: 50rem">
-                                    <Column v-for="col in columns" :key="col" :field="col"
-                                        :header="capitalizeFirst(col)" />
+                            <TabPanel>
+                                <DataTable :key="currentTab" v-show="roomList" :value="roomList">
+                                    <Column v-for="col in roomColumns" :key="col"
+                                        :field="col" :header="capitalizeFirst(col)" />
                                 </DataTable>
                             </TabPanel>
-
-                            <TabPanel value="room_type">
-                                <DataTable :value="roomTypeList" tableStyle="min-width: 50rem">
-                                    <Column v-for="col in columns" :key="col" :field="col"
-                                        :header="capitalizeFirst(col)" />
+                             <TabPanel>
+                                <DataTable :key="currentTab" v-show="roomTypeList" :value="roomTypeList">
+                                    <Column v-for="col in roomTypeColumns" :key="col"
+                                        :field="col" :header="capitalizeFirst(col)" />
                                 </DataTable>
                             </TabPanel>
                         </TabPanels>
+
                     </Tabs>
                 </section>
             </div>
@@ -116,12 +118,11 @@ import Row from 'primevue/row';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
-let tabs = ['room_type', 'room'];
 
 function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, " ");
+    return str.charAt(0).toUpperCase() + str.slice(1).replace(/-/g, " ");
 }
 
 const props = defineProps({
@@ -137,23 +138,32 @@ const props = defineProps({
         type: Array,
         required: false,
     },
-    columns: {
-        type: Array,
-        required: true
-    },
+    roomColumns: Object,
+    roomTypeColumns: Object,
     activeTab: {
         type: String,
         default: "room_type"
     }
 })
 
+
+const tabs = ['room-type', 'room'];
 const currentTab = ref(props.activeTab);
-watch(currentTab, (newTab) => {
-    if (newTab === 'room') {
-        router.visit(route('room-management'))
-    } else {
-        router.visit(route('room-type-management'))
+
+const goToTab = (tab) => {
+    if (currentTab.value === tab) return // tránh reload route hiện tại
+    currentTab.value = tab;
+    // router.visit(route(`admin.${tab}-management`), { replace: true })
+}
+
+watch(
+    currentTab , (newValue, oldValue) => {
+        router.visit(route(`admin.${newValue}-management`))
     }
-})
+)
+
+// console.log(props.roomColumns);
+// console.log(props.roomTypeColumns);
+console.log(props.activeTab);
 
 </script>

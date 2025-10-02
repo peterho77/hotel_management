@@ -28,7 +28,7 @@ class RoomController extends Controller
             'roomList' => $roomList,
             'roomTypeList' => $roomTypeList,
             'branchList'   => $branchList,
-            'columns'      => $columns,
+            'roomColumns'      => $columns,
             'activeTab'    => 'room_type',
         ]);
     }
