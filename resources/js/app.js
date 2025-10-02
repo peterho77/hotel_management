@@ -1,5 +1,5 @@
 import "./bootstrap";
-import "../css/base.css"
+import "../css/base.css";
 import "primeicons/primeicons.css";
 
 import { createApp, h } from "vue";
@@ -10,6 +10,7 @@ import Admin from "./Layouts/Admin.vue";
 import PrimeVue from "primevue/config";
 import Breadcrumb from "primevue/breadcrumb";
 import Aura from "@primeuix/themes/aura";
+import { ZiggyVue } from "../../vendor/tightenco/ziggy";
 
 createInertiaApp({
     title: (title) => `Sona Hotel ${title}`,
@@ -28,6 +29,7 @@ createInertiaApp({
     },
     setup({ el, App, props, plugin }) {
         const vueApp = createApp({ render: () => h(App, props) })
+            .use(ZiggyVue)
             .component("Head", Head)
             .component("Link", Link)
             .component("Breadcrumb", Breadcrumb);

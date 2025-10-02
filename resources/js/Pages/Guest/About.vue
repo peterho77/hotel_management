@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const breadcrumb = page.props.breadcrumb;
+const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 
 let mainServiceList = [{
     name: 'Restaurants',
@@ -20,8 +21,9 @@ let galleryImageList = ['/img/gallery/gallery-1.jpg', '/img/gallery/gallery-4.jp
 
 </script>
 
-
 <template>
+     <Head :title="pageTitle" />
+
     <Breadcrumb :model="breadcrumb" :pt="{ root: { class: 'justify-center' }, item: { class: 'text-xl' } }">
         <template #item="{ item, props }">
             <a v-if="item === breadcrumb[breadcrumb.length - 1]" class="font-medium text-orange-300">

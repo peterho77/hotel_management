@@ -1,12 +1,12 @@
 <template>
     <header class="primary-header">
         <section class="top-nav | padding-block-200">
-            <div class="custom-container">
-                <div class="row">
-                    <div class="header-logo | col-lg-2">
+            <div class="container">
+                <div class="grid grid-cols-12">
+                    <div class="header-logo | col-span-12 lg:col-span-2">
                         <img src="../../../../public/img/logo.png" alt="">
                     </div>
-                    <div class="col-lg-10">
+                    <div class="col-span-12 lg:col-span-10">
                         <nav class="nav-wrapper">
                             <ul class="financial-tools | nav-list | align-center" role="list">
                                 <li>
@@ -62,7 +62,7 @@
             </div>
         </section>
         <section class="bottom-nav | padding-block-100">
-            <div class="custom-container">
+            <div class="container">
                 <nav class="nav-wrapper">
                     <ul class="primary-nav | nav-list">
                         <li>Tổng quan</li>
@@ -81,7 +81,7 @@
                         <li>Bán online</li>
                         <li>Báo cáo</li>
                     </ul>
-                    <button class="button" data-type="inverted">
+                    <button class="admin-button" data-type="inverted">
                         <SvgSprite symbol="bell-concierge" size="0 0 24 24" role="presentation" class="icon" />
                         Lễ tân
                     </button>

@@ -560,7 +560,7 @@ ul[role="list"] > li {
 /* nav wrapper */
 .nav-wrapper {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     justify-content: space-between;
     gap: var(--size-700);
 }

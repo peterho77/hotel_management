@@ -1,15 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use App\Http\Controllers\RoomTypeController;
+use App\Http\Controllers\RoomController;
 
-Route::get('/', function () {
-    return Inertia::render('Guest/Home');
-});
 
-Route::inertia('/about', 'Guest/About');
+Route::inertia('/', 'Guest/Home')->name('home');
+Route::inertia('/about', 'Guest/About')->name('about');
 
 // Admin pages
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::inertia('/room-management','Admin/Room');
+    Route::get('/room-type', [RoomTypeController::class, 'index'])
+        ->name('room-type-management');
+    Route::get('/room', [RoomController::class, 'index'])
+        ->name('room-management');
 });

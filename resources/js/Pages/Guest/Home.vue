@@ -4,11 +4,15 @@ import AboutSection from "../../Components/Guest/About-section.vue";
 import ServicesSection from "../../Components/Guest/Services-section.vue";
 import RoomSection from "../../Components/Guest/Room-section.vue";
 
+import { usePage } from '@inertiajs/vue3'
+const page = usePage()
+const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
+
 </script>
 
 <template>
     <!-- Page title -->
-    <Head title="- Home Page" />
+    <Head :title="pageTitle" />
 
     <!-- Hero section -->
     <HeroSection />
