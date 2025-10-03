@@ -9,46 +9,22 @@
                             <input type="text" name="room-type-search" placeholder="Tìm kiếm hạng phòng">
                         </div>
 
-                        <!-- --custom mutiple select tag--  -->
-                        <!-- <div class="box">
-                            <x-utility.multiple-select-tag id="filter-branch-select" :list="$branchList"
-                                placeholder="Chọn chi nhánh" />
-                        </div> -->
+                        <!-- mutiple select tag -->
+                        <div class="box">
+                            <MultiSelect :options="branchList" display="chip" optionLabel="name" filter
+                                placeholder="Chọn chi nhánh" :maxSelectedLabels="3" class="w-full md:w-52">
+                            </MultiSelect>
+                        </div>
 
-                        <form class="filter-status | box | flow" style="--flow-spacer:1em">
-                            <label class="label admin-label" for="room-status">Trạng thái</label>
-                            <div class="radio-select | form-check">
-                                <input class="form-check-input" type="radio" name="filter-status" value="active"
-                                    id="active-room">
-                                <label class="form-check-label" for="filter-status">
-                                    Đang kinh doanh
-                                </label>
+                        <!-- filter status -->
+                        <RadioButtonGroup class="filter-status | box | flow flex flex-col">
+                            <label class="admin-label" for="room-status">Trạng thái</label>
+                            <div v-for="status in statusList" key="filter-status" class="flex items-center gap-2">
+                                <RadioButton :inputId="status" name="status" :value="status" />
+                                <label :for="status">{{ status }}</label>
                             </div>
-                            <div class="radio-select | form-check">
-                                <input class="form-check-input" type="radio" name="filter-status" value="inactive"
-                                    id="inactive-room">
-                                <label class="form-check-label" for="filter-status">
-                                    Ngừng kinh doanh
-                                </label>
-                            </div>
-                            <div class="radio-select | form-check">
-                                <input class="form-check-input" type="radio" name="filter-status" value="all"
-                                    id="all-room" checked>
-                                <label class="form-check-label" for="filter-status">
-                                    Tất cả
-                                </label>
-                            </div>
-                        </form>
+                        </RadioButtonGroup>
 
-                        <section class="record-quantity">
-                            <label for="record">Số bản ghi: </label>
-                            <select name="record" id="record" class="nice-select">
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                        </section>
                     </div>
                 </section>
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
@@ -67,27 +43,46 @@
                     </nav>
 
                     <!-- tabs -->
-                    <Tabs>
+                    <Tabs v-model:value="currentTab">
                         <TabList>
-                            <Tab v-for="tab in tabs" :key="tab" :value="tab" @click="goToTab(tab)">
+                            <Tab v-for="tab in tabs" :key="tab" :value="tab">
                                 {{ capitalizeFirst(tab) }}
                             </Tab>
                         </TabList>
                         <TabPanels>
-                            <TabPanel>
-                                <DataTable :key="currentTab" v-show="roomList" :value="roomList">
-                                    <Column v-for="col in roomColumns" :key="col"
-                                        :field="col" :header="capitalizeFirst(col)" />
-                                </DataTable>
-                            </TabPanel>
-                             <TabPanel>
-                                <DataTable :key="currentTab" v-show="roomTypeList" :value="roomTypeList">
-                                    <Column v-for="col in roomTypeColumns" :key="col"
-                                        :field="col" :header="capitalizeFirst(col)" />
+                            <TabPanel v-for="tab in tabs" :key="tab" :value="tab">
+                                <DataTable v-model:expandedRows="expandedRows"
+                                    :value="tab === 'room' ? roomList : roomTypeList" sortMode="multiple" dataKey="id"
+                                    removableSort paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+                                    tableStyle="min-width: 50rem">
+                                    <!-- <template #header>
+                                        <div style="text-align:left">
+                                            <MultiSelect :modelValue="selectedColumns"
+                                                :options="currentTab === 'room' ? Object.values(props.roomColumns) : Object.values(props.roomTypeColumns)"
+                                                @update:modelValue="toggleColumn" display="chip"
+                                                placeholder="Select Columns" />
+                                        </div>
+                                    </template> -->
+                                    <Column expander style="width: 5rem" />
+                                    <Column v-for="col in tab === 'room' ? roomColumns : roomTypeColumns" :key="col"
+                                        :field="col" :header="capitalizeFirst(col)" sortable />
+                                    <template #expansion="slotProps">
+                                        <Panel header="Detail information">
+                                            <div class="p-4">
+                                                <table class="w-full border-collapse">
+                                                    <tbody>
+                                                        <tr v-for="(value, key) in slotProps.data" :key="key">
+                                                            <td class="font-semibold border p-2 w-1/3">{{ key }}</td>
+                                                            <td class="border p-2">{{ value }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </Panel>
+                                    </template>
                                 </DataTable>
                             </TabPanel>
                         </TabPanels>
-
                     </Tabs>
                 </section>
             </div>
@@ -103,6 +98,13 @@
 </template>
 
 <script setup>
+// mutiple select
+import MultiSelect from 'primevue/multiselect';
+
+// radio button
+import RadioButton from 'primevue/radiobutton';
+import RadioButtonGroup from 'primevue/radiobuttongroup';
+
 // tabs
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -110,15 +112,16 @@ import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 
+// panel
+import Panel from 'primevue/panel';
+
 // data-table
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';
-import Row from 'primevue/row';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch,computed } from 'vue';
 
 
 function capitalizeFirst(str) {
@@ -140,30 +143,36 @@ const props = defineProps({
     },
     roomColumns: Object,
     roomTypeColumns: Object,
-    activeTab: {
-        type: String,
-        default: "room_type"
-    }
+    activeTab: String
 })
 
+// status
+const statusList = ['Đang kinh doanh', 'Ngừng kinh doanh', 'Tất cả'];
 
+// tabs
 const tabs = ['room-type', 'room'];
 const currentTab = ref(props.activeTab);
 
-const goToTab = (tab) => {
-    if (currentTab.value === tab) return // tránh reload route hiện tại
-    currentTab.value = tab;
-    // router.visit(route(`admin.${tab}-management`), { replace: true })
-}
-
 watch(
-    currentTab , (newValue, oldValue) => {
-        router.visit(route(`admin.${newValue}-management`))
+    currentTab, (newValue) => {
+        router.visit(route(`admin.${newValue}-management`), {
+            preserveState: true, // giữ state nếu muốn
+            preserveScroll: true,
+        })
     }
-)
+);
 
-// console.log(props.roomColumns);
-// console.log(props.roomTypeColumns);
-console.log(props.activeTab);
+// row expansion
+const expandedRows = ref({});
+
+// toggle column
+const selectedColumns = computed(() => {
+  return currentTab.value === 'room'
+    ? Object.values(props.roomColumns || [])
+    : Object.values(props.roomTypeColumns || []);
+});
+const toggleColumn = (val) => {
+    selectedColumns.value = selectedColumns.value.filter(col => val.includes(col));
+};
 
 </script>

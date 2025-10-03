@@ -66,12 +66,13 @@
                 <nav class="nav-wrapper">
                     <ul class="primary-nav | nav-list">
                         <li>Tổng quan</li>
-                        <li class="room-nav">
+                        <li class="room-nav" @click="toggle">
                             Phòng
-                            <ul class="sub-menu | padding-block-200">
-                                <li><a href="">Hạng phòng & Phòng</a></li>
-                                <li><a href="">Thiết lập giá</a></li>
-                            </ul>
+                            <Menu ref="menu" :model="roomItemsMenu" class="sub-menu padding-block-200" :popup="true">
+                                <template #item="{ item, props }">
+                                    <Link :href="route('admin.room-management')">{{ item.label }}</Link>
+                                </template>
+                            </Menu>
                         </li>
                         <li>Hàng hóa</li>
                         <li>Giao dịch</li>
@@ -92,6 +93,18 @@
     </header>
 </template>
 
-<!-- <script setup>
+<script setup>
+import Menu from 'primevue/menu';
+import { ref } from "vue";
 
-</script> -->
+const menu = ref();
+const roomItemsMenu = ref([
+    { label: 'Hạng phòng & Phòng' },
+    { label: 'Thiết lập giá' }
+]);
+
+const toggle = (event) => {
+    menu.value.toggle(event);
+};
+
+</script>

@@ -29,7 +29,7 @@ class RoomController extends Controller
             'roomTypeList' => $roomTypeList,
             'branchList'   => $branchList,
             'roomColumns'      => $columns,
-            'activeTab'    => 'room_type',
+            'activeTab'    => 'room',
         ]);
     }
 

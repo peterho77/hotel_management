@@ -24,7 +24,7 @@
     --fs-primary-heading: var(--fs-900);
     --fs-secondary-heading: var(--fs-800);
     --fs-normal-heading: var(--fs-700);
-    --fs-table: var(--fs-600);
+    --fs-table: var(--fs-300);
     --fs-label: var(--fs-500);
     --fs-nav: var(--fs-500);
     --fs-button: var(--fs-600);
@@ -87,7 +87,7 @@
         --fs-secondary-heading: var(--fs-900);
         --fs-normal-heading: var(--fs-800);
         --fs-nav: var(--fs-600);
-        --fs-table: var(--fs-500);
+        --fs-table: var(--fs-400);
     }
 }
 
