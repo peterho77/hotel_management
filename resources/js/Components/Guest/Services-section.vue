@@ -7,7 +7,7 @@
             </div>
             <div class="services__content | grid gap-4 sm:grid-cols-2 lg:grid-cols-3 | padding-block-800">
                 <div class="service-item">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="travel-plan" role="presentation" class="icon service-icon" />
                         </div>
@@ -19,8 +19,8 @@
                         </p>
                     </a>
                 </div>
-                <div class="service-item | text-center flow" style="--flow-spacer:1rem">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                <div class="service-item">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="catering" role="presentation" class="icon service-icon" />
                         </div>
@@ -32,8 +32,8 @@
                         </p>
                     </a>
                 </div>
-                <div class="service-item | text-center flow" style="--flow-spacer:1rem">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                <div class="service-item">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="babysitting" role="presentation" class="icon service-icon" />
                         </div>
@@ -45,8 +45,8 @@
                         </p>
                     </a>
                 </div>
-                <div class="service-item | text-center flow" style="--flow-spacer:1rem">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                <div class="service-item">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="laundry" role="presentation" class="icon service-icon" />
                         </div>
@@ -58,8 +58,8 @@
                         </p>
                     </a>
                 </div>
-                <div class="service-item | text-center flow" style="--flow-spacer:1rem">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                <div class="service-item">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="driver" role="presentation" class="icon service-icon" />
                         </div>
@@ -71,8 +71,8 @@
                         </p>
                     </a>
                 </div>
-                <div class="service-item | text-center flow" style="--flow-spacer:1rem">
-                    <a href="" class="algin-center text-center flow" style="--flow-spacer:1rem">
+                <div class="service-item">
+                    <a href="" class="service-item__content | inline-block algin-center text-center flow" style="--flow-spacer:1rem">
                         <div class="justify-center align-center">
                             <SvgSprite symbol="bar-drink" role="presentation" class="icon service-icon" />
                         </div>

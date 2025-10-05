@@ -1,6 +1,6 @@
 <template>
     <header class="primary-header">
-        <section class="top-nav | padding-block-200 section-divider">
+        <section class="top-nav | bg-sky-200 padding-block-200 section-divider">
             <div class="container">
                 <div class="even-columns">
                     <nav class="top-nav__left">
@@ -21,25 +21,25 @@
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="facebook" size="0 0 24 24" role="presentation"
-                                            class="icon social-icon" />
+                                            class="icon social-icon--facebook" data-color="original"/>
                                     </a>
                                 </li>
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="instagram" size="0 0 24 24" role="presentation"
-                                            class="icon social-icon" />
+                                            class="icon social-icon--instagram text-[#DD2A7B] transition-colors duration-300" />
                                     </a>
                                 </li>
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="twitch" size="0 0 24 24" role="presentation"
-                                            class="icon social-icon" />
+                                            class="icon social-icon--twitch" />
                                     </a>
                                 </li>
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="twitter-x" size="0 0 24 24" role="presentation"
-                                            class="icon social-icon" />
+                                            class="icon social-icon--x" />
                                     </a>
                                 </li>
                             </ul>
