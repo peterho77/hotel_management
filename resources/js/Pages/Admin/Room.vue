@@ -6,13 +6,20 @@
                     <div class="side-bar | flow" style="--flow-spacer:1em">
                         <div class="search-bar | box | flow" style="--flow-spacer:1em">
                             <label class="admin-label label" for="room-type-search">Tìm kiếm</label>
-                            <input type="text" name="room-type-search" placeholder="Tìm kiếm hạng phòng">
+                            <IconField iconPosition="left" class="flex items-center gap-x-2">
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" size="small"
+                                    placeholder="Tìm kiếm hạng phòng" class="!pl-8" />
+                            </IconField>
                         </div>
 
                         <!-- mutiple select tag -->
                         <div class="box">
-                            <MultiSelect :options="branchList" display="chip" optionLabel="name" filter
-                                placeholder="Chọn chi nhánh" :maxSelectedLabels="3" class="w-full md:w-52">
+                            <MultiSelect :options="branchList" v-model="selectedBranches" display="chip"
+                                optionLabel="name" optionValue="id" filter placeholder="Chọn chi nhánh"
+                                :maxSelectedLabels="1" class="w-full md:w-52">
                             </MultiSelect>
                         </div>
 
@@ -51,17 +58,25 @@
                         </TabList>
                         <TabPanels>
                             <TabPanel v-for="tab in tabs" :key="tab" :value="tab">
-                                <DataTable v-model:expandedRows="expandedRows" ref="dt"
-                                    :value="currentTab === 'room' ? roomList : roomTypeList" sortMode="multiple"
+                                <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
+                                    :value="currentTab === 'room' ? roomList : filteredRoomTypeList" sortMode="multiple"
                                     dataKey="id" removableSort paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
                                     tableStyle="min-width: 50rem">
                                     <template #header>
                                         <div class="text-right flex items-center justify-end gap-x-4">
+                                            <IconField>
+                                                <InputIcon>
+                                                    <i class="pi pi-search" />
+                                                </InputIcon>
+                                                <InputText v-model="filters['global'].value" size="small"
+                                                    placeholder="Keyword Search" />
+                                            </IconField>
                                             <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
-                                                optionLabel="header" @update:modelValue="toggleColumn" display="chip"
-                                                placeholder="Select Columns" />
+                                                optionLabel="header" @update:modelValue="toggleColumn"
+                                                placeholder="Select Columns" class="w-full md:w-50" size="small"
+                                                :virtualScrollerOptions="{ itemSize: 44 }" :maxSelectedLabels="2" />
                                             <Button icon="pi pi-external-link" label="Export" severity="info"
-                                                @click="exportCSV($event)" />
+                                                size="small" @click="exportCSV($event)" class="text-neutral-50" />
                                         </div>
                                     </template>
                                     <Column expander style="width: 5rem" />
@@ -72,10 +87,25 @@
                                             <div class="p-4">
                                                 <table class="w-full border-collapse">
                                                     <tbody>
-                                                        <tr v-for="(value, key) in slotProps.data" :key="key">
-                                                            <td class="font-semibold border p-2 w-1/3">{{ key }}</td>
-                                                            <td class="border p-2">{{ value }}</td>
-                                                        </tr>
+                                                        <template v-for="(value, key) in slotProps.data" :key="key">
+                                                            <tr v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
+                                                                <td class="font-semibold border p-2 w-1/3">
+                                                                    {{ formatLabel(key) }}</td>
+                                                                <td class="border p-2">{{ value }}</td>
+                                                            </tr>
+                                                            <tr v-else-if="key === 'branch' || key === 'room_type'">
+                                                                <td class="font-semibold border p-2 w-1/3">
+                                                                    {{ formatLabel(key) }}</td>
+                                                                <td class="border p-2">{{ value.name }}</td>
+                                                            </tr>
+                                                            <tr v-else>
+                                                                <td class="font-semibold border p-2 w-1/3">
+                                                                    {{ formatLabel(key) }}</td>
+                                                                <td class="border p-2">
+                                                                    {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
+                                                                </td>
+                                                            </tr>
+                                                        </template>
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -107,6 +137,12 @@ import Button from 'primevue/button';
 import RadioButton from 'primevue/radiobutton';
 import RadioButtonGroup from 'primevue/radiobuttongroup';
 
+// keyword search
+import { FilterMatchMode } from '@primevue/core/api';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
+
 // tabs
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -123,15 +159,15 @@ import Column from 'primevue/column';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 
 function formatLabel(str) {
     // Thay tất cả dấu '-' hoặc '_' bằng dấu cách
     str = str.replace(/[-_]/g, " ");
-    
+
     // Viết hoa chữ cái đầu của mỗi từ
-    return str.split(" ").map(word => 
+    return str.split(" ").map(word =>
         word.charAt(0).toUpperCase() + word.slice(1)
     ).join(" ");
 }
@@ -164,6 +200,41 @@ const currentTab = ref(props.activeTab);
 // row expansion
 const expandedRows = ref({});
 
+// keyword search
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+// filter room type and room by branch
+const selectedBranches = ref([])
+
+// filter room type by branch
+const filteredRoomTypeList = computed(() => {
+    // default filter behaviour
+    if (!selectedBranches.value.length) {
+        return props.roomTypeList;
+    }
+
+    // selecting branch will affect the data table
+    return props.roomTypeList.filter(roomType => {
+        const branchIds = roomType.branches.map(b => b.id)
+        return selectedBranches.value.every(id => branchIds.includes(id))
+    })
+})
+
+const filteredRoomList = computed(() => {
+    // default filter behaviour
+    if (!selectedBranches.value.length) {
+        return props.roomList;
+    }
+
+    // selecting branch will affect the data table
+    return props.roomTypeList.filter(roomType => {
+        const branchIds = roomType.branches.map(b => b.id)
+        return selectedBranches.value.every(id => branchIds.includes(id))
+    })
+})
+
 // toggle column
 const selectedColumns = ref([]);
 const currentColumns = ref({});
@@ -179,10 +250,6 @@ watch(
 
 watch(() => [props.roomColumns, props.roomTypeColumns, currentTab.value],
     () => {
-        // currentColumns.value = currentTab.value === 'room' 
-        // ? Object.entries(props.roomColumns || []).map(([field, header]) => ({ field, header })) 
-        // : Object.entries(props.roomTypeColumns || []).map(([field, header]) => ({ field, header }));
-
         currentColumns.value = currentTab.value === 'room'
             ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
             : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
@@ -197,6 +264,7 @@ const toggleColumn = (val) => {
     })
 };
 
+console.log(props.roomList);
 
 // export CSV
 const dt = ref(null);

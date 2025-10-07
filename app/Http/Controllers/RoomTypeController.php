@@ -15,7 +15,7 @@ class RoomTypeController extends Controller
      */
     public function index()
     {
-        $roomTypeList = RoomType::all();
+        $roomTypeList = RoomType::with('branches')->get();;
         $columns = [];
 
         if ($roomTypeList->isNotEmpty()) {
@@ -29,7 +29,7 @@ class RoomTypeController extends Controller
         return Inertia::render('Admin/Room', [
             'roomTypeList' => $roomTypeList,
             'branchList'   => $branchList,
-            'roomTypeColumns'      => $columns,
+            'roomTypeColumns'=> $columns,
             'activeTab'    => 'room-type',
         ]);
     }

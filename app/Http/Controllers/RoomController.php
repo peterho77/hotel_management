@@ -15,11 +15,13 @@ class RoomController extends Controller
      */
     public function index()
     {
-        $roomList = Room::all();
+        $roomList = Room::with(['branch', 'room_type'])
+            ->get()
+            ->makeHidden(['id', 'branch_id', 'room_type_id']);
         if ($roomList->isNotEmpty()) {
             $firstItem = $roomList->first();
             $columns = array_keys($firstItem->getAttributes());
-            $columns = array_diff($columns, ['id', 'branch_id']);
+            $columns = array_diff($columns, ['id', 'branch_id', 'room_type_id']);
         };
         $roomTypeList = RoomType::all();
         $branchList = Branch::all();

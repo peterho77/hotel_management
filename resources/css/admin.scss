@@ -125,11 +125,11 @@
 
     // main content
     .main-content {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr;
         gap: var(--size-400);
 
         &__left {
-            width: 250px;
 
             .side-bar {
                 .search-bar {
@@ -158,7 +158,6 @@
         }
 
         &__right {
-            flex: 1;
             background: var(--neutral-color-100);
             padding: 1em;
 

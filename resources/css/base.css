@@ -125,62 +125,65 @@ header {
     grid-template-columns: minmax(0, 1fr);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
-    line-height: 1.2;
-}
+@layout base{
 
-p {
-    line-height: 1.4;
-    max-width: 50ch;
-}
-
-p[data-width="narrow"] {
-    max-width: 30ch;
-}
-
-p[data-width="wide"] {
-    max-width: 64ch;
-}
-
-@media (max-width: 62em) {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+        line-height: 1.2;
+    }
+    
     p {
+        line-height: 1.4;
+        max-width: 50ch;
+    }
+    
+    p[data-width="narrow"] {
+        max-width: 30ch;
+    }
+    
+    p[data-width="wide"] {
+        max-width: 64ch;
+    }
+    
+    @media (max-width: 62em) {
+        p {
+            max-width: 100%;
+        }
+    }
+    
+    nav {
+        font-size: var(--fs-nav);
+    }
+    
+    img {
+        display: block;
         max-width: 100%;
     }
-}
-
-nav {
-    font-size: var(--fs-nav);
-}
-
-img {
-    display: block;
-    max-width: 100%;
-}
-
-input {
-    border: none;
-}
-
-input:focus,
-select:focus,
-button:focus,
-textarea:focus {
-    outline: none;
-}
-
-input[data-type="small"] {
-    width: 15%;
-    display: inline-block;
-}
-
-a,
-span {
-    text-decoration: none;
-    color: var(--text-color);
+    
+    input {
+        border: none;
+    }
+    
+    input:focus,
+    select:focus,
+    button:focus,
+    textarea:focus {
+        outline: none;
+    }
+    
+    input[data-type="small"] {
+        width: 15%;
+        display: inline-block;
+    }
+    
+    :where(a,
+    span) {
+        text-decoration: none;
+        color: var(--text-color);
+    }
 }
 
 /* utility class */
