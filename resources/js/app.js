@@ -11,6 +11,7 @@ import PrimeVue from "primevue/config";
 import Breadcrumb from "primevue/breadcrumb";
 import Aura from "@primeuix/themes/aura";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy";
+import DialogService from 'primevue/dialogservice';
 
 createInertiaApp({
     title: (title) => `Sona Hotel ${title}`,
@@ -29,6 +30,7 @@ createInertiaApp({
     },
     setup({ el, App, props, plugin }) {
         const vueApp = createApp({ render: () => h(App, props) })
+            .use(DialogService)
             .use(ZiggyVue)
             .component("Head", Head)
             .component("Link", Link)

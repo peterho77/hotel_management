@@ -39,14 +39,38 @@
                     <nav class="table-toolbar">
                         <div class="nav-wrapper">
                             <div class="filter-search">
-                                <span class="label admin-label | fs-normal-heading">Hạng phòng & Phòng</span>
+                                <span class="admin-label | fs-700">Hạng phòng & Phòng</span>
                                 <!-- --code thêm nút search-- -->
                             </div>
-                            <!-- <div class="table-toolbar-buttons">
-                                <x-utility.button.add-new-button :newList="['room', 'room_type']"
-                                    :branchList="$branchList" :selectList="$roomTypeList" />
-                                <x-utility.button.toggle-column-button :$columns />
-                            </div> -->
+                            <div class="table-toolbar-buttons">
+                                <div class="text-right flex items-center justify-end gap-x-4">
+                                    <Button severity="success" size="small" class="flex items-center" @click="toggle">
+                                        <i class="pi pi-plus" style="font-size: .875rem"></i>
+                                        <span>Add new</span>
+                                        <Menu ref="addMenu" :model="addNewMenu" class="sub-menu padding-block-200"
+                                            :popup="true">
+                                            <template #item="{ item, props }">
+                                                <div class="sub-menu-item">
+                                                    {{ item.label }}
+                                                </div>
+                                            </template>
+                                        </Menu>
+                                    </Button>
+                                    <IconField>
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" size="small"
+                                            placeholder="Keyword Search" />
+                                    </IconField>
+                                    <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
+                                        optionLabel="header" @update:modelValue="toggleColumn"
+                                        placeholder="Select Columns" class="w-full md:w-50" size="small"
+                                        :virtualScrollerOptions="{ itemSize: 44 }" :maxSelectedLabels="2" />
+                                    <Button icon="pi pi-external-link" label="Export" severity="info" size="small"
+                                        @click="exportCSV($event)" class="text-neutral-50" />
+                                </div>
+                            </div>
                         </div>
                     </nav>
 
@@ -63,23 +87,6 @@
                                     :value="currentTab === 'room' ? filteredRoomList : filteredRoomTypeList"
                                     sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                                     :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
-                                    <template #header>
-                                        <div class="text-right flex items-center justify-end gap-x-4">
-                                            <IconField>
-                                                <InputIcon>
-                                                    <i class="pi pi-search" />
-                                                </InputIcon>
-                                                <InputText v-model="filters['global'].value" size="small"
-                                                    placeholder="Keyword Search" />
-                                            </IconField>
-                                            <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
-                                                optionLabel="header" @update:modelValue="toggleColumn"
-                                                placeholder="Select Columns" class="w-full md:w-50" size="small"
-                                                :virtualScrollerOptions="{ itemSize: 44 }" :maxSelectedLabels="2" />
-                                            <Button icon="pi pi-external-link" label="Export" severity="info"
-                                                size="small" @click="exportCSV($event)" class="text-neutral-50" />
-                                        </div>
-                                    </template>
                                     <Column expander style="width: 5rem" />
                                     <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
                                         :field="col.field" :header="formatLabel(col.header)" sortable />
@@ -245,6 +252,18 @@ const filteredRoomList = computed(() => {
     });
 })
 
+// add new menu
+import Menu from 'primevue/menu';
+
+const addMenu = ref();
+const addNewMenu = ref([
+    { label: 'Hạng phòng' },
+    { label: 'Phòng' }
+]);
+
+const toggle = (event) => {
+    addMenu.value.toggle(event);
+};
 
 
 // toggle column

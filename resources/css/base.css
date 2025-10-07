@@ -307,11 +307,12 @@ header {
     text-transform: uppercase;
     color: var(--accent-color-400);
     font-weight: var(--fw-semi-bold);
-    font-size: var(--fs-label);
 }
 .admin-label {
     color: var(--neutral-color-800);
     font-weight: var(--fw-semi-bold);
+}
+:where(.label,.admin-label){
     font-size: var(--fs-label);
 }
 
@@ -890,4 +891,9 @@ table.dataTable > thead {
 .custom-select .error {
     color: var(--danger-color-500);
     margin-top: var(--size-200);
+}
+
+/* configure menu list primevue */
+.sub-menu .sub-menu-item{
+    padding: .75rem;
 }

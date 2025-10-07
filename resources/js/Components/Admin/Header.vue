@@ -70,9 +70,11 @@
                             Phòng
                             <Menu ref="menu" :model="roomItemsMenu" class="sub-menu padding-block-200" :popup="true">
                                 <template #item="{ item, props }">
-                                    <Link :href="route('admin.room-management')">{{ item.label }}</Link>
+                                    <div class="sub-menu-item">
+                                        <Link :href="route('admin.room-management')">{{ item.label }}</Link>
+                                    </div>
                                 </template>
-                            </Menu>
+                            </Menu> 
                         </li>
                         <li>Hàng hóa</li>
                         <li>Giao dịch</li>
