@@ -5,7 +5,7 @@
                 <section class="main-content__left">
                     <div class="side-bar | flow" style="--flow-spacer:1em">
                         <div class="search-bar | box | flow" style="--flow-spacer:1em">
-                            <label class="admin-label label" for="room-type-search">Tìm kiếm</label>
+                            <label class="admin-label" for="room-type-search">Tìm kiếm</label>
                             <IconField iconPosition="left" class="flex items-center gap-x-2">
                                 <InputIcon>
                                     <i class="pi pi-search" />
@@ -24,13 +24,14 @@
                         </div>
 
                         <!-- filter status -->
-                        <RadioButtonGroup class="filter-status | box | flow flex flex-col">
+                        <div class="filter-status | box | flow flex flex-col">
                             <label class="admin-label" for="room-status">Trạng thái</label>
-                            <div v-for="status in statusList" key="filter-status" class="flex items-center gap-2">
-                                <RadioButton :inputId="status" name="status" :value="status" />
-                                <label :for="status">{{ status }}</label>
+                            <div v-for="(status, index) in statusList" :key="index" class="flex items-center gap-2">
+                                <RadioButton v-model="filterStatus" :inputId="status.name" name="status"
+                                    :value="status.label" />
+                                <label :for="status.name">{{ status.label }}</label>
                             </div>
-                        </RadioButtonGroup>
+                        </div>
 
                     </div>
                 </section>
@@ -59,9 +60,9 @@
                         <TabPanels>
                             <TabPanel v-for="tab in tabs" :key="tab" :value="tab">
                                 <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
-                                    :value="currentTab === 'room' ? roomList : filteredRoomTypeList" sortMode="multiple"
-                                    dataKey="id" removableSort paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
-                                    tableStyle="min-width: 50rem">
+                                    :value="currentTab === 'room' ? filteredRoomList : filteredRoomTypeList"
+                                    sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                                    :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
                                     <template #header>
                                         <div class="text-right flex items-center justify-end gap-x-4">
                                             <IconField>
@@ -88,7 +89,8 @@
                                                 <table class="w-full border-collapse">
                                                     <tbody>
                                                         <template v-for="(value, key) in slotProps.data" :key="key">
-                                                            <tr v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
+                                                            <tr
+                                                                v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
                                                                 <td class="font-semibold border p-2 w-1/3">
                                                                     {{ formatLabel(key) }}</td>
                                                                 <td class="border p-2">{{ value }}</td>
@@ -190,9 +192,6 @@ const props = defineProps({
     activeTab: String
 })
 
-// status
-const statusList = ['Đang kinh doanh', 'Ngừng kinh doanh', 'Tất cả'];
-
 // tabs
 const tabs = ['room-type', 'room'];
 const currentTab = ref(props.activeTab);
@@ -208,32 +207,45 @@ const filters = ref({
 // filter room type and room by branch
 const selectedBranches = ref([])
 
-// filter room type by branch
+// filter room and room type by status
+const statusList = ref([
+    {
+        name: 'active',
+        label: 'Đang kinh doanh'
+    },
+    {
+        name: 'inactive',
+        label: 'Ngừng kinh doanh'
+    },
+    {
+        name: 'all',
+        label: 'Tất cả'
+    },
+]);
+const filterStatus = ref('Tất cả');
+
+// filter room type by branch ans status
 const filteredRoomTypeList = computed(() => {
-    // default filter behaviour
-    if (!selectedBranches.value.length) {
-        return props.roomTypeList;
-    }
-
-    // selecting branch will affect the data table
-    return props.roomTypeList.filter(roomType => {
-        const branchIds = roomType.branches.map(b => b.id)
-        return selectedBranches.value.every(id => branchIds.includes(id))
+    return (props.roomTypeList || []).filter(roomType => {
+        const branchIds = (roomType.branches || []).map(b => b.id)
+        const branchMatch = !selectedBranches.value.length || selectedBranches.value.some(id => branchIds.includes(id));
+        const statusMatch = filterStatus.value === 'Tất cả' || roomType.status === filterStatus.value;
+        return branchMatch && statusMatch;
     })
-})
+});
 
+// filter room by branch and status
 const filteredRoomList = computed(() => {
-    // default filter behaviour
-    if (!selectedBranches.value.length) {
-        return props.roomList;
-    }
+    return (props.roomList || []).filter(room => {
+        const branchMatch = selectedBranches.value.length === 0 ||
+            selectedBranches.value.includes(room.branch.id)
+        const statusMatch = filterStatus.value === 'Tất cả' || room.status === filterStatus.value;
 
-    // selecting branch will affect the data table
-    return props.roomTypeList.filter(roomType => {
-        const branchIds = roomType.branches.map(b => b.id)
-        return selectedBranches.value.every(id => branchIds.includes(id))
-    })
+        return branchMatch && statusMatch;
+    });
 })
+
+
 
 // toggle column
 const selectedColumns = ref([]);
@@ -264,11 +276,8 @@ const toggleColumn = (val) => {
     })
 };
 
-console.log(props.roomList);
-
 // export CSV
 const dt = ref(null);
-
 const exportCSV = () => {
     // dt.value.exportCSV();
 };
