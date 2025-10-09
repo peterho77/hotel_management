@@ -9,6 +9,7 @@
         <!-- Footer -->
         <Footer/>
     </div>
+    <DynamicDialog/>
 </template>
 
 <script setup>

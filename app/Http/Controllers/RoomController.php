@@ -40,7 +40,26 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'area' => 'required',
+            'status' => 'required|max:50',
+            'room_type_id' => 'required',
+            'branch_id' => 'required'
+        ]);
+
+        $newRoom = [
+            'name' => $request->name,
+            'area' => $request->area,
+            'status' => $request->status,
+            'note' => $request->note,
+            'room_type_id' => $request->room_type_id,
+            'branch_id' => $request->branch_id
+        ];
+
+        Room::create($newRoom);
+
+        return redirect()->route('admin.room-management');
     }
 
     /**

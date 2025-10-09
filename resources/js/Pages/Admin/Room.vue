@@ -50,7 +50,8 @@
                                         <Menu ref="addMenu" :model="addNewMenu" class="sub-menu padding-block-200"
                                             :popup="true">
                                             <template #item="{ item, props }">
-                                                <div class="sub-menu-item">
+                                                <div class="sub-menu-item"
+                                                    @click="item.label === 'Phòng' ? showAddNewRoom() : null">
                                                     {{ item.label }}
                                                 </div>
                                             </template>
@@ -144,7 +145,6 @@ import MultiSelect from 'primevue/multiselect';
 // radio button
 import Button from 'primevue/button';
 import RadioButton from 'primevue/radiobutton';
-import RadioButtonGroup from 'primevue/radiobuttongroup';
 
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
@@ -166,9 +166,12 @@ import Panel from 'primevue/panel';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
+// dynamic dialog
+import { useDialog } from 'primevue/usedialog';
+
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, defineAsyncComponent } from 'vue';
 
 
 function formatLabel(str) {
@@ -294,6 +297,30 @@ const toggleColumn = (val) => {
         return val.includes(col);
     })
 };
+
+// open add new dialog
+const AddNewRoom = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoom.vue'));
+
+const dialog = useDialog();
+const showAddNewRoom = () => {
+    const dialogRef = dialog.open(AddNewRoom, {
+        props: {
+            header: 'Add new room',
+            style: {
+                width: '40vw',
+            },
+            breakpoints: {
+                '960px': '60vw',
+                '640px': '50vw'
+            },
+            modal: true
+        },
+        data: {
+            roomTypeList: props.roomTypeList,
+            branchList: props.branchList
+        }
+    });
+}
 
 // export CSV
 const dt = ref(null);

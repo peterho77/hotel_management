@@ -12,6 +12,8 @@ import Breadcrumb from "primevue/breadcrumb";
 import Aura from "@primeuix/themes/aura";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy";
 import DialogService from 'primevue/dialogservice';
+import DynamicDialog from 'primevue/dynamicdialog';
+import ToastService from 'primevue/toastservice';
 
 createInertiaApp({
     title: (title) => `Sona Hotel ${title}`,
@@ -31,10 +33,12 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         const vueApp = createApp({ render: () => h(App, props) })
             .use(DialogService)
+            .use(ToastService)
             .use(ZiggyVue)
             .component("Head", Head)
             .component("Link", Link)
-            .component("Breadcrumb", Breadcrumb);
+            .component("Breadcrumb", Breadcrumb)
+            .component('DynamicDialog', DynamicDialog);
 
         vueApp.use(plugin);
         vueApp.use(svgSpritePlugin, {

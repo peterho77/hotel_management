@@ -14,4 +14,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('room-type-management');
     Route::get('/room', [RoomController::class, 'index'])
         ->name('room-management');
+    Route::post('/room/add-new', [RoomController::class, 'store']);
 });
