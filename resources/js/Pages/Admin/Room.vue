@@ -94,30 +94,35 @@
                                     <template #expansion="slotProps">
                                         <Panel header="Detail information">
                                             <div class="p-4">
-                                                <table class="w-full border-collapse">
-                                                    <tbody>
-                                                        <template v-for="(value, key) in slotProps.data" :key="key">
-                                                            <tr
-                                                                v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
-                                                                <td class="font-semibold border p-2 w-1/3">
-                                                                    {{ formatLabel(key) }}</td>
-                                                                <td class="border p-2">{{ value }}</td>
-                                                            </tr>
-                                                            <tr v-else-if="key === 'branch' || key === 'room_type'">
-                                                                <td class="font-semibold border p-2 w-1/3">
-                                                                    {{ formatLabel(key) }}</td>
-                                                                <td class="border p-2">{{ value.name }}</td>
-                                                            </tr>
-                                                            <tr v-else>
-                                                                <td class="font-semibold border p-2 w-1/3">
-                                                                    {{ formatLabel(key) }}</td>
-                                                                <td class="border p-2">
-                                                                    {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                                </td>
-                                                            </tr>
+                                                <div
+                                                    class="grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr] gap-x-6 gap-y-3">
+                                                    <template v-for="(value, key) in slotProps.data" :key="key">
+                                                        <template
+                                                            v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
+                                                            <div class="font-semibold text-gray-700">
+                                                                {{ formatLabel(key) }}:</div>
+                                                            <div class="text-gray-900">{{ value }}</div>
                                                         </template>
-                                                    </tbody>
-                                                </table>
+
+                                                        <template v-else-if="key === 'branch' || key === 'room_type'">
+                                                            <div class="font-semibold text-gray-700">
+                                                                {{ formatLabel(key) }}:</div>
+                                                            <div class="text-gray-900">{{ value.name }}</div>
+                                                        </template>
+
+                                                        <template v-else>
+                                                            <div class="font-semibold text-gray-700">
+                                                                {{ formatLabel(key) }}:</div>
+                                                            <div class="text-gray-900">
+                                                                {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                                <div class="update-buttons | flex mr-10">
+                                                    <Button raised severity="success">Update</Button>
+                                                    <Button raised severity="danger">Delete</Button>
+                                                </div>
                                             </div>
                                         </Panel>
                                     </template>
@@ -207,7 +212,12 @@ const tabs = ['room-type', 'room'];
 const currentTab = ref(props.activeTab);
 
 // row expansion
-const expandedRows = ref({});
+const expandedRoomRows = ref({});
+const expandedRoomTypeRows = ref({});
+
+const expandedRows = computed(
+    () => currentTab.value === 'room' ? expandedRoomRows.value : expandedRoomTypeRows.value,
+)
 
 // keyword search
 const filters = ref({
@@ -307,11 +317,11 @@ const showAddNewRoom = () => {
         props: {
             header: 'Add new room',
             style: {
-                width: '40vw',
+                width: '30vw',
             },
             breakpoints: {
-                '960px': '60vw',
-                '640px': '50vw'
+                '960px': '50vw',
+                '640px': '40vw'
             },
             modal: true
         },

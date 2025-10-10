@@ -14,23 +14,27 @@
                 {{ $form.area.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
+            <label for="note">Note</label>
+            <Textarea name="note" rows="4" cols="30" autoResize />
+        </div>
+        <div class="flex flex-col gap-2">
             <label for="name">Status</label>
             <Select name="status" :options="statusList" optionValue="name" optionLabel="name"
-                placeholder="Select status" class="w-full md:w-56" />
+                placeholder="Select status" class="w-full" />
             <Message v-if="$form.status?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.status.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="room-type">Room Type</label>
             <Select name="room_type_id" :options="roomTypeList" optionValue="id" optionLabel="name"
-                placeholder="Select room type" class="w-full md:w-56" />
+                placeholder="Select room type" class="w-full" />
             <Message v-if="$form.room_type_id?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.room_type_id.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="branch">Branch</label>
             <Select name="branch_id" :options="branchList" optionValue="id" optionLabel="name"
-                placeholder="Select branch" class="w-full md:w-56" />
+                placeholder="Select branch" class="w-full" />
             <Message v-if="$form.branch_id?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.branch_id.error.message }}</Message>
         </div>
@@ -46,6 +50,7 @@
 import { ref, inject, onMounted } from "vue";
 import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
@@ -77,8 +82,8 @@ const resolver = zodResolver(
             .string()
             .min(1, { message: 'Trạng thái là bắt buộc.' })
             .max(50, { message: 'Tối đa 50 ký tự' }),
-        room_type_id: z.number().min(1, { message: 'Chọn loại phòng.' }),
-        branch_id: z.number().min(1, { message: 'Chọn chi nhánh.' })
+        room_type_id: z.coerce.number().min(1, { message: 'Chọn loại phòng.' }),
+        branch_id: z.coerce.number().min(1, { message: 'Chọn chi nhánh.' })
     })
 )
 
@@ -97,6 +102,7 @@ const submit = (e) => {
     if (e.valid) {
         router.post('/admin/room/add-new', JSON.parse(JSON.stringify(e.values)))
         toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        dialogRef.value.close();
     }
 }
 

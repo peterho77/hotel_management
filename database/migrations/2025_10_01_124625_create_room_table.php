@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('room_type_id')->constrained('room_type')->onDelete('cascade');
             $table->string('area', 20);
             $table->string('status', 50);
-            $table->text('note');
+            $table->text('note')->nullable();
             $table->foreignId('branch_id')->nullable()->constrained('branch')->onDelete('cascade');
         });
     }
