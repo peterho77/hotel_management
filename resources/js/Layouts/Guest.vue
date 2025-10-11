@@ -10,6 +10,8 @@
         <Footer/>
     </div>
     <DynamicDialog/>
+    <ConfirmDialog/>
+    <Toast/>
 </template>
 
 <script setup>

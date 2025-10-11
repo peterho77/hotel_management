@@ -15,4 +15,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/room', [RoomController::class, 'index'])
         ->name('room-management');
     Route::post('/room/add-new', [RoomController::class, 'store']);
+    Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
+    Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
 });

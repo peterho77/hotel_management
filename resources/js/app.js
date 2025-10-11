@@ -10,10 +10,13 @@ import Admin from "./Layouts/Admin.vue";
 import PrimeVue from "primevue/config";
 import Breadcrumb from "primevue/breadcrumb";
 import Aura from "@primeuix/themes/aura";
+import Toast from 'primevue/toast';
 import { ZiggyVue } from "../../vendor/tightenco/ziggy";
 import DialogService from 'primevue/dialogservice';
 import DynamicDialog from 'primevue/dynamicdialog';
+import ConfirmDialog from 'primevue/confirmdialog';
 import ToastService from 'primevue/toastservice';
+import ConfirmationService from 'primevue/confirmationservice'; 
 
 createInertiaApp({
     title: (title) => `Sona Hotel ${title}`,
@@ -34,11 +37,14 @@ createInertiaApp({
         const vueApp = createApp({ render: () => h(App, props) })
             .use(DialogService)
             .use(ToastService)
+            .use(ConfirmationService)
             .use(ZiggyVue)
             .component("Head", Head)
             .component("Link", Link)
             .component("Breadcrumb", Breadcrumb)
-            .component('DynamicDialog', DynamicDialog);
+            .component("Toast", Toast)
+            .component('DynamicDialog', DynamicDialog)
+            .component('ConfirmDialog', ConfirmDialog);
 
         vueApp.use(plugin);
         vueApp.use(svgSpritePlugin, {

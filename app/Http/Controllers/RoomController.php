@@ -17,11 +17,11 @@ class RoomController extends Controller
     {
         $roomList = Room::with(['branch', 'room_type'])
             ->get()
-            ->makeHidden(['id', 'branch_id', 'room_type_id']);
+            ->makeHidden(['branch_id', 'room_type_id']);
         if ($roomList->isNotEmpty()) {
             $firstItem = $roomList->first();
             $columns = array_keys($firstItem->getAttributes());
-            $columns = array_diff($columns, ['id', 'branch_id', 'room_type_id']);
+            $columns = array_diff($columns, ['branch_id', 'room_type_id']);
         };
         $roomTypeList = RoomType::all();
         $branchList = Branch::all();
@@ -75,7 +75,17 @@ class RoomController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required',
+            'area' => 'required',
+            'status' => 'required|max:50',
+            'room_type_id' => 'required',
+            'branch_id' => 'required'
+        ]);
+
+        $room = Room::find($id);
+        $room->update($validated);
+        return redirect()->route('admin.room-management')->with('success', 'Record updated successfully.');
     }
 
     /**
@@ -83,13 +93,8 @@ class RoomController extends Controller
      */
     public function destroy(string $id)
     {
-        $roomList = Room::all();
-        if ($roomList->isNotEmpty()) {
-            $firstItem = $roomList->first();
-            $columns = array_keys($firstItem->getAttributes());
-            $columns = array_diff($columns, ['id', 'branch_id']);
-        };
-        $roomTypeList = RoomType::all();
-        $branchList = Branch::all();
+        $room = Room::where('id', $id)->first();
+        $room->delete();
+        return redirect()->route('admin.room-management')->with('success', 'Record deleted successfully.');
     }
 }

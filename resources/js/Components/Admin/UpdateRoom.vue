@@ -1,6 +1,6 @@
 <template>
-    <Form ref="newRoomForm" v-slot="$form" :resolver :initialValues validateOnUpdate="false" :validateOnBlur="true"
-        class="grid gap-y-6" @submit="submit">
+    <Form v-if="ready" ref="newRoomForm" v-slot="$form" :resolver :initialValues validateOnUpdate="false"
+        :validateOnBlur="true" class="grid gap-y-6" @submit="submit">
         <div class="flex flex-col gap-2">
             <label for="name">Name</label>
             <InputText id="name" name="name" />
@@ -43,11 +43,11 @@
             <Button label="Cancel" severity="danger" raised @click="closeDialog" />
         </div>
     </Form>
-    <Toast/>
+    <Toast />
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from "vue";
+import { ref, reactive, inject, onMounted, toRaw } from "vue";
 import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -56,8 +56,8 @@ import Button from 'primevue/button';
 import Message from 'primevue/message';
 
 import { router } from '@inertiajs/vue3';
-import { useDialog } from "primevue/usedialog";
 import { useToast } from 'primevue/usetoast';
+import { useConfirm } from "primevue/useconfirm";
 
 // zod validate
 import { zodResolver } from '@primevue/forms/resolvers/zod';
@@ -68,8 +68,8 @@ const statusList = ref([{ name: 'Đang kinh doanh', value: 'active' }, { name: '
 
 const dialogRef = inject('dialogRef');
 
-const branchList = ref([])
-const roomTypeList = ref([])
+const branchList = ref([]);
+const roomTypeList = ref([]);
 
 const toast = useToast();
 
@@ -86,23 +86,61 @@ const resolver = zodResolver(
     })
 )
 
-const initialValues = {
+const initialValues = reactive({
     name: '',
     area: '',
     status: '',
-    room_type_id: '',
-    branch_id: ''
-};
+    room_type_id: null,
+    branch_id: null
+});
 
 const newRoomForm = ref(null);
 
+// confirm update dialog
+const confirm = useConfirm();
+const ready = ref(false);
+
+const updateConfirm = (onAccept) => {
+    confirm.require({
+        message: 'Are you sure you want to update the record?',
+        header: 'Confirmation',
+        icon: 'pi pi-exclamation-triangle',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Save'
+        },
+        accept: () => {
+            return onAccept && onAccept(); //call back
+        },
+        reject: () => {
+            toast.add({
+                severity: 'error',
+                summary: 'Rejected',
+                detail: 'You have rejected',
+                life: 3000
+            });
+        }
+    });
+};
 
 const submit = (e) => {
-    if (e.valid) {
-        router.post('/admin/room/add-new', JSON.parse(JSON.stringify(e.values)))
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+    if (!e.valid) return
+    const id = dialogRef.value.data?.initialData?.id;
+    updateConfirm(() => {
+        router.put(
+            route('admin.room.update', id),
+            e.values,
+            {
+                preserveScroll: true,
+                preserveState: true,
+            }
+        );
         dialogRef.value.close();
-    }
+    })
 }
 
 // pass data from dynamic dialog primevue
@@ -110,9 +148,17 @@ onMounted(() => {
     const params = dialogRef.value.data;
 
     if (params) {
-        branchList.value = params.branchList || []
-        roomTypeList.value = params.roomTypeList || []
+        branchList.value = params.branchList || [];
+        roomTypeList.value = params.roomTypeList || [];
+
+        const { branch, room_type, ...rest } = toRaw(params.initialData);
+        Object.assign(initialValues, {
+            ...rest,
+            branch_id: branch?.id ?? null,
+            room_type_id: room_type?.id ?? null,
+        });
     }
+    ready.value = true;
 })
 
 const closeDialog = () => {

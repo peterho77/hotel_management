@@ -120,8 +120,9 @@
                                                     </template>
                                                 </div>
                                                 <div class="update-buttons | flex mr-10">
-                                                    <Button raised severity="success">Update</Button>
-                                                    <Button raised severity="danger">Delete</Button>
+                                                    <Button raised severity="success" @click="currentTab === 'room' ? showUpdateRoom(slotProps.data) : null">Update</Button>
+                                                    <Button raised severity="danger"
+                                                        @click="currentTab === 'room' ? deleteConfirm(slotProps.data.id) : null">Delete</Button>
                                                 </div>
                                             </div>
                                         </Panel>
@@ -177,6 +178,12 @@ import { useDialog } from 'primevue/usedialog';
 // router
 import { router } from '@inertiajs/vue3';
 import { ref, watch, computed, defineAsyncComponent } from 'vue';
+
+// confirm dialog
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import { usePage } from '@inertiajs/vue3'
+import ConfirmDialog from 'primevue/confirmdialog';
 
 
 function formatLabel(str) {
@@ -308,8 +315,9 @@ const toggleColumn = (val) => {
     })
 };
 
-// open add new dialog
+// open add new or update dialog
 const AddNewRoom = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoom.vue'));
+const UpdateRoom = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoom.vue'));
 
 const dialog = useDialog();
 const showAddNewRoom = () => {
@@ -331,6 +339,73 @@ const showAddNewRoom = () => {
         }
     });
 }
+const showUpdateRoom = (oldData) => {
+    const dialogRef = dialog.open(UpdateRoom, {
+        props: {
+            header: 'Update room',
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true
+        },
+        data: {
+            roomTypeList: props.roomTypeList,
+            branchList: props.branchList,
+            initialData: oldData
+        }
+    });
+}
+
+// confirm dialog 
+const confirm = useConfirm();
+const toast = useToast();
+const page = usePage();
+
+const deleteConfirm = (id) => {
+    confirm.require({
+        message: 'Do you want to delete this record?',
+        header: 'Danger Zone',
+        icon: 'pi pi-info-circle',
+        rejectLabel: 'Cancel',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Delete',
+            severity: 'danger'
+        },
+        accept: () => {
+            router.delete(
+                route('admin.room.delete', id), // hoặc '/users/123'
+                {
+                    preserveScroll: true, // không cuộn lại đầu trang
+                    preserveState: true, // reset state page
+                }
+            );
+        },
+        reject: () => {
+            toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+        }
+    })
+};
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        console.log('Flash message:', flash)
+        if (flash?.success) {
+            console.log(flash.success);
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
+        }
+    },
+    
+)
 
 // export CSV
 const dt = ref(null);
