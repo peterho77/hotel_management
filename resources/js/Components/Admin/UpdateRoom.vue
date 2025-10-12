@@ -98,7 +98,6 @@ const newRoomForm = ref(null);
 
 // confirm update dialog
 const confirm = useConfirm();
-const ready = ref(false);
 
 const updateConfirm = (onAccept) => {
     confirm.require({
@@ -144,6 +143,7 @@ const submit = (e) => {
 }
 
 // pass data from dynamic dialog primevue
+const ready = ref(false); // wait for data to mount
 onMounted(() => {
     const params = dialogRef.value.data;
 

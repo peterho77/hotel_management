@@ -40,7 +40,6 @@
                         <div class="nav-wrapper">
                             <div class="filter-search">
                                 <span class="admin-label | fs-700">Hạng phòng & Phòng</span>
-                                <!-- --code thêm nút search-- -->
                             </div>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
@@ -51,7 +50,7 @@
                                             :popup="true">
                                             <template #item="{ item, props }">
                                                 <div class="sub-menu-item"
-                                                    @click="item.label === 'Phòng' ? showAddNewRoom() : null">
+                                                    @click="item.label === 'Phòng' ? showAddNewRoom() : showAddNewRoomType()">
                                                     {{ item.label }}
                                                 </div>
                                             </template>
@@ -120,9 +119,10 @@
                                                     </template>
                                                 </div>
                                                 <div class="update-buttons | flex mr-10">
-                                                    <Button raised severity="success" @click="currentTab === 'room' ? showUpdateRoom(slotProps.data) : null">Update</Button>
+                                                    <Button raised severity="success"
+                                                        @click="currentTab === 'room' ? showUpdateRoom(slotProps.data) : showUpdateRoomType(slotProps.data)">Update</Button>
                                                     <Button raised severity="danger"
-                                                        @click="currentTab === 'room' ? deleteConfirm(slotProps.data.id) : null">Delete</Button>
+                                                        @click="deleteConfirm(slotProps.data.id, currentTab)">Delete</Button>
                                                 </div>
                                             </div>
                                         </Panel>
@@ -133,13 +133,6 @@
                     </Tabs>
                 </section>
             </div>
-
-            <!-- <div class="modals">
-                <x-utility.modal.update-modal :item="$activeTab" :$columns :branchList="$branchList"
-                    :selectList="$roomTypeList" />
-                <x-utility.modal.update-status-modal />
-                <x-utility.modal.delete-modal :item="$activeTab" />
-            </div> -->
         </div>
     </main>
 </template>
@@ -183,8 +176,6 @@ import { ref, watch, computed, defineAsyncComponent } from 'vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { usePage } from '@inertiajs/vue3'
-import ConfirmDialog from 'primevue/confirmdialog';
-
 
 function formatLabel(str) {
     // Thay tất cả dấu '-' hoặc '_' bằng dấu cách
@@ -316,12 +307,15 @@ const toggleColumn = (val) => {
 };
 
 // open add new or update dialog
-const AddNewRoom = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoom.vue'));
-const UpdateRoom = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoom.vue'));
+const addNewRoom = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoom.vue'));
+const addNewRoomType = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoomType.vue'));
+const updateRoom = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoom.vue'));
+const updateRoomType = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoomType.vue'));
 
 const dialog = useDialog();
+// add new dialog
 const showAddNewRoom = () => {
-    const dialogRef = dialog.open(AddNewRoom, {
+    const dialogRef = dialog.open(addNewRoom, {
         props: {
             header: 'Add new room',
             style: {
@@ -339,8 +333,29 @@ const showAddNewRoom = () => {
         }
     });
 }
+const showAddNewRoomType = () => {
+    const dialogRef = dialog.open(addNewRoomType, {
+        props: {
+            header: 'Add new room type',
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true
+        },
+        data: {
+            roomTypeList: props.roomTypeList,
+            branchList: props.branchList
+        }
+    });
+}
+
+// update dialog
 const showUpdateRoom = (oldData) => {
-    const dialogRef = dialog.open(UpdateRoom, {
+    const dialogRef = dialog.open(updateRoom, {
         props: {
             header: 'Update room',
             style: {
@@ -359,13 +374,32 @@ const showUpdateRoom = (oldData) => {
         }
     });
 }
+const showUpdateRoomType = (oldData) => {
+    const dialogRef = dialog.open(updateRoomType, {
+        props: {
+            header: 'Update room type',
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true
+        },
+        data: {
+            branchList: props.branchList,
+            initialData: oldData
+        }
+    });
+}
 
 // confirm dialog 
 const confirm = useConfirm();
 const toast = useToast();
 const page = usePage();
 
-const deleteConfirm = (id) => {
+const deleteConfirm = (id, tab) => {
     confirm.require({
         message: 'Do you want to delete this record?',
         header: 'Danger Zone',
@@ -381,13 +415,25 @@ const deleteConfirm = (id) => {
             severity: 'danger'
         },
         accept: () => {
-            router.delete(
-                route('admin.room.delete', id), // hoặc '/users/123'
-                {
-                    preserveScroll: true, // không cuộn lại đầu trang
-                    preserveState: true, // reset state page
-                }
-            );
+            if (tab === 'room') {
+                router.delete(
+                    route('admin.room.delete', id), // hoặc '/users/123'
+                    {
+                        preserveScroll: true, // không cuộn lại đầu trang
+                        preserveState: true, // reset state page
+                    }
+                );
+            }
+            else
+            {
+                router.delete(
+                    route('admin.room-type.delete', id), // hoặc '/users/123'
+                    {
+                        preserveScroll: true, // không cuộn lại đầu trang
+                        preserveState: true, // reset state page
+                    }
+                );
+            }
         },
         reject: () => {
             toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
@@ -404,7 +450,7 @@ watch(
             toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
         }
     },
-    
+
 )
 
 // export CSV

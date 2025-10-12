@@ -10,8 +10,15 @@ Route::inertia('/about', 'Guest/About')->name('about');
 
 // Admin pages
 Route::prefix('admin')->name('admin.')->group(function () {
+
+    //room type section
     Route::get('/room-type', [RoomTypeController::class, 'index'])
         ->name('room-type-management');
+    Route::post('/room-type/add-new', [RoomTypeController::class, 'store']);
+    Route::put('/room-type/update/{id}', [RoomTypeController::class, 'update'])->name('room-type.update');
+    Route::delete('/room-type/delete/{id}', [RoomTypeController::class, 'destroy'])->name('room-type.delete');
+
+    // room section
     Route::get('/room', [RoomController::class, 'index'])
         ->name('room-management');
     Route::post('/room/add-new', [RoomController::class, 'store']);
