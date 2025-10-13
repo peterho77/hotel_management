@@ -16,12 +16,12 @@
                         </ul>
                     </nav>
                     <nav class="top-nav__right  ">
-                        <div class="nav-wrapper">
+                        <div class="nav-wrapper !gap-x-16">
                             <ul class="social-list" role="list">
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="facebook" size="0 0 24 24" role="presentation"
-                                            class="icon social-icon--facebook" data-color="original"/>
+                                            class="icon social-icon--facebook" data-color="original" />
                                     </a>
                                 </li>
                                 <li>
@@ -43,7 +43,10 @@
                                     </a>
                                 </li>
                             </ul>
-                            <button class="button">Book now</button>
+                            <div class="card flex justify-center gap-x-2">
+                                <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised/>
+                                <Button label="Register" class="fs-600" severity="info" variant="text" raised/>
+                            </div>
                             <div class="toggle-lang-switch">
                                 <img class="flag-icon" src="../../../../public/img/united-states-of-america.png"
                                     alt="" />
@@ -100,3 +103,7 @@
         </section>
     </header>
 </template>
+
+<script setup>
+import Button from 'primevue/button';
+</script>

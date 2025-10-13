@@ -43,19 +43,13 @@
                             </div>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
-                                    <Button severity="success" size="small" class="flex items-center" @click="toggle">
-                                        <i class="pi pi-plus" style="font-size: .875rem"></i>
-                                        <span>Add new</span>
-                                        <Menu ref="addMenu" :model="addNewMenu" class="sub-menu padding-block-200"
-                                            :popup="true">
-                                            <template #item="{ item, props }">
-                                                <div class="sub-menu-item"
-                                                    @click="item.label === 'Phòng' ? showAddNewRoom() : showAddNewRoomType()">
-                                                    {{ item.label }}
-                                                </div>
-                                            </template>
-                                        </Menu>
-                                    </Button>
+                                    <SplitButton severity="success" size="small" :model="addNewItems"
+                                        raised>
+                                        <div class="flex items-center gap-x-2 sub-menu">
+                                            <i class="pi pi-plus" style="font-size: .875rem"></i>
+                                            <span>Add new</span>
+                                        </div>
+                                    </SplitButton>
                                     <IconField>
                                         <InputIcon>
                                             <i class="pi pi-search" />
@@ -141,8 +135,9 @@
 // mutiple select
 import MultiSelect from 'primevue/multiselect';
 
-// radio button
+// buttons
 import Button from 'primevue/button';
+import SplitButton from 'primevue/splitbutton';
 import RadioButton from 'primevue/radiobutton';
 
 // keyword search
@@ -271,6 +266,20 @@ const addNewMenu = ref([
     { label: 'Hạng phòng' },
     { label: 'Phòng' }
 ]);
+const addNewItems = [
+    {
+        label: 'Hạng phòng',
+        command: () => {
+            showAddNewRoomType();
+        }
+    },
+    {
+        label: 'Phòng',
+        command: () => {
+            showAddNewRoom();
+        }
+    },
+];
 
 const toggle = (event) => {
     addMenu.value.toggle(event);
@@ -424,8 +433,7 @@ const deleteConfirm = (id, tab) => {
                     }
                 );
             }
-            else
-            {
+            else {
                 router.delete(
                     route('admin.room-type.delete', id), // hoặc '/users/123'
                     {
