@@ -16,7 +16,7 @@
                         </ul>
                     </nav>
                     <nav class="top-nav__right  ">
-                        <div class="nav-wrapper !gap-x-16">
+                        <div class="nav-wrapper !gap-x-16   ">
                             <ul class="social-list" role="list">
                                 <li>
                                     <a href="">
@@ -44,8 +44,10 @@
                                 </li>
                             </ul>
                             <div class="card flex justify-center gap-x-2">
-                                <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised/>
-                                <Button label="Register" class="fs-600" severity="info" variant="text" raised/>
+                                <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
+                                    @click="showLoginForm" />
+                                <Button label="Register" class="fs-600" severity="info" variant="text" raised
+                                    @click="showSignupForm" />
                             </div>
                             <div class="toggle-lang-switch">
                                 <img class="flag-icon" src="../../../../public/img/united-states-of-america.png"
@@ -105,5 +107,65 @@
 </template>
 
 <script setup>
+import { defineAsyncComponent, h } from 'vue';
+import { useDialog } from 'primevue/usedialog';
 import Button from 'primevue/button';
+
+// dynamic dialog
+const dialog = useDialog();
+
+const loginForm = defineAsyncComponent(() => import('../../Components/Utility/Dialog/LoginForm.vue'));
+const signupForm = defineAsyncComponent(() => import('../../Components/Utility/Dialog/SignupForm.vue'));
+
+const loginImg = '/img/login-bg.jpg';
+
+const showLoginForm = () => {
+    const dialogRef = dialog.open(loginForm, {
+        props: {
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            closable: false,
+            class: 'login-dialog',
+        },
+    })
+};
+const showSignupForm = () => {
+    const dialogRef = dialog.open(signupForm, {
+        props: {
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            closable: false,
+            class: 'signup-dialog',
+        },
+    });
+}
 </script>
+
+<style scoped>
+/* Xóa padding mặc định của header và content */
+.p-dialog-content {
+    padding: 0 !important;
+}
+
+.p-dialog-header {
+    display: none !important;
+    /* ẩn header mặc định */
+}
+
+/* Xóa padding mặc định dialog wrapper */
+.p-dialog {
+    overflow: hidden;
+}
+</style>

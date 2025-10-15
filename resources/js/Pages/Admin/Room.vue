@@ -262,10 +262,6 @@ const filteredRoomList = computed(() => {
 import Menu from 'primevue/menu';
 
 const addMenu = ref();
-const addNewMenu = ref([
-    { label: 'Hạng phòng' },
-    { label: 'Phòng' }
-]);
 const addNewItems = [
     {
         label: 'Hạng phòng',
@@ -316,10 +312,10 @@ const toggleColumn = (val) => {
 };
 
 // open add new or update dialog
-const addNewRoom = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoom.vue'));
-const addNewRoomType = defineAsyncComponent(() => import('../../Components/Admin/AddNewRoomType.vue'));
-const updateRoom = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoom.vue'));
-const updateRoomType = defineAsyncComponent(() => import('../../Components/Admin/UpdateRoomType.vue'));
+const addNewRoom = defineAsyncComponent(() => import('../../Components/Utility/Dialog/AddNewRoom.vue'));
+const addNewRoomType = defineAsyncComponent(() => import('../../Components/Utility/Dialog/AddNewRoomType.vue'));
+const updateRoom = defineAsyncComponent(() => import('../../Components/Utility/Dialog/UpdateRoom.vue'));
+const updateRoomType = defineAsyncComponent(() => import('../../Components/Utility/Dialog/UpdateRoomType.vue'));
 
 const dialog = useDialog();
 // add new dialog

@@ -58,14 +58,16 @@
     --text-color: var(--neutral-color-700);
 
     /* custom primevue button */
-    --p-button-primary-background: var(--accent-color-400)!important;
-    --p-button-primary-border-color: var(--accent-color-400)!important; /* nền */
+    --p-button-primary-background: var(--accent-color-400) !important;
+    --p-button-primary-border-color: var(
+        --accent-color-400
+    ) !important; /* nền */
     --p-button-primary-color: #fff; /* chữ */
-    --p-button-primary-hover-background: var(--accent-color-300)!important;
-    --p-button-primary-hover-border-color: var(--accent-color-300)!important;
-    --p-button-hover-link-color: var(--accent-color-400)!important;
-    --p-button-hover-link-hover-color: var(--accent-color-3 00)!important;
-    --p-button-primary-active-background: var(--accent-color-300)!important;
+    --p-button-primary-hover-background: var(--accent-color-300) !important;
+    --p-button-primary-hover-border-color: var(--accent-color-300) !important;
+    --p-button-hover-link-color: var(--accent-color-400) !important;
+    --p-button-hover-link-hover-color: var(--accent-color-3 00) !important;
+    --p-button-primary-active-background: var(--accent-color-300) !important;
 
     /* size */
     --size-100: 0.25rem;
@@ -117,7 +119,8 @@ header {
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 
-.guest-layout,.admin-layout{
+.guest-layout,
+.admin-layout {
     min-height: 100vh;
     min-height: 100dvh;
     display: grid;
@@ -125,8 +128,7 @@ header {
     grid-template-columns: minmax(0, 1fr);
 }
 
-@layout base{
-
+@layout base {
     h1,
     h2,
     h3,
@@ -134,53 +136,52 @@ header {
     h5 {
         line-height: 1.2;
     }
-    
+
     p {
         line-height: 1.4;
         max-width: 50ch;
     }
-    
+
     p[data-width="narrow"] {
         max-width: 30ch;
     }
-    
+
     p[data-width="wide"] {
         max-width: 64ch;
     }
-    
+
     @media (max-width: 62em) {
         p {
             max-width: 100%;
         }
     }
-    
+
     nav {
         font-size: var(--fs-nav);
     }
-    
+
     img {
         display: block;
         max-width: 100%;
     }
-    
+
     input {
         border: none;
     }
-    
+
     input:focus,
     select:focus,
     button:focus,
     textarea:focus {
         outline: none;
     }
-    
+
     input[data-type="small"] {
         width: 15%;
         display: inline-block;
     }
-    
-    :where(a,
-    span) {
+
+    :where(a, span) {
         text-decoration: none;
         color: var(--text-color);
     }
@@ -198,29 +199,29 @@ header {
 }
 
 .fs-300 {
-    font-size: var(--fs-300)!important;
+    font-size: var(--fs-300) !important;
 }
 .fs-400 {
-    font-size: var(--fs-400)!important;
+    font-size: var(--fs-400) !important;
 }
 .fs-500 {
-    font-size: var(--fs-500)!important;
+    font-size: var(--fs-500) !important;
 }
 .fs-600 {
-    font-size: var(--fs-600)!important;
+    font-size: var(--fs-600) !important;
 }
 .fs-700 {
-    font-size: var(--fs-700)!important;
+    font-size: var(--fs-700) !important;
 }
 
 .fs-primary-heading {
-    font-size: var(--fs-primary-heading)!important;
+    font-size: var(--fs-primary-heading) !important;
 }
 .fs-secondary-heading {
-    font-size: var(--fs-secondary-heading)!important;
+    font-size: var(--fs-secondary-heading) !important;
 }
 .fs-normal-heading {
-    font-size: var(--fs-normal-heading)!important;
+    font-size: var(--fs-normal-heading) !important;
 }
 
 .text-center {
@@ -312,7 +313,7 @@ header {
     color: var(--neutral-color-800);
     font-weight: var(--fw-semi-bold);
 }
-:where(.label,.admin-label){
+:where(.label, .admin-label) {
     font-size: var(--fs-label);
 }
 
@@ -331,19 +332,19 @@ header {
     color: var(--neutral-color-900);
 }
 .social-icon--instagram {
-  @apply text-[#DD2A7B] hover:text-[#f68bb9] transition-colors duration-300;
+    @apply text-[#DD2A7B] hover:text-[#f68bb9] transition-colors duration-300;
 }
 
 .social-icon--facebook {
-  @apply text-[#1877F2] hover:brightness-125 transition-colors duration-300;
+    @apply text-[#1877F2] hover:brightness-125 transition-colors duration-300;
 }
 
 .social-icon--twitch {
-  @apply text-[#9146FF] hover:brightness-125 transition-colors duration-300;
+    @apply text-[#9146FF] hover:brightness-125 transition-colors duration-300;
 }
 
 .social-icon--x {
-  @apply text-black hover:text-neutral-600 transition-colors duration-300;
+    @apply text-black hover:text-neutral-600 transition-colors duration-300;
 }
 
 .service-icon {
@@ -498,7 +499,7 @@ header {
         display: flex;
         gap: var(--size-200);
 
-        > a{
+        > a {
             width: 100%;
             display: flex;
             justify-content: flex-start;
@@ -729,7 +730,7 @@ ul[role="list"] > li {
 .detail-row {
     padding-block: var(--size-200);
 }
-.detail-row:hover{
+.detail-row:hover {
     background: var(--neutral-color-100);
 }
 .detail-row .detail-content {
@@ -806,7 +807,7 @@ table.dataTable > thead {
     gap: var(--size-100);
 }
 
-.nav-pills .nav-link{
+.nav-pills .nav-link {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     color: var(--neutral-color-800);
@@ -816,6 +817,23 @@ table.dataTable > thead {
 }
 
 /* configure menu list primevue */
-.sub-menu .sub-menu-item{
-    padding: .75rem;
+.sub-menu .sub-menu-item {
+    padding: 0.75rem;
+}
+
+/* login dialog custom */
+/* CSS */
+.login-dialog,
+.signup-dialog {
+    overflow: hidden;
+}
+
+.login-dialog .p-dialog-content,
+.signup-dialog .p-dialog-content {
+    padding: 0 !important;
+}
+
+.login-dialog .p-dialog-header,
+.signup-dialog .p-dialog-header {
+    display: none !important;
 }
