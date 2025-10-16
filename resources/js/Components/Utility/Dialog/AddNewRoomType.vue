@@ -137,7 +137,6 @@ const resolver = zodResolver(
         })
         .superRefine((data, ctx) => {
             const { hourly_rate, overnight_rate, full_day_rate } = data;
-            console.log(hourly_rate, overnight_rate, full_day_rate);
 
             // nếu đều là số thì kiểm tra quan hệ
             if (typeof hourly_rate !== "undefined" && typeof overnight_rate !== "undefined" && typeof full_day_rate !== "undefined") {

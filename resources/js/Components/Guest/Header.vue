@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, h } from 'vue';
+import { defineAsyncComponent } from 'vue';
 import { useDialog } from 'primevue/usedialog';
 import Button from 'primevue/button';
 

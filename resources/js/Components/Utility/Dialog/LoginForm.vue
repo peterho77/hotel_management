@@ -31,7 +31,7 @@
                 <Link>Forgot Password</Link>
             </div>
             <p class="text-center">Not a member?
-                <Link class="text-blue-400">Sign up</Link>
+                <Link class="text-blue-400" @click="showSignupForm()">Sign up</Link>
             </p>
         </Form>
     </div>
@@ -43,13 +43,41 @@ import FloatLabel from 'primevue/floatlabel';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
-import { inject } from "vue";
+
+import { inject, defineAsyncComponent, nextTick } from 'vue';
+import { useDialog } from 'primevue/usedialog';
+// register dynamic dialog
+const dialog = useDialog();
+
+// open sign up dialog
+const signupForm = defineAsyncComponent(() => import('../Dialog/SignupForm.vue'));
+const showSignupForm = async () => {
+    closeDialog();
+    await nextTick();
+    const dialogRef = dialog.open(signupForm, {
+        props: {
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            closable: false,
+            class: 'signup-dialog',
+        },
+    });
+}
 
 const dialogRef = inject('dialogRef');
 
+// close dialog
 const closeDialog = () => {
     dialogRef.value.close();
 }
+
+// login
 
 const loginImg = '/img/login-bg.jpg';
 </script>
