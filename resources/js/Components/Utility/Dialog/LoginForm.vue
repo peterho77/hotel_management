@@ -3,7 +3,8 @@
         <div class="login-form__header | set-bg-img h-[300px]" :style="$getBgStyle(loginImg)">
             <i class="close-icon | pi pi-times | text-neutral-300 hover:text-neutral-100" @click="closeDialog()"></i>
         </div>
-        <Form class="px-12 py-8 flex flex-col gap-y-8">
+        <Form v-slot="$form" :initialValues :resolver="loginSchema" :validateOnValueUpdate="false"
+            :validateOnBlur="true" @submit="submit" class="px-12 py-8 flex flex-col gap-y-8">
             <div class="login-form-title | grid grid-cols-2 gap-20 mb-4">
                 <span class="fs-normal-heading">
                     Sign In
@@ -14,18 +15,26 @@
                     <i class="pi pi-github text-white bg-gray-800 p-3 rounded-full"></i>
                 </div>
             </div>
-            <FloatLabel>
-                <InputText id="username" v-model="value" fluid />
-                <label for="username">Username</label>
-            </FloatLabel>
-            <FloatLabel>
-                <Password id="password" v-model="value" fluid toggleMask />
-                <label for="password">Password</label>
-            </FloatLabel>
-            <Button label="Sign in" severity="success"></Button>
+            <div class="flex flex-col gap-y-2">
+                <FloatLabel>
+                    <InputText id="account_name" name="account_name" fluid />
+                    <label for="account_name">Username</label>
+                </FloatLabel>
+                <Message v-if="$form.account_name?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.account_name.error.message }}</Message>
+            </div>
+            <div class="flex flex-col gap-y-2">
+                <FloatLabel>
+                    <Password id="password" name="password" fluid toggleMask />
+                    <label for="password">Password</label>
+                </FloatLabel>
+                <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.password.error.message }}</Message>
+            </div>
+            <Button label="Sign in" type="submit" severity="success"></Button>
             <div class="flex justify-between">
                 <div class="flex items-center gap-2">
-                    <Checkbox v-model="checked" binary variant="filled" checked />
+                    <Checkbox name="checked" binary variant="filled" checked />
                     <label for="checked">Remember me</label>
                 </div>
                 <Link>Forgot Password</Link>
@@ -38,13 +47,19 @@
 </template>
 
 <script setup>
+import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
 import FloatLabel from 'primevue/floatlabel';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
+import Message from 'primevue/message';
 
 import { inject, defineAsyncComponent, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { z } from "zod";
+import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { useToast } from 'primevue/usetoast';
 import { useDialog } from 'primevue/usedialog';
 // register dynamic dialog
 const dialog = useDialog();
@@ -71,13 +86,41 @@ const showSignupForm = async () => {
 }
 
 const dialogRef = inject('dialogRef');
-
 // close dialog
 const closeDialog = () => {
     dialogRef.value.close();
 }
 
 // login
+// sign up
+const initialValues = {
+    account_name: '',
+    password: ''
+};
+
+const loginSchema = zodResolver(z.
+    object({
+        account_name: z
+            .string()
+            .min(1, "Please enter your email / username / phone.")
+            .max(30, "Acount name is too long.")
+            .transform((v) => v.trim()),
+
+        password: z
+            .string()
+            .min(8, "Password must be at least 8 characters.")
+            .transform((v) => v.trim()),
+    }));
+
+// login
+const toast = useToast();
+const submit = (e) => {
+    if (e.valid) {
+        router.post('/login', JSON.parse(JSON.stringify(e.values)))
+        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        dialogRef.value.close();
+    }
+}
 
 const loginImg = '/img/login-bg.jpg';
 </script>

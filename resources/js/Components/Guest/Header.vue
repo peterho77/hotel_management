@@ -43,11 +43,16 @@
                                     </a>
                                 </li>
                             </ul>
-                            <div class="card flex justify-center gap-x-2">
+                            <!-- UI show user name -->
+                            <div class="card flex justify-center gap-x-2" v-if="!user">
                                 <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
                                     @click="showLoginForm" />
                                 <Button label="Register" class="fs-600" severity="info" variant="text" raised
                                     @click="showSignupForm" />
+                            </div>
+                            <div class="card flex justify-center gap-x-2" v-else>
+                                <span>Hello {{ user?.full_name }}</span>
+                                <Button label="Logout" severity="infor" variant="text" raised/>
                             </div>
                             <div class="toggle-lang-switch">
                                 <img class="flag-icon" src="../../../../public/img/united-states-of-america.png"
@@ -107,7 +112,8 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent,ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useDialog } from 'primevue/usedialog';
 import Button from 'primevue/button';
 
@@ -151,21 +157,10 @@ const showSignupForm = () => {
         },
     });
 }
+
+// check authentication to show user name
+const page = usePage()
+const user = ref(page.props.user);
+console.log(user);
+
 </script>
-
-<style scoped>
-/* Xóa padding mặc định của header và content */
-.p-dialog-content {
-    padding: 0 !important;
-}
-
-.p-dialog-header {
-    display: none !important;
-    /* ẩn header mặc định */
-}
-
-/* Xóa padding mặc định dialog wrapper */
-.p-dialog {
-    overflow: hidden;
-}
-</style>

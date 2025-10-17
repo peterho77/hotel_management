@@ -82,7 +82,6 @@
 
 <script setup>
 import { Form } from '@primevue/forms';
-import { FormField } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
 import InputMask from 'primevue/inputmask';
 import FloatLabel from 'primevue/floatlabel';
@@ -92,8 +91,10 @@ import Checkbox from 'primevue/checkbox';
 import Message from 'primevue/message';
 
 import { inject, defineAsyncComponent, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { z } from "zod";
 import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { useToast } from 'primevue/usetoast';
 import { useDialog } from 'primevue/usedialog';
 // register dynamic dialog
 const dialog = useDialog();
@@ -148,10 +149,11 @@ const userRegisterSchema = zodResolver(z
             .max(50, "Tên đăng nhập không được vượt quá 50 ký tự."),
 
         email: z
-            .string()
+            .string({ required_error: "Email là bắt buộc." })
+            .trim()
             .min(1, "Email là bắt buộc.")
-            .email("Email không hợp lệ.")
-            .max(255, "Email không được vượt quá 255 ký tự."),
+            .max(255, "Email không được vượt quá 255 ký tự.")
+            .refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), "Email không hợp lệ."),
 
         phone: z
             .string()
@@ -161,7 +163,7 @@ const userRegisterSchema = zodResolver(z
             .refine((val) => val.replace(/\s+/g, "").length <= 15, {
                 message: "Số điện thoại không được vượt quá 15 ký tự.",
             }),
-        
+
         password: z
             .string()
             .min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
@@ -174,12 +176,12 @@ const userRegisterSchema = zodResolver(z
         message: "Mật khẩu xác nhận không khớp.",
     }));
 
+const toast = useToast();
 const submit = (e) => {
     if (e.valid) {
-        // router.post('/admin/room-type/add-new', JSON.parse(JSON.stringify(e.values)))
-        // toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        // dialogRef.value.close();
-        console.log(e.values);
+        router.post('/register', JSON.parse(JSON.stringify(e.values)))
+        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        dialogRef.value.close();
     }
 }
 
