@@ -25,7 +25,7 @@
             </div>
             <div class="flex flex-col gap-y-2">
                 <FloatLabel>
-                    <Password id="password" name="password" fluid toggleMask />
+                    <Password id="password" name="password" fluid :feedback="false" toggleMask />
                     <label for="password">Password</label>
                 </FloatLabel>
                 <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
@@ -116,9 +116,22 @@ const loginSchema = zodResolver(z.
 const toast = useToast();
 const submit = (e) => {
     if (e.valid) {
-        router.post('/login', JSON.parse(JSON.stringify(e.values)))
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        dialogRef.value.close();
+        router.post('/login', JSON.parse(JSON.stringify(e.values)), {
+            onSuccess: () => {
+                setTimeout(() => {
+                    router.reload({ only: ['auth', 'flash'] })
+                }, 100);
+                dialogRef.value.close()
+            },
+            onError: (errors) => {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Đăng nhập thất bại!',
+                    detail: Object.values(errors).join(', '),
+                    life: 3000,
+                })
+            },
+        })
     }
 }
 

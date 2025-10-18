@@ -837,3 +837,10 @@ table.dataTable > thead {
 .signup-dialog .p-dialog-header {
     display: none !important;
 }
+
+/* custom tiered menu */
+.p-tieredmenu.p-component.p-tieredmenu-overlay {
+  inset-inline-start: auto !important; 
+  left: auto !important;               
+  right: 0 !important;                 
+}

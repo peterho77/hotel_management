@@ -15,8 +15,8 @@
                             </li>
                         </ul>
                     </nav>
-                    <nav class="top-nav__right  ">
-                        <div class="nav-wrapper !gap-x-16   ">
+                    <nav class="top-nav__right">
+                        <div class="nav-wrapper !gap-x-18">
                             <ul class="social-list" role="list">
                                 <li>
                                     <a href="">
@@ -44,32 +44,68 @@
                                 </li>
                             </ul>
                             <!-- UI show user name -->
-                            <div class="card flex justify-center gap-x-2" v-if="!user">
-                                <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
-                                    @click="showLoginForm" />
-                                <Button label="Register" class="fs-600" severity="info" variant="text" raised
-                                    @click="showSignupForm" />
+                            <div class="show-login | flex justify-center gap-x-2">
+                                <template v-if="!user">
+                                    <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
+                                        @click="showLoginForm" />
+                                    <Button label="Register" class="fs-600" severity="info" variant="text" raised
+                                        @click="showSignupForm" />
+                                </template>
+                                <template v-else>
+                                    <Button class="button" label="Book now" raised></Button>
+                                </template>
                             </div>
-                            <div class="card flex justify-center gap-x-2" v-else>
-                                <span>Hello {{ user?.full_name }}</span>
-                                <Button label="Logout" severity="infor" variant="text" raised/>
-                            </div>
-                            <div class="toggle-lang-switch">
-                                <img class="flag-icon" src="../../../../public/img/united-states-of-america.png"
-                                    alt="" />
-                                <div class="current-lang">
-                                    <span> EN </span>
-                                    <SvgSprite symbol="caret-down-fill" size="0 0 24 24" role="presentation"
-                                        class="icon" />
-                                </div>
-                                <ul class="lang-list | padding-block-200" role="list">
-                                    <li class="en">
-                                        <a href="">EN</a>
-                                    </li>
-                                    <li class="vi">
-                                        <a href="">VI</a>
-                                    </li>
-                                </ul>
+                            <div class="menu-user | relative flex justify-center items-center gap-x-4">
+                                <Button icon="pi pi-bell" rounded raised></Button>
+                                <Button icon="pi pi-ellipsis-v" rounded raised @click="toggleUserMenu" />
+                                <TieredMenu v-if="user" ref="userMenu" :popup="true" :model="userMenuItems"
+                                    appendTo="self">
+                                    <!-- Header user info -->
+                                    <template #start>
+                                        <button
+                                            class="relative overflow-hidden w-full border-0 bg-transparent flex items-center gap-x-3 p-2 pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
+                                            <Avatar icon="pi pi-user"
+                                                style="background-color: #dee9fc; color: #1a2551" />
+                                            <span class="inline-flex flex-col items-start">
+                                                <span class="font-bold">{{ user.user_name }}</span>
+                                                <span class="text-sm">{{ user.role }}</span>
+                                            </span>
+                                        </button>
+                                    </template>
+
+                                    <!-- Custom item template -->
+                                    <template #item="{ item, props }">
+                                        <a v-ripple
+                                            class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
+                                            v-bind="props.action">
+                                            <span :class="item.icon" class="mr-2" />
+                                            <img v-if="item.img" :src="item.img" alt="">
+                                            <span>{{ item.label }}</span>
+                                            <Badge v-if="item.badge" class="ml-auto" :value="item.badge" />
+                                            <span v-if="item.shortcut"
+                                                class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
+                                                {{ item.shortcut }}
+                                            </span>
+                                        </a>
+                                    </template>
+                                </TieredMenu>
+                                <TieredMenu v-else ref="userMenu" :popup="true" :model="guestMenuItems" appendTo="self">
+                                    <!-- Custom item template -->
+                                    <template #item="{ item, props }">
+                                        <a v-ripple
+                                            class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
+                                            v-bind="props.action">
+                                            <span :class="item.icon" class="mr-2" />
+                                            <img v-if="item.img" :src="item.img" alt="">
+                                            <span>{{ item.label }}</span>
+                                            <Badge v-if="item.badge" class="ml-auto" :value="item.badge" />
+                                            <span v-if="item.shortcut"
+                                                class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
+                                                {{ item.shortcut }}
+                                            </span>
+                                        </a>
+                                    </template>
+                                </TieredMenu>
                             </div>
                         </div>
                     </nav>
@@ -112,10 +148,16 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent,ref } from 'vue';
+import { defineAsyncComponent, ref, watch, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDialog } from 'primevue/usedialog';
+import { useToast } from "primevue/usetoast";
+import { router } from '@inertiajs/vue3';
+
+import TieredMenu from 'primevue/tieredmenu';
 import Button from 'primevue/button';
+import Avatar from 'primevue/avatar';
+import Badge from 'primevue/badge';
 
 // dynamic dialog
 const dialog = useDialog();
@@ -159,8 +201,111 @@ const showSignupForm = () => {
 }
 
 // check authentication to show user name
-const page = usePage()
-const user = ref(page.props.user);
-console.log(user);
+const page = usePage();
+const toast = useToast();
+const user = computed(() => page.props.auth.user);
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) {
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
+        }
+        else if (flash?.error) {
+            toast.add({ severity: 'error', summary: 'Confirmed', detail: flash.success, life: 3000 });
+
+        }
+    },
+)
+
+// toggle user menu
+const userMenu = ref();
+
+const toggleUserMenu = (event) => {
+    userMenu.value.toggle(event);
+}
+
+const userMenuItems = ref([
+    {
+        separator: true
+    },
+    {
+        label: 'Profile',
+        icon: 'pi pi-info-circle',
+        items: [
+            {
+                label: 'Edit',
+                icon: 'pi pi-user-edit',
+                shortcut: '⌘+N'
+            },
+            {
+                label: 'Messages',
+                icon: 'pi pi-inbox',
+                badge: 2
+            },
+            {
+                label: 'Password',
+                icon: 'pi pi-key',
+            }
+        ]
+    },
+    {
+        label: 'Settings',
+        icon: 'pi pi-cog',
+        items: [
+            {
+                label: 'Theme',
+                icon: 'pi pi-sun',
+                shortcut: '⌘+O'
+            },
+            {
+                label: 'Language',
+                icon: 'pi pi-language',
+                items: [
+                    {
+                        label: 'EN',
+                        img: '/img/united-states-of-america.png'
+                    },
+                    {
+                        label: 'VN',
+                        img: '/img/vietnam.png'
+                    }
+                ]
+            },
+        ]
+    },
+    {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        shortcut: '⌘+Q',
+        command: () => { logout() },
+    }
+]);
+
+const guestMenuItems = ref([
+    {
+        label: 'Theme',
+        icon: 'pi pi-sun',
+        shortcut: '⌘+O'
+    },
+    {
+        label: 'Language',
+        icon: 'pi pi-language',
+        items: [
+            {
+                label: 'EN',
+                img: '/img/united-states-of-america.png'
+            },
+            {
+                label: 'VN',
+                img: '/img/vietnam.png'
+            }
+        ]
+    },
+])
+
+// logout
+const logout = () => {
+    router.post('/logout');
+}
 
 </script>

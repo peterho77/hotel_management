@@ -2,7 +2,7 @@
     <section class="hero | align-center justify-center padding-block-400 | mb-8">
         <div class="hero__content">
             <div class="container">
-                <div class="even-columns" style="--custom-gap:var(--size-800)">
+                <div class="even-columns" style="--custom-gap:var(--size-900)">
                     <div class="align-center">
                         <div class="hero__text | flow">
                             <h1 class="fs-primary-heading">Sona A luxury hotel</h1>
@@ -11,7 +11,7 @@
                             <button class="button">Discover now</button>
                         </div>
                     </div>
-                    <div class="align-center justify-center">
+                    <div class="flex justify-end">
                         <div class="booking-form | padding-block-600 flow">
                             <h5 class="fs-normal-heading | text-center">Booking your hotel</h5>
 

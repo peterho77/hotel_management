@@ -445,16 +445,14 @@ const deleteConfirm = (id, tab) => {
     })
 };
 
+// flash message
 watch(
     () => page.props.flash,
     (flash) => {
-        console.log('Flash message:', flash)
         if (flash?.success) {
-            console.log(flash.success);
             toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
         }
     },
-
 )
 
 // export CSV

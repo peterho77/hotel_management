@@ -34,4 +34,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:customer')->group(function () {});
+
+    Route::post('/logout',[AuthController::class, 'logout'])->name('auth.logout');
 });
