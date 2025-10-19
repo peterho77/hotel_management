@@ -173,10 +173,8 @@ import { useToast } from "primevue/usetoast";
 import { usePage } from '@inertiajs/vue3'
 
 function formatLabel(str) {
-    // Thay tất cả dấu '-' hoặc '_' bằng dấu cách
     str = str.replace(/[-_]/g, " ");
 
-    // Viết hoa chữ cái đầu của mỗi từ
     return str.split(" ").map(word =>
         word.charAt(0).toUpperCase() + word.slice(1)
     ).join(" ");

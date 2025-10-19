@@ -124,6 +124,9 @@
                             <li>
                                 <Link :href="route('home')"><span>Home</span></Link>
                             </li>
+                            <li v-if="user">
+                                <Link :href="route('user.dashboard', user.user_name)"><span>Dashboard</span></Link>
+                            </li>
                             <li>
                                 <a href=""><span>Rooms</span></a>
                             </li>
@@ -135,9 +138,6 @@
                             </li>
                             <li>
                                 <a href=""><span>Contact</span></a>
-                            </li>
-                            <li>
-                                <a href=""><span>Account</span></a>
                             </li>
                         </ul>
                     </nav>

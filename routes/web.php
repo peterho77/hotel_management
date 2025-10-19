@@ -5,11 +5,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 Route::inertia('/', 'Guest/Home')->name('home');
 
 // Role Authentication
-Route::middleware('guest')->group(function () {   
+Route::middleware('guest')->group(function () {
     Route::inertia('/about', 'Guest/About')->name('about');
 });
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
@@ -33,7 +34,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
     });
 
-    Route::middleware('role:customer')->group(function () {});
+    Route::middleware('role:customer')->group(function () {
+        Route::get('/{user_name}/dashboard', function ($user_name) {
+            abort_unless(Auth::user()->user_name === $user_name, 403);
+            return Inertia::render('Guest/Dashboard');
+        })->name('user.dashboard');
+    });
 
-    Route::post('/logout',[AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 });
+

@@ -15,7 +15,7 @@ class Role
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (! $request->user()->hasRole($role)) {
+        if (! $request->user()->role == $role) {
             abort(403, 'Bạn không có quyền truy cập trang này.');
         }
 
