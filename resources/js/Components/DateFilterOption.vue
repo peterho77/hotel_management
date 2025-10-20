@@ -1,13 +1,13 @@
 <template>
     <div class="filter-date | box | flow">
-        <Accordion value="0">
-            <AccordionPanel value="0">
+        <Accordion>
+            <AccordionPanel class="flow">
                 <AccordionHeader>
                     <label for="" class="admin-label">{{ label }}</label>
                 </AccordionHeader>
-                <AccordionContent class="!p-2">
+                <AccordionContent>
                     <div class="flex flex-col gap-y-2">
-                        <div class="flex flex-col flex-wrap gap-y-2">
+                        <div class="flex flex-col flex-wrap gap-y-3">
                             <div class="flex items-center gap-x-2">
                                 <RadioButton v-model="filterOption" inputId="option1" name="filter-option"
                                     value="option1" />
@@ -28,7 +28,7 @@
 </template>
 
 <style scoped>
-:deep(.p-accordion.p-component .p-accordioncontent-content) {
+:deep(.p-accordion.p-component .p-accordioncontent-content,.p-accordion.p-component .p-accordionheader) {
     padding: 0 !important;
 }
 

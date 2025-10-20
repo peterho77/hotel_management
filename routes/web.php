@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -33,11 +34,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
         Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
 
-        Route::inertia('/partner', 'Admin/Partner')->name('partners');
+        Route::get('/partner', [CustomerController::class, 'index'])->name('partners');
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function(){
-        Route::inertia('/partner', 'Admin/Partner')->name('partners');
+        Route::inertia('/partner', [CustomerController::class, 'index'])->name('partners');
     });
 
     Route::middleware('role:customer')->group(function () {

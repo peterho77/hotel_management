@@ -17,9 +17,7 @@
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
                     <nav class="table-toolbar">
                         <div class="nav-wrapper">
-                            <div class="filter-search">
-                                <span class="admin-label | fs-700">Hạng phòng & Phòng</span>
-                            </div>
+                            <span class="admin-label | fs-700">Hạng phòng & Phòng</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <SplitButton severity="success" size="small" :model="addNewItems"
