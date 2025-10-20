@@ -4,35 +4,14 @@
             <div class="main-content">
                 <section class="main-content__left">
                     <div class="side-bar | flow" style="--flow-spacer:1em">
-                        <div class="search-bar | box | flow" style="--flow-spacer:1em">
-                            <label class="admin-label" for="room-type-search">Tìm kiếm</label>
-                            <IconField iconPosition="left" class="flex items-center gap-x-2">
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" size="small"
-                                    placeholder="Tìm kiếm hạng phòng" class="!pl-8" />
-                            </IconField>
-                        </div>
+                        <!-- keyword search -->
+                        <Searchbar v-model="filters['global'].value"/>
 
-                        <!-- mutiple select tag -->
-                        <div class="box">
-                            <MultiSelect :options="branchList" v-model="selectedBranches" display="chip"
-                                optionLabel="name" optionValue="id" filter placeholder="Chọn chi nhánh"
-                                :maxSelectedLabels="1" class="w-full md:w-52">
-                            </MultiSelect>
-                        </div>
+                        <!-- filter branches -->
+                        <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="selectedBranches"/>
 
                         <!-- filter status -->
-                        <div class="filter-status | box | flow flex flex-col">
-                            <label class="admin-label" for="room-status">Trạng thái</label>
-                            <div v-for="(status, index) in statusList" :key="index" class="flex items-center gap-2">
-                                <RadioButton v-model="filterStatus" :inputId="status.name" name="status"
-                                    :value="status.label" />
-                                <label :for="status.name">{{ status.label }}</label>
-                            </div>
-                        </div>
-
+                        <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái"/>
                     </div>
                 </section>
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
@@ -50,13 +29,6 @@
                                             <span>Add new</span>
                                         </div>
                                     </SplitButton>
-                                    <IconField>
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" size="small"
-                                            placeholder="Keyword Search" />
-                                    </IconField>
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
                                         placeholder="Select Columns" class="w-full md:w-50" size="small"
@@ -138,13 +110,9 @@ import MultiSelect from 'primevue/multiselect';
 // buttons
 import Button from 'primevue/button';
 import SplitButton from 'primevue/splitbutton';
-import RadioButton from 'primevue/radiobutton';
 
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
 
 // tabs
 import Tabs from 'primevue/tabs';
@@ -170,7 +138,12 @@ import { ref, watch, computed, defineAsyncComponent } from 'vue';
 // confirm dialog
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import { usePage } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3';
+
+// component
+import Searchbar from "../../Components/Searchbar.vue";
+import Multiselect from "../../Components/Multiselect.vue";
+import Radioselect from "../../Components/Radioselect.vue";
 
 function formatLabel(str) {
     str = str.replace(/[-_]/g, " ");
@@ -215,11 +188,9 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-// filter room type and room by branch
-const selectedBranches = ref([])
-
-// filter room and room type by status
+// filter room type and room by branch and status
 const statusList = ref([
+
     {
         name: 'active',
         label: 'Đang kinh doanh'
@@ -233,6 +204,7 @@ const statusList = ref([
         label: 'Tất cả'
     },
 ]);
+const selectedBranches = ref([])
 const filterStatus = ref('Tất cả');
 
 // filter room type by branch ans status

@@ -15,7 +15,7 @@ class AuthController extends Controller
             'full_name' => ['required', 'string', 'max:30'],
             'user_name' => ['required', 'string', 'max:30', 'unique:users,user_name'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:15', 'regex:/^[0-9]+$/'], // không bắt buộc
+            'phone' => ['nullable', 'string', 'max:15', 'regex:/^[0-9]+(?: [0-9]+)*$/'], // không bắt buộc
             'password' => ['required', 'string', 'min:8', 'max:15', 'confirmed'],
         ]);
 
@@ -28,10 +28,9 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        dd(Auth::user());
         return redirect()->route('home')
-        ->with('user', Auth::user())
-        ->with('success', 'You’ve successfully signed up!');
+            ->with('user', Auth::user())
+            ->with('success', 'You’ve successfully signed up!');
     }
 
     public function login(Request $request)
@@ -52,13 +51,27 @@ class AuthController extends Controller
         }
         if (Auth::attempt([$field => $accountName, 'password' => $credentials['password']], $request->boolean('remember'))) {
             $request->session()->regenerate();
+            $user = Auth::user();
+
+            if ($user->role === 'admin') {
+                return redirect()
+                    ->route('admin.room-type-management')
+                    ->with('user', $user)
+                    ->with('success', 'Welcome back, Admin!');
+            } else if ($user->role === 'manager') {
+                return redirect()
+                    ->route('manager.partners')
+                    ->with('user', $user)
+                    ->with('success', 'Welcome back, Manager!');
+            }
+
             return redirect()->intended(route('home'))
-            ->with('user', Auth::user())
-            ->with('success', 'You signed in successfully');
+                ->with('user', $user)
+                ->with('success', 'You signed in successfully');
         }
 
         return redirect()->route('home')
-        ->with('error', 'You failed to login!');
+            ->with('error', 'You failed to login!');
     }
 
     public function logout(Request $request)

@@ -661,7 +661,7 @@ ul[role="list"] > li {
 .box {
     border-radius: var(--size-200);
     background-color: var(--neutral-color-100);
-    padding: 1em;
+    padding: .75rem;
 }
 
 .form-box {
@@ -838,9 +838,3 @@ table.dataTable > thead {
     display: none !important;
 }
 
-/* custom tiered menu */
-.p-tieredmenu.p-component.p-tieredmenu-overlay {
-  inset-inline-start: auto !important; 
-  left: auto !important;               
-  right: 0 !important;                 
-}

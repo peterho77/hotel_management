@@ -32,6 +32,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/room/add-new', [RoomController::class, 'store']);
         Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
         Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
+
+        Route::inertia('/partner', 'Admin/Partner')->name('partners');
+    });
+
+    Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function(){
+        Route::inertia('/partner', 'Admin/Partner')->name('partners');
     });
 
     Route::middleware('role:customer')->group(function () {
@@ -41,6 +47,6 @@ Route::middleware('auth')->group(function () {
         })->name('user.dashboard');
     });
 
-    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
 });
 

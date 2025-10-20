@@ -66,30 +66,37 @@
                 <nav class="nav-wrapper">
                     <ul class="primary-nav | nav-list">
                         <li>Tổng quan</li>
-                        <li class="room-nav" @click="toggle">
-                            Phòng
-                            <Menu ref="menu" :model="roomItemsMenu" class="sub-menu padding-block-200" :popup="true">
-                                <template #item="{ item, props }">
-                                    <div class="sub-menu-item">
-                                        <Link :href="route('admin.room-management')">{{ item.label }}</Link>
-                                    </div>
-                                </template>
-                            </Menu> 
+                        <template v-if="user.role === 'admin'">
+                            <li class="room-nav" @click="toggle">
+                                Phòng
+                                <Menu ref="menu" :model="roomItemsMenu" class="sub-menu padding-block-200" :popup="true">
+                                    <template #item="{ item, props }">
+                                        <div class="sub-menu-item">
+                                            <Link :href="route('admin.room-management')">{{ item.label }}</Link>
+                                        </div>
+                                    </template>
+                                </Menu> 
+                            </li>
+                            <li>Hàng hóa - Dịch vụ</li>
+                        </template>
+                        <li>
+                            <Link :href="route(`${user.role}.partners`)">Khách hàng - Đối tác</Link>
                         </li>
-                        <li>Hàng hóa</li>
-                        <li>Giao dịch</li>
-                        <li>Đối tác</li>
-                        <li>Nhân viên</li>
-                        <li>Số quỹ</li>
-                        <li>Bán online</li>
-                        <li>Báo cáo</li>
+                        <template v-if="user.role === 'manager'">
+                            <li>Giao dịch</li>
+                            <li>Nhân viên</li>
+                            <li>Bán online</li>
+                            <li>Báo cáo thống kê</li>
+                        </template>
                     </ul>
-                    <button class="admin-button" data-type="inverted">
-                        <SvgSprite symbol="bell-concierge" size="0 0 24 24" role="presentation" class="icon" />
-                        Lễ tân
-                    </button>
+                    <div class="flex items-center gap-x-2">
+                        <button class="admin-button" data-type="inverted">
+                            <SvgSprite symbol="bell-concierge" size="0 0 24 24" role="presentation" class="icon" />
+                            Lễ tân
+                        </button>
+                        <Button severity="warn" label="Đăng xuất" @click="logout()" raised/>
+                    </div>
                 </nav>
-
             </div>
         </section>
     </header>
@@ -97,7 +104,11 @@
 
 <script setup>
 import Menu from 'primevue/menu';
-import { ref } from "vue";
+import Button from 'primevue/button';
+import { ref, computed } from "vue";
+
+import { router } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 const menu = ref();
 const roomItemsMenu = ref([
@@ -108,5 +119,14 @@ const roomItemsMenu = ref([
 const toggle = (event) => {
     menu.value.toggle(event);
 };
+
+// define user is admin or manager
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+// logout
+const logout = () => {
+    router.post('/logout');
+}
 
 </script>

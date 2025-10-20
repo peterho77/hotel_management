@@ -147,6 +147,15 @@
     </header>
 </template>
 
+<style scoped>
+/* custom tiered menu */
+:deep(.p-tieredmenu.p-component.p-tieredmenu-overlay) {
+    inset-inline-start: auto !important;
+    left: auto !important;
+    right: 0 !important;
+}
+</style>
+
 <script setup>
 import { defineAsyncComponent, ref, watch, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -309,3 +318,5 @@ const logout = () => {
 }
 
 </script>
+
+

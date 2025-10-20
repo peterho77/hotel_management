@@ -14,14 +14,25 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
-        User::factory()->create([
-            'full_name' => 'Test User',
-            'user_name' => 'testuser',
+        $test_users = [[
+            'full_name' => 'Test Admin',
+            'user_name' => 'testadmin',
+            'phone' => '0123456779',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'password' => bcrypt('thiendat123'),
+        ], [
+            'full_name' => 'Test Manager',
+            'user_name' => 'testmanager',
             'phone' => '0123456789',
-            'email' => 'test@example.com',
-            'role' => 'admin'
-        ]);
+            'email' => 'manager@example.com',
+            'role' => 'manager',
+            'password' => bcrypt('thiendat123'),
+        ]];
+
+        foreach ($test_users as $user) {
+            User::factory()->create($user);
+        }
 
         $this->call([
             BranchSeeder::class,
