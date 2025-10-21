@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
@@ -15,6 +16,7 @@ class CustomerController extends Controller
         if ($customersList->isNotEmpty()) {
             $firstItem = $customersList->first();
             $columns = array_keys($firstItem->getAttributes());
+            $columns = array_diff($columns, ['password', 'email_verified_at', 'remember_token']);
         };
 
         return Inertia::render('Admin/Partner', [

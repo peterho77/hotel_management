@@ -5,13 +5,13 @@
                 <section class="main-content__left">
                     <div class="side-bar | flow" style="--flow-spacer:1em">
                         <!-- keyword search -->
-                        <Searchbar v-model="filters['global'].value"/>
+                        <Searchbar v-model="filters['global'].value" />
 
                         <!-- filter branches -->
-                        <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="selectedBranches"/>
+                        <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="selectedBranches" />
 
                         <!-- filter status -->
-                        <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái"/>
+                        <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
                     </div>
                 </section>
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
@@ -20,13 +20,9 @@
                             <span class="admin-label | fs-700">Hạng phòng & Phòng</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
-                                    <SplitButton severity="success" size="small" :model="addNewItems"
-                                        raised>
-                                        <div class="flex items-center gap-x-2 sub-menu">
-                                            <i class="pi pi-plus" style="font-size: .875rem"></i>
-                                            <span>Add new</span>
-                                        </div>
-                                    </SplitButton>
+                                    <!-- toggle add new items menu -->
+                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="addNewItems"/>
+
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
                                         placeholder="Select Columns" class="w-full md:w-50" size="small"
@@ -107,7 +103,6 @@ import MultiSelect from 'primevue/multiselect';
 
 // buttons
 import Button from 'primevue/button';
-import SplitButton from 'primevue/splitbutton';
 
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
@@ -142,6 +137,7 @@ import { usePage } from '@inertiajs/vue3';
 import Searchbar from "../../Components/Searchbar.vue";
 import Multiselect from "../../Components/Multiselect.vue";
 import Radioselect from "../../Components/Radioselect.vue";
+import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
 
 function formatLabel(str) {
     str = str.replace(/[-_]/g, " ");
@@ -226,11 +222,8 @@ const filteredRoomList = computed(() => {
     });
 })
 
-// add new menu
-import Menu from 'primevue/menu';
-
-const addMenu = ref();
-const addNewItems = [
+// toggle add new item menu
+const addNewItems = ref([
     {
         label: 'Hạng phòng',
         command: () => {
@@ -243,12 +236,7 @@ const addNewItems = [
             showAddNewRoom();
         }
     },
-];
-
-const toggle = (event) => {
-    addMenu.value.toggle(event);
-};
-
+]);
 
 // toggle column
 const selectedColumns = ref([]);
@@ -277,6 +265,9 @@ const toggleColumn = (val) => {
     selectedColumns.value = currentColumns.value.filter(col => {
         return val.includes(col);
     })
+    console.log(val);
+    console.log(currentColumns.value);
+    console.log(selectedColumns.value);
 };
 
 // open add new or update dialog

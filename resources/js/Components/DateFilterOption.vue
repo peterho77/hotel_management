@@ -1,6 +1,6 @@
 <template>
     <div class="filter-date | box | flow">
-        <Accordion>
+        <Accordion class="w-full">
             <AccordionPanel class="flow">
                 <AccordionHeader>
                     <label for="" class="admin-label">{{ label }}</label>
@@ -28,7 +28,12 @@
 </template>
 
 <style scoped>
-:deep(.p-accordion.p-component .p-accordioncontent-content,.p-accordion.p-component .p-accordionheader) {
+:deep(.p-accordion.p-component .p-accordioncontent-content) {
+    padding: 0 !important;
+}
+
+:deep(.p-accordionheader)
+{
     padding: 0 !important;
 }
 

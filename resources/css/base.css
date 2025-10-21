@@ -816,9 +816,9 @@ table.dataTable > thead {
     padding-block: var(--size-300);
 }
 
-/* configure menu list primevue */
-.sub-menu .sub-menu-item {
-    padding: 0.75rem;
+/* custom toggle menu primevue */
+.toggle-menu .toggle-menu-item {
+    padding: 0.5rem;
 }
 
 /* login dialog custom */

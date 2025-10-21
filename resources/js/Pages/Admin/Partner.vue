@@ -47,11 +47,30 @@
                     </div>
                 </section>
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
+                    <nav class="table-toolbar">
+                        <div class="nav-wrapper">
+                            <span class="admin-label | fs-700">Khách hàng</span>
+                            <div class="table-toolbar-buttons">
+                                <div class="text-right flex items-center justify-end gap-x-4">
+                                    <AddNewItemsButton label="Khách hàng" :hasMenu="false" />
+
+                                    <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
+                                        optionLabel="header" @update:modelValue="toggleColumn"
+                                        placeholder="Select Columns" class="w-full md:w-50" size="small"
+                                        :virtualScrollerOptions="{ itemSize: 44 }" :maxSelectedLabels="2" />
+
+                                    <Button icon="pi pi-external-link" label="Export" severity="info" size="small"
+                                        @click="exportCSV($event)" class="text-neutral-50" />
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
                     <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
                         :value="customersList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
                         <Column expander style="width: 5rem" />
-                        <Column v-for="(col, index) of currentColumns" :key="col.field + '_' + index"
+                        <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
                             :field="col.field" :header="formatLabel(col.header)" sortable />
                         <template #expansion="slotProps">
                             <Panel header="Detail information">
@@ -97,18 +116,22 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, reactive } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import FloatLabel from 'primevue/floatlabel';
 import InputText from 'primevue/inputtext';
+import Menu from 'primevue/menu';
+import MultiSelect from 'primevue/multiselect';
+
 
 // component
 import DateFilterOption from '../../Components/DateFilterOption.vue';
 import RangeFilter from '../../Components/RangeFilter.vue';
 import Radioselect from '../../Components/Radioselect.vue';
+import AddNewItemsButton from '../../Components/AddNewItemsButton.vue';
 
 // data table
 import DataTable from 'primevue/datatable';
@@ -215,11 +238,22 @@ const props = defineProps({
     }
 })
 const customersList = ref(props.customersList);
-console.log(customersList);
 
 // toggle column
 const selectedColumns = ref([]);
+
 const currentColumns = computed(() => Object.values(props.columns || {}).map(field => ({ field, header: formatLabel(field) })));
+
+watch(() => currentColumns, () => {
+    selectedColumns.value = currentColumns.value;
+}, { immediate: true })
+
+const toggleColumn = (val) => {
+    const selectedFields = val.map(v => v.field); // lấy giá trị thực
+    selectedColumns.value = currentColumns.value.filter(col =>
+        selectedFields.includes(col.field)
+    );
+};
 
 // expand row data table
 const expandedRows = ref({});

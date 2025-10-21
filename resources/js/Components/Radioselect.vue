@@ -1,8 +1,8 @@
 <template>
-    <div class="box | flow">
-        <Accordion>
+    <div class="radio-select | box | flow">
+        <Accordion class="w-full">
             <AccordionPanel class="flow">
-                <AccordionHeader>
+                <AccordionHeader >
                     <label for="" class="admin-label">{{ label }}</label>
                 </AccordionHeader>
                 <AccordionContent>
@@ -21,7 +21,11 @@
 </template>
 
 <style scoped>
-:deep(.p-accordion.p-component .p-accordioncontent-content, .p-accordion.p-component .p-accordionheader) {
+:deep(.p-accordion.p-component .p-accordioncontent-content) {
+    padding: 0 !important;
+}
+
+:deep(.p-accordionheader) {
     padding: 0 !important;
 }
 

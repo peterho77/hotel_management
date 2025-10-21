@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function(){
-        Route::inertia('/partner', [CustomerController::class, 'index'])->name('partners');
+        Route::get('/partner', [CustomerController::class, 'index'])->name('partners');
     });
 
     Route::middleware('role:customer')->group(function () {

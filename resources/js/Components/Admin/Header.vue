@@ -69,9 +69,9 @@
                         <template v-if="user.role === 'admin'">
                             <li class="room-nav" @click="toggle">
                                 Phòng
-                                <Menu ref="menu" :model="roomItemsMenu" class="sub-menu padding-block-200" :popup="true">
+                                <Menu ref="menu" :model="roomItemsMenu" class="toggle-menu py-1" :popup="true">
                                     <template #item="{ item, props }">
-                                        <div class="sub-menu-item">
+                                        <div class="toggle-menu-item">
                                             <Link :href="route('admin.room-management')">{{ item.label }}</Link>
                                         </div>
                                     </template>
