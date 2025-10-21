@@ -38,7 +38,9 @@ class DatabaseSeeder extends Seeder
             BranchSeeder::class,
             RoomTypeSeeder::class,
             RoomTypeBranchSeeder::class,
-            RoomSeeder::class
+            RoomSeeder::class,
+            CustomerTypeSeeder::class,
+            CustomerGroupSeeder::class,
         ]);
     }
 }

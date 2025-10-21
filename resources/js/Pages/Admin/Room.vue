@@ -21,14 +21,15 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="addNewItems"/>
+                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="addNewItems" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
                                         placeholder="Select Columns" class="w-full md:w-50" size="small"
                                         :virtualScrollerOptions="{ itemSize: 44 }" :maxSelectedLabels="2" />
-                                    <Button icon="pi pi-external-link" label="Export" severity="info" size="small"
-                                        @click="exportCSV($event)" class="text-neutral-50" />
+
+                                    <Button icon="pi pi-external-link" label="Export" severity="success" size="small"
+                                        @click="exportCSV()" class="text-neutral-50" />
                                 </div>
                             </div>
                         </div>
@@ -126,7 +127,7 @@ import { useDialog } from 'primevue/usedialog';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch, computed, defineAsyncComponent } from 'vue';
+import { ref, watch, computed, defineAsyncComponent, onMounted } from 'vue';
 
 // confirm dialog
 import { useConfirm } from "primevue/useconfirm";
@@ -251,6 +252,14 @@ watch(
     }
 );
 
+onMounted(() => {
+    currentColumns.value = currentTab.value === 'room'
+        ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
+        : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
+
+    selectedColumns.value = currentColumns.value;
+})
+
 watch(() => [props.roomColumns, props.roomTypeColumns, currentTab.value],
     () => {
         currentColumns.value = currentTab.value === 'room'
@@ -258,16 +267,13 @@ watch(() => [props.roomColumns, props.roomTypeColumns, currentTab.value],
             : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
 
         selectedColumns.value = currentColumns.value;
-    },
-    { immediate: true });
+    });
+// { immediate: true });
 
 const toggleColumn = (val) => {
     selectedColumns.value = currentColumns.value.filter(col => {
         return val.includes(col);
     })
-    console.log(val);
-    console.log(currentColumns.value);
-    console.log(selectedColumns.value);
 };
 
 // open add new or update dialog
@@ -415,9 +421,17 @@ watch(
 )
 
 // export CSV
-const dt = ref(null);
+const dt = ref();
 const exportCSV = () => {
-    // dt.value.exportCSV();
+    if (dt.value) {
+        console.log(currentTab);
+        if (currentTab.value === 'room-type') {
+            dt.value[0].exportCSV();
+        }
+        else
+        {
+            dt.value[1].exportCSV();
+        }
+    }
 };
-
 </script>

@@ -23,7 +23,9 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'role'
+        'role',
+        'customer_type_id',
+        'customer_group_id',
     ];
 
     /**
@@ -47,5 +49,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // User thuộc 1 loại khách hàng
+    public function customerType()
+    {
+        return $this->belongsTo(CustomerType::class, 'customer_type_id');
+    }
+
+    // User thuộc 1 nhóm khách hàng
+    public function customerGroup()
+    {
+        return $this->belongsTo(CustomerGroup::class, 'customer_group_id');
     }
 }

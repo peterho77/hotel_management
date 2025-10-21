@@ -66,7 +66,7 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" :size="large" ref="dt"
                         :value="customersList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
                         <Column expander style="width: 5rem" />
