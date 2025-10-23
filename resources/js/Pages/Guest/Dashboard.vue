@@ -21,8 +21,9 @@ const toggleSidebar = () => {
 // show username 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const customer = computed(() => page.props.auth.user.customer);
 
-const userJSON = ref(JSON.parse(JSON.stringify(page.props.auth.user)));
+const customerInfor = ref(JSON.parse(JSON.stringify(page.props.auth.user.customer)));
 
 const dropdownMenu = [
     {
@@ -136,13 +137,13 @@ function formatLabel(str) {
         <main class="dashboard-content | border-1 border-gray-200 mx-2">
             <div class="user-header | flex flex-col px-12 py-8 gap-y-1">
                 <Avatar class="user-avatar" icon="pi pi-user" size="xlarge" shape="circle" />
-                <h2 class="fs-normal-heading">{{ user.full_name }}</h2>
-                <span class="text-gray-600">{{ user.email }}</span>
+                <h2 class="fs-normal-heading">{{ customer.full_name }}</h2>
+                <span class="text-gray-600">{{ customer.email }}</span>
             </div>
             <div
                 class="user-personal-details | px-12 py-4">
                 <ul class="divide-y divide-dashed divide-gray-300">
-                    <li class="grid grid-cols-[100px_1fr] md:grid-cols-[200px_1fr] gap-x-6 py-2" v-for="(value, key) in userJSON" :key="key">
+                    <li class="grid grid-cols-[100px_1fr] md:grid-cols-[200px_1fr] gap-x-6 py-2" v-for="(value, key) in customerInfor" :key="key">
                         <span class="font-semibold text-gray-600">{{ formatLabel(key) }}:</span>
                         <span class="text-left">{{ value }}</span>
                     </li>

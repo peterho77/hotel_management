@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -17,15 +18,12 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
     protected $fillable = [
-        'full_name',
         'user_name',
         'email',
-        'phone',
         'password',
-        'role',
-        'customer_type_id',
-        'customer_group_id',
+        'role'
     ];
 
     /**
@@ -51,15 +49,22 @@ class User extends Authenticatable
         ];
     }
 
-    // User thuộc 1 loại khách hàng
-    public function customerType()
+    public function customer()
     {
-        return $this->belongsTo(CustomerType::class, 'customer_type_id');
+        return $this->hasOne(Customer::class);
     }
 
-    // User thuộc 1 nhóm khách hàng
-    public function customerGroup()
+    public function getCreatedAtAttribute($value)
     {
-        return $this->belongsTo(CustomerGroup::class, 'customer_group_id');
+        return Carbon::parse($value)
+            ->timezone('Asia/Ho_Chi_Minh')
+            ->format('H:i  d/m/Y');
+    }
+
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)
+            ->timezone('Asia/Ho_Chi_Minh')
+            ->format('H:i  d/m/Y');
     }
 }

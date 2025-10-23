@@ -15,16 +15,12 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $test_users = [[
-            'full_name' => 'Test Admin',
             'user_name' => 'testadmin',
-            'phone' => '0123456779',
             'email' => 'admin@example.com',
             'role' => 'admin',
             'password' => bcrypt('thiendat123'),
         ], [
-            'full_name' => 'Test Manager',
             'user_name' => 'testmanager',
-            'phone' => '0123456789',
             'email' => 'manager@example.com',
             'role' => 'manager',
             'password' => bcrypt('thiendat123'),
@@ -41,6 +37,7 @@ class DatabaseSeeder extends Seeder
             RoomSeeder::class,
             CustomerTypeSeeder::class,
             CustomerGroupSeeder::class,
+            CustomerSeeder::class
         ]);
     }
 }

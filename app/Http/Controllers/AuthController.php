@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Customer;
 
 class AuthController extends Controller
 {
@@ -20,16 +21,22 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-            'full_name' => $validated['full_name'],
             'user_name' => $validated['user_name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
+        ]);
+
+        $customer = $user->customer()->create([
+            'full_name' => $validated['full_name'],
+            'user_id' => $user->id,
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
         ]);
 
         Auth::login($user);
         return redirect()->route('home')
             ->with('user', Auth::user())
+            ->with('customer', $customer)
             ->with('success', 'You’ve successfully signed up!');
     }
 

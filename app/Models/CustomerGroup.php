@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerGroup extends Model
 {
+    protected $table = 'customer_group';
     protected $fillable = ['code', 'name', 'customer_type_id', 'discount_percent', 'description'];
 
     // Một nhóm thuộc về một loại khách hàng
@@ -17,6 +18,6 @@ class CustomerGroup extends Model
     // Một nhóm có thể có nhiều khách hàng
     public function customers()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Customer::class);
     }
 }

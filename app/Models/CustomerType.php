@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerType extends Model
 {
+    protected $table = 'customer_type';
     protected $fillable = ['code', 'name', 'description'];
 
     // Một loại khách hàng có nhiều nhóm
@@ -17,6 +18,6 @@ class CustomerType extends Model
     // Một loại khách hàng có nhiều user
     public function customers()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Customer::class);
     }
 }

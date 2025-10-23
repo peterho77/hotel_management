@@ -171,8 +171,8 @@ import Badge from 'primevue/badge';
 // dynamic dialog
 const dialog = useDialog();
 
-const loginForm = defineAsyncComponent(() => import('../../Components/Utility/Dialog/LoginForm.vue'));
-const signupForm = defineAsyncComponent(() => import('../../Components/Utility/Dialog/SignupForm.vue'));
+const loginForm = defineAsyncComponent(() => import('../../Components/Dialog/LoginForm.vue'));
+const signupForm = defineAsyncComponent(() => import('../../Components/Dialog/SignupForm.vue'));
 
 const loginImg = '/img/login-bg.jpg';
 

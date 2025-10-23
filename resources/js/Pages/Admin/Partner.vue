@@ -11,8 +11,8 @@
                                 <i class="pi pi-plus-circle"></i>
                             </div>
                             <div class="flex gap-x-2">
-                                <Select v-model="selectedCustomerGroup" :options="customerGroupList" optionLabel="name"
-                                    optionValue="alias" placeholder="Tất cả các nhóm" class="w-full md:w-52" />
+                                <Select v-model="filterCustomerGroup" :options="customerGroupList" optionLabel="name"
+                                    optionValue="name" placeholder="Tất cả các nhóm" class="w-full md:w-52" />
                                 <Button icon="pi pi-pencil" class="!border-1 !border-gray-300" severity="info"
                                     variant="text" />
                             </div>
@@ -66,9 +66,14 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" :size="large" ref="dt"
-                        :value="customersList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
-                        :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" size="small" ref="dt"
+                        :value="filteredCustomerList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                        :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem;">
+                        <template #empty>
+                            <div class="text-center">
+                                <span class="py-8">Không tìm thấy khách hàng nào. </span>
+                            </div>
+                        </template>
                         <Column expander style="width: 5rem" />
                         <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
                             :field="col.field" :header="formatLabel(col.header)" sortable />
@@ -77,25 +82,15 @@
                                 <div class="p-4">
                                     <div class="grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr] gap-x-6 gap-y-3">
                                         <template v-for="(value, key) in slotProps.data" :key="key">
-                                            <template
-                                                v-if="key !== 'branches' && key !== 'branch' && key !== 'room_type'">
-                                                <div class="font-semibold text-gray-700">
-                                                    {{ formatLabel(key) }}:</div>
-                                                <div class="text-gray-900">{{ value }}</div>
-                                            </template>
-
-                                            <template v-else-if="key === 'branch' || key === 'room_type'">
+                                            <template v-if="key === 'customer_type' || key === 'customer_group'">
                                                 <div class="font-semibold text-gray-700">
                                                     {{ formatLabel(key) }}:</div>
                                                 <div class="text-gray-900">{{ value.name }}</div>
                                             </template>
-
                                             <template v-else>
                                                 <div class="font-semibold text-gray-700">
                                                     {{ formatLabel(key) }}:</div>
-                                                <div class="text-gray-900">
-                                                    {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                </div>
+                                                <div class="text-gray-900">{{ value }}</div>
                                             </template>
                                         </template>
                                     </div>
@@ -146,33 +141,26 @@ function formatLabel(str) {
     ).join(" ");
 }
 
-const selectedCustomerGroup = ref();
-const customerGroupList = ref([
-    {
-        name: 'Khách lẻ',
-        alias: 'FIT(Free Independent Traveler)'
+// data table
+const props = defineProps({
+    customersList: {
+        type: Array,
+        required: false,
     },
-    {
-        name: 'Khách đoàn',
-        alias: 'Group'
+    customerGroupList: {
+        type: Array,
+        required: false
     },
-    {
-        name: 'Khách doanh nghiệp',
-        alias: 'Corporate'
+    customerTypeList: {
+        type: Array,
+        required: false
     },
-    {
-        name: 'Khách hội nghị - sự kiện',
-        alias: 'MICE: Meeting, Incentive, Conference, Exhibition'
-    },
-    {
-        name: 'Khách trung gian',
-        alias: 'Travel Agent / OTA'
-    },
-    {
-        name: 'Khách địa phương',
-        alias: 'Local Guests'
-    },
-])
+    columns: {
+        type: Array,
+        required: false
+    }
+})
+console.log(ref(props.customersList).value);
 
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
@@ -180,34 +168,22 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
+// filter customer group
+const customerGroupList = ref(props.customerGroupList);
+const filterCustomerGroup = ref('Tất cả');
+
 // filter customer type
-const customerTypeList = ref([
-    {
-        label: 'Cá nhân',
-        name: 'Individual / FIT'
-    },
-    {
-        label: 'Đoàn',
-        name: 'Group'
-    },
-    {
-        label: 'Công ty',
-        name: 'Corporate'
-    },
-    {
-        label: 'Nước ngoài',
-        name: 'International'
-    },
-    {
-        label: 'Nội địa',
-        name: 'Domestic'
-    },
-    {
-        label: 'Dài hạn',
-        name: 'Long-stay'
-    }
-])
+const customerTypeList = ref(props.customerTypeList);
 const filterCustomerType = ref('Tất cả');
+
+const filteredCustomerList = computed(() => {
+    return (props.customersList || []).filter(user => {        
+        const customerGroupMatch = filterCustomerGroup.value === 'Tất cả' || filterCustomerGroup.value === user.customer_group.name;
+        const customerTypeMatch = filterCustomerType.value === 'Tất cả' || filterCustomerType.value === user.customer_type.name;
+
+        return customerGroupMatch && customerTypeMatch;
+    })
+});
 
 // filter status
 const statusList = ref([
@@ -225,19 +201,6 @@ const statusList = ref([
     },
 ]);
 const filterStatus = ref('Tất cả');
-
-// data table
-const props = defineProps({
-    customersList: {
-        type: Array,
-        required: false,
-    },
-    columns: {
-        type: Array,
-        required: false
-    }
-})
-const customersList = ref(props.customersList);
 
 // toggle column
 const selectedColumns = ref([]);

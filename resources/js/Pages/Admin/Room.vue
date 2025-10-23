@@ -8,7 +8,7 @@
                         <Searchbar v-model="filters['global'].value" />
 
                         <!-- filter branches -->
-                        <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="selectedBranches" />
+                        <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="filterBranches" />
 
                         <!-- filter status -->
                         <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
@@ -199,14 +199,14 @@ const statusList = ref([
         label: 'Tất cả'
     },
 ]);
-const selectedBranches = ref([])
+const filterBranches = ref([])
 const filterStatus = ref('Tất cả');
 
 // filter room type by branch ans status
 const filteredRoomTypeList = computed(() => {
     return (props.roomTypeList || []).filter(roomType => {
         const branchIds = (roomType.branches || []).map(b => b.id)
-        const branchMatch = !selectedBranches.value.length || selectedBranches.value.some(id => branchIds.includes(id));
+        const branchMatch = !filterBranches.value.length || filterBranches.value.some(id => branchIds.includes(id));
         const statusMatch = filterStatus.value === 'Tất cả' || roomType.status === filterStatus.value;
         return branchMatch && statusMatch;
     })
@@ -215,8 +215,8 @@ const filteredRoomTypeList = computed(() => {
 // filter room by branch and status
 const filteredRoomList = computed(() => {
     return (props.roomList || []).filter(room => {
-        const branchMatch = selectedBranches.value.length === 0 ||
-            selectedBranches.value.includes(room.branch.id)
+        const branchMatch = filterBranches.value.length === 0 ||
+            filterBranches.value.includes(room.branch.id)
         const statusMatch = filterStatus.value === 'Tất cả' || room.status === filterStatus.value;
 
         return branchMatch && statusMatch;
@@ -277,10 +277,10 @@ const toggleColumn = (val) => {
 };
 
 // open add new or update dialog
-const addNewRoom = defineAsyncComponent(() => import('../../Components/Utility/Dialog/AddNewRoom.vue'));
-const addNewRoomType = defineAsyncComponent(() => import('../../Components/Utility/Dialog/AddNewRoomType.vue'));
-const updateRoom = defineAsyncComponent(() => import('../../Components/Utility/Dialog/UpdateRoom.vue'));
-const updateRoomType = defineAsyncComponent(() => import('../../Components/Utility/Dialog/UpdateRoomType.vue'));
+const addNewRoom = defineAsyncComponent(() => import('../../Components/Dialog/AddNewRoom.vue'));
+const addNewRoomType = defineAsyncComponent(() => import('../../Components/Dialog/AddNewRoomType.vue'));
+const updateRoom = defineAsyncComponent(() => import('../../Components/Dialog/UpdateRoom.vue'));
+const updateRoomType = defineAsyncComponent(() => import('../../Components/Dialog/UpdateRoomType.vue'));
 
 const dialog = useDialog();
 // add new dialog
