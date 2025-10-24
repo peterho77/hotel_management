@@ -52,7 +52,7 @@
                             <span class="admin-label | fs-700">Khách hàng</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
-                                    <AddNewItemsButton label="Khách hàng" :hasMenu="false" />
+                                    <AddNewItemsButton label="Khách hàng" :hasMenu="false" @parentClickEvent="showAddNewCustomer"/>
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -111,16 +111,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from 'vue';
+import { ref, computed, watch, defineAsyncComponent } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import FloatLabel from 'primevue/floatlabel';
 import InputText from 'primevue/inputtext';
-import Menu from 'primevue/menu';
 import MultiSelect from 'primevue/multiselect';
 
+// dynamic dialog
+import { useDialog } from 'primevue/usedialog';
 
 // component
 import DateFilterOption from '../../Components/DateFilterOption.vue';
@@ -220,5 +221,30 @@ const toggleColumn = (val) => {
 
 // expand row data table
 const expandedRows = ref({});
+
+// open add new or update dialog
+const addNewCustomer = defineAsyncComponent(() => import('../../Components/Dialog/AddNewCustomer.vue'));
+
+const dialog = useDialog();
+// add new dialog
+const showAddNewCustomer = () => {
+    const dialogRef = dialog.open(addNewCustomer, {
+        props: {
+            header: 'Add new customer',
+            style: {
+                width: '60vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true
+        },
+        data: {
+            customerTypeList: props.customerTypeList,
+            customerGroupList: props.customerGroupList
+        }
+    });
+}
 
 </script>

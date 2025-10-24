@@ -14,8 +14,7 @@ class CustomerController extends Controller
     //
     public function index()
     {
-        $customersList = User::with(['customer_type', 'customer_group'])
-            ->where('role', 'customer')
+        $customersList = Customer::with(['customer_type', 'customer_group'])
             ->get()
             ->makeHidden(['customer_type_id', 'customer_group_id']);
 
@@ -24,7 +23,7 @@ class CustomerController extends Controller
         if ($customersList->isNotEmpty()) {
             $firstItem = $customersList->first();
             $columns = array_keys($firstItem->getAttributes());
-            $columns = array_diff($columns, ['customer_type_id', 'customer_group_id', 'password', 'email_verified_at', 'remember_token', 'role']);
+            $columns = array_diff($columns, ['customer_type_id', 'customer_group_id', 'email_verified_at', 'remember_token']);
         };
 
         $customerGroupList = CustomerGroup::get();
@@ -36,5 +35,10 @@ class CustomerController extends Controller
             'customerTypeList' => $customerTypeList,
             'columns' => $columns
         ]);
+    }
+
+    public function store(Request $request)
+    {
+
     }
 }

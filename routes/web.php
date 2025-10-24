@@ -33,8 +33,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/room/add-new', [RoomController::class, 'store']);
         Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
         Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
-
-        Route::get('/partner', [CustomerController::class, 'index'])->name('partners');
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function(){

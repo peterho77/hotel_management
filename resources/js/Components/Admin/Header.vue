@@ -78,13 +78,14 @@
                                 </Menu> 
                             </li>
                             <li>Hàng hóa - Dịch vụ</li>
+                            <li>Tài khoản</li>
                         </template>
-                        <li>
-                            <Link :href="route(`${user.role}.partners`)">Khách hàng - Đối tác</Link>
-                        </li>
                         <template v-if="user.role === 'manager'">
-                            <li>Giao dịch</li>
+                            <li>
+                                <Link :href="route(`manager.partners`)">Khách hàng - Đối tác</Link>
+                            </li>
                             <li>Nhân viên</li>
+                            <li>Giao dịch</li>
                             <li>Bán online</li>
                             <li>Báo cáo thống kê</li>
                         </template>
