@@ -25,7 +25,7 @@ createInertiaApp({
         const page = pages[`./Pages/${name}.vue`];
 
         // set layout theo folder
-        if (name.startsWith("Admin/")) {
+        if (name.startsWith("Admin/") || name.startsWith("Manager/")) {
             page.default.layout = page.default.layout || Admin;
         } else if (name.startsWith("Guest/")) {
             page.default.layout = page.default.layout || Guest;

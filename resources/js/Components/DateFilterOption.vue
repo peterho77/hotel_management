@@ -9,15 +9,15 @@
                     <div class="flex flex-col gap-y-2">
                         <div class="flex flex-col flex-wrap gap-y-3">
                             <div class="flex items-center gap-x-2">
-                                <RadioButton v-model="filterOption" inputId="option1" name="filter-option"
+                                <RadioButton inputId="option1" name="filter-option"
                                     value="option1" />
-                                <Select v-model="selectedOption1" :options optionLabel="name" placeholder="Toàn thời gian"
+                                <Select :options optionLabel="name" placeholder="Toàn thời gian"
                                     checkmark :highlightOnSelect="false" class="md:w-56" fluid/>
                             </div>
                         </div>
                         <div class="flex items-center gap-x-2">
-                            <RadioButton v-model="filterOption" inputId="option2" name="filter-option" value="option2" />
-                            <DatePicker v-model="buttondisplay" placeholder="Lựa chọn khác" dateFormat="dd/mm/yy" showIcon
+                            <RadioButton inputId="option2" name="filter-option" value="option2" />
+                            <DatePicker placeholder="Lựa chọn khác" dateFormat="dd/mm/yy" showIcon
                                 fluid :showOnFocus="false" />
                         </div>
                     </div>

@@ -82,7 +82,7 @@
                         </template>
                         <template v-if="user.role === 'manager'">
                             <li>
-                                <Link :href="route(`manager.partners`)">Khách hàng - Đối tác</Link>
+                                <Link :href="route('manager.customer')">Khách hàng - Đối tác</Link>
                             </li>
                             <li>Nhân viên</li>
                             <li>Giao dịch</li>

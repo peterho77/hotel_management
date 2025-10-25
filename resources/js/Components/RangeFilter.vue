@@ -3,11 +3,13 @@
         <label for="" class="admin-label">{{ label }}</label>
         <div class="flex items-center justify-between">
             <label class="">Từ</label>
-            <InputNumber v-model="fromValue" mode="currency" currency="VND" locale="vi-VN" placeholder="Giá trị" />
+            <!-- from value -->
+            <InputNumber mode="currency" currency="VND" locale="vi-VN" placeholder="Giá trị" />
         </div>
         <div class="flex items-center justify-between">
             <label class="">Tới</label>
-            <InputNumber v-model="toValue" mode="currency" currency="VND" locale="vi-VN" placeholder="Giá trị" />
+            <!-- to value -->
+            <InputNumber mode="currency" currency="VND" locale="vi-VN" placeholder="Giá trị" />
         </div>
     </div>
 </template>

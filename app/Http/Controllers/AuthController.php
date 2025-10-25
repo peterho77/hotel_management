@@ -67,7 +67,7 @@ class AuthController extends Controller
                     ->with('success', 'Welcome back, Admin!');
             } else if ($user->role === 'manager') {
                 return redirect()
-                    ->route('manager.partners')
+                    ->route('manager.customer')
                     ->with('user', $user)
                     ->with('success', 'Welcome back, Manager!');
             }

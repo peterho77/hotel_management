@@ -22,11 +22,11 @@
                         <div class="double-keyword-search | box | flow">
                             <label class="admin-label">Tìm kiếm</label>
                             <FloatLabel variant="on">
-                                <InputText id="on_label" v-model="value3" fluid />
+                                <InputText id="on_label" fluid />
                                 <label for="on_label">Theo mã, tên, điện thoại</label>
                             </FloatLabel>
                             <FloatLabel variant="on">
-                                <InputText id="on_label" v-model="value3" fluid />
+                                <InputText id="on_label" fluid />
                                 <label for="on_label">Theo mã hóa đơn</label>
                             </FloatLabel>
                         </div>
@@ -52,7 +52,8 @@
                             <span class="admin-label | fs-700">Khách hàng</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
-                                    <AddNewItemsButton label="Khách hàng" :hasMenu="false" @parentClickEvent="showAddNewCustomer"/>
+                                    <AddNewItemsButton label="Khách hàng" :hasMenu="false"
+                                        @parentClickEvent="showAddNewCustomer" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -112,13 +113,15 @@
 
 <script setup>
 import { ref, computed, watch, defineAsyncComponent } from 'vue';
-import { usePage } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3';
+import { useToast } from "primevue/usetoast";
 
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import FloatLabel from 'primevue/floatlabel';
 import InputText from 'primevue/inputtext';
 import MultiSelect from 'primevue/multiselect';
+import Panel from 'primevue/panel';
 
 // dynamic dialog
 import { useDialog } from 'primevue/usedialog';
@@ -157,7 +160,7 @@ const props = defineProps({
         required: false
     },
     columns: {
-        type: Array,
+        type: Object,
         required: false
     }
 })
@@ -178,7 +181,7 @@ const customerTypeList = ref(props.customerTypeList);
 const filterCustomerType = ref('Tất cả');
 
 const filteredCustomerList = computed(() => {
-    return (props.customersList || []).filter(user => {        
+    return (props.customersList || []).filter(user => {
         const customerGroupMatch = filterCustomerGroup.value === 'Tất cả' || filterCustomerGroup.value === user.customer_group.name;
         const customerTypeMatch = filterCustomerType.value === 'Tất cả' || filterCustomerType.value === user.customer_type.name;
 
@@ -246,5 +249,22 @@ const showAddNewCustomer = () => {
         }
     });
 }
+
+// flash message
+const page = usePage();
+const toast = useToast();
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) {
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000, group: 'bc' });
+        }
+        else if (flash?.error) {
+            toast.add({ severity: 'error', summary: 'Confirmed', detail: flash.success, life: 3000, group: 'bc' });
+
+        }
+    },
+)
 
 </script>

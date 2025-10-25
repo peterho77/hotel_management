@@ -151,8 +151,8 @@ const userRegisterSchema = zodResolver(z
         email: z
             .string({ required_error: "Email là bắt buộc." })
             .trim()
-            .min(1, "Email là bắt buộc.")
-            .max(255, "Email không được vượt quá 255 ký tự.")
+            .min(8, "Email ít nhất 8 ký tự")
+            .max(30, "Email không được vượt quá 255 ký tự.")
             .refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), "Email không hợp lệ."),
 
         phone: z

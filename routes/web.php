@@ -36,7 +36,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function(){
-        Route::get('/partner', [CustomerController::class, 'index'])->name('partners');
+        Route::get('/customer', [CustomerController::class, 'index'])->name('customer');
+        Route::post('/customer/add-new', [CustomerController::class, 'store']);
     });
 
     Route::middleware('role:customer')->group(function () {

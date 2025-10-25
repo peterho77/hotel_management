@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('customer', function (Blueprint $table) {
             $table->id();
             $table->string('full_name');
+            $table->string('avatar')->nullable();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->date('birth_date')->nullable();
