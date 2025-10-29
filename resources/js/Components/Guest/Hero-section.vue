@@ -15,14 +15,14 @@
                         <div class="booking-form | padding-block-600 flow">
                             <h5 class="fs-normal-heading | text-center">Booking your hotel</h5>
 
-                            <Form v-model="checkBooking" :resolver="zodResolver(schema)" @submit="onSubmit"
-                                class="space-y-4">
+                            <Form v-slot="$form" :initialValues :resolver="zodResolver(schema)" :validateOnBlur="true"
+                                @submit="onSubmit" class="space-y-4">
                                 <!-- Check-in -->
                                 <div>
                                     <label class="block mb-1">Check-in</label>
                                     <FormField name="checkIn" v-slot="{ field, error }">
-                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon class="w-full" />
-                                        <small v-if="error" class="text-red-500">{{ error.message }}</small>
+                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                                        <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>
 
@@ -30,26 +30,28 @@
                                 <div>
                                     <label class="block mb-1">Check-out</label>
                                     <FormField name="checkOut" v-slot="{ field, error }">
-                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon class="w-full" />
-                                        <small v-if="error" class="text-red-500">{{ error.message }}</small>
+                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                                        <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>
 
-                                <!-- Guests -->
+                                <!-- Num of guests -->
                                 <div>
                                     <label class="block mb-1">Guest</label>
-                                    <FormField name="guests" v-slot="{ field, error }">
-                                        <Select v-bind="field" :options="guestOptions" class="w-full" />
-                                        <small v-if="error" class="text-red-500">{{ error.message }}</small>
+                                    <FormField name="num_of_guests" v-slot="{ field, error }">
+                                        <Select v-bind="field" :options="guestOptions" optionLabel="label"
+                                            optionValue="value" fluid />
+                                        <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>
 
-                                <!-- Rooms -->
+                                <!-- Num of rooms -->
                                 <div>
                                     <label class="block mb-1">Room</label>
-                                    <FormField name="rooms" v-slot="{ field, error }">
-                                        <Select v-bind="field" :options="roomOptions" class="w-full" />
-                                        <small v-if="error" class="text-red-500">{{ error.message }}</small>
+                                    <FormField name="num_of_rooms" v-slot="{ field, error }">
+                                        <Select v-bind="field" :options="roomOptions" optionLabel="label"
+                                            optionValue="value" fluid />
+                                        <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>
 
@@ -73,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, computed } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules'
 
@@ -92,35 +94,61 @@ import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
 
 // booking check form
-let checkBooking = reactive({
+// router
+import { router } from '@inertiajs/vue3';
+
+let initialValues = {
     checkIn: '',
     checkOut: '',
-    guests: 1,
-    rooms: 1,
-});
+    num_of_guests: 1,
+    num_of_rooms: 1,
+};
 
-let guestOptions = ['1 Adult', '2 Adults', '3 Adults'];
-let roomOptions = ['1 Room', '2 Rooms', '3 Rooms'];
+let maxNumOfGuests = ref(4);
+const guestOptions = computed(() =>
+    Array.from({ length: maxNumOfGuests.value }, (_, i) => ({
+        label: `${i + 1} guest${i > 0 ? 's' : ''}`,
+        value: i + 1,
+    }))
+)
+let maxNumOfRooms = ref(4);
+const roomOptions = computed(() =>
+    Array.from({ length: maxNumOfRooms.value }, (_, i) => ({
+        label: `${i + 1} room${i > 0 ? 's' : ''}`,
+        value: i + 1,
+    }))
+)
 
 // Validation schema
 const schema = z
     .object({
         checkIn: z.date({ required_error: "Vui lòng chọn ngày check-in" }),
         checkOut: z.date({ required_error: "Vui lòng chọn ngày check-out" }),
-        guests: z.string().nonempty("Vui lòng chọn số lượng khách"),
-        rooms: z.string().nonempty("Vui lòng chọn số lượng phòng"),
+        num_of_guests: z
+            .number({ invalid_type_error: "Vui lòng chọn số lượng khách" })
+            .min(1, "Số lượng khách phải ít nhất là 1"),
+
+        num_of_rooms: z
+            .number({ invalid_type_error: "Vui lòng chọn số lượng phòng" })
+            .min(1, "Số lượng phòng phải ít nhất là 1"),
     })
     .refine((data) => data.checkOut > data.checkIn, {
-        message: "Ngày check-out phải sau check-in",
+        message: "Ngày check out phải sau check in",
         path: ["checkOut"],
     })
 
 // Submit handler
-const onSubmit = (values) => {
-    console.log("Form data:", values)
-    alert("Kiểm tra phòng thành công ✅")
+const onSubmit = (e) => {
+    console.log(e.values);
+    if (e.valid) {
+        const values = {
+            ...e.values,
+            checkIn: e.values.checkIn instanceof Date ? e.values.checkIn.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkIn,
+            checkOut: e.values.checkOut instanceof Date ? e.values.checkOut.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkOut,
+        }
+        router.get(route('booking'), values);
+    }
 }
-
 
 let imagesList = ref(['/img/hero/hero-1.jpg', '/img/hero/hero-2.jpg', '/img/hero/hero-3.jpg']);
 

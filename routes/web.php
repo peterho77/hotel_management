@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -13,6 +14,7 @@ Route::inertia('/', 'Guest/Home')->name('home');
 // Role Authentication
 Route::middleware('guest')->group(function () {
     Route::inertia('/about', 'Guest/About')->name('about');
+    Route::get('/booking', [BookingController::class, 'index'])->name('booking');
 });
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
