@@ -1,92 +1,132 @@
 <template>
-    <div class="booking-section">
+    <div class="booking-section pb-10">
         <div class="booking-section-header | padding-block-200">
-            <div class="container">
-                <Form v-slot="$form" :initialValues
-                    class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
-                    <div class="flex gap-x-4 items-center">
-                        <!-- Check-in -->
+
+            <Form v-slot="$form" :initialValues
+                class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
+                <div class="flex gap-x-4 items-center">
+                    <!-- Check-in -->
+                    <div>
+                        <label class="block mb-1">Check-in</label>
+                        <FormField name="checkIn" v-slot="{ field, error }">
+                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                            <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
+                        </FormField>
+                    </div>
+
+                    <!-- Check-out -->
+                    <div>
+                        <label class="block mb-1">Check-out</label>
+                        <FormField name="checkOut" v-slot="{ field, error }">
+                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                            <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
+                        </FormField>
+                    </div>
+
+                    <!-- Num of guests -->
+                    <div>
                         <div>
-                            <label class="block mb-1">Check-in</label>
-                            <FormField name="checkIn" v-slot="{ field, error }">
-                                <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
-                                <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
-                            </FormField>
+                            <label class="block mb-1">Guest</label>
                         </div>
+                        <FormField @click="toggle">
+                            <IconField>
+                                <InputIcon class="pi pi-users" />
+                                <InputText :placeholder="numOfGuests" disabled />
+                                <InputIcon class="pi pi-angle-down" />
+                            </IconField>
+                        </FormField>
 
-                        <!-- Check-out -->
-                        <div>
-                            <label class="block mb-1">Check-out</label>
-                            <FormField name="checkOut" v-slot="{ field, error }">
-                                <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
-                                <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
-                            </FormField>
-                        </div>
-
-                        <!-- Num of guests -->
-                        <div>
-                            <div>
-                                <label class="block mb-1">Guest</label>
-                            </div>
-                            <FormField @click="toggle">
-                                <IconField>
-                                    <InputIcon class="pi pi-users" />
-                                    <InputText :placeholder="numOfGuests" disabled />
-                                    <InputIcon class="pi pi-angle-down" />
-                                </IconField>
-                            </FormField>
-
-                            <!-- guest option popover -->
-                            <Popover ref="guestOptionMenu">
-                                <div class="py-2 px-3 space-y-3">
-                                    <!-- Adult -->
-                                    <div class="flex justify-between gap-x-3 items-center">
-                                        <div class="flex flex-col">
-                                            <span class="text-base">Người lớn</span>
-                                            <span class="fs-300 text-gray-500">18 tuổi trở lên</span>
-                                        </div>
-                                        <InputNumber v-model="numOfAdult" name="num_of_guests" showButtons size="small" :min="1" :pt="{
+                        <!-- guest option popover -->
+                        <Popover ref="guestOptionMenu">
+                            <div class="py-2 px-3 space-y-3">
+                                <!-- Adult -->
+                                <div class="flex justify-between gap-x-3 items-center">
+                                    <div class="flex">
+                                        <span class="text-base">Người lớn</span>
+                                        <span class="fs-300 text-gray-500">18 tuổi trở lên</span>
+                                    </div>
+                                    <InputNumber v-model="numOfAdult" name="num_of_guests" showButtons size="small"
+                                        :min="1" :pt="{
                                             incrementButton: { class: 'bg-gray-100' },
                                             decrementButton: { class: 'bg-gray-100' },
                                             incrementIcon: { class: 'pi pi-plus' },
                                             decrementIcon: { class: 'pi pi-minus' }
                                         }" />
-                                    </div>
-
-                                    <!-- Children -->
-                                    <div class="flex justify-between gap-x-3 items-center">
-                                        <div class="flex flex-col">
-                                            <span class="text-base">Trẻ em</span>
-                                            <span class="fs-300 text-gray-500">0-17 tuổi</span>
-                                        </div>
-                                        <InputNumber v-model="numOfChild" showButtons size="small" :min="0" :max="10"
-                                            :pt="{
-                                                incrementButton: { class: 'bg-gray-100' },
-                                                decrementButton: { class: 'bg-gray-100' },
-                                                incrementIcon: { class: 'pi pi-plus' },
-                                                decrementIcon: { class: 'pi pi-minus' }
-                                            }" />
-                                    </div>
                                 </div>
-                            </Popover>
-                        </div>
 
-                        <!-- Num of rooms -->
-                        <div>
-                            <label class="block mb-1">Room</label>
-                            <FormField name="num_of_rooms" v-slot="{ field, error }">
-                                <InputNumber v-model="numOfRooms" showButtons :min="1" :pt="{
-                                    incrementButton: { class: 'bg-gray-100' },
-                                    decrementButton: { class: 'bg-gray-100' },
-                                    incrementIcon: { class: 'pi pi-plus' },
-                                    decrementIcon: { class: 'pi pi-minus' }
-                                }" />
-                            </FormField>
-                        </div>
+                                <!-- Children -->
+                                <div class="flex justify-between gap-x-3 items-center">
+                                    <div class="flex flex-col">
+                                        <span class="text-base">Trẻ em</span>
+                                        <span class="fs-300 text-gray-500">0-17 tuổi</span>
+                                    </div>
+                                    <InputNumber v-model="numOfChild" showButtons size="small" :min="0" :max="10" :pt="{
+                                        incrementButton: { class: 'bg-gray-100' },
+                                        decrementButton: { class: 'bg-gray-100' },
+                                        incrementIcon: { class: 'pi pi-plus' },
+                                        decrementIcon: { class: 'pi pi-minus' }
+                                    }" />
+                                </div>
+                            </div>
+                        </Popover>
                     </div>
 
-                    <Button class="mt-6" severity="info" size="large" label="Tìm phòng" raised />
-                </Form>
+                    <!-- Num of rooms -->
+                    <div>
+                        <label class="block mb-1">Room</label>
+                        <FormField name="num_of_rooms" v-slot="{ field, error }">
+                            <InputNumber v-model="numOfRooms" showButtons :min="1" :pt="{
+                                incrementButton: { class: 'bg-gray-100' },
+                                decrementButton: { class: 'bg-gray-100' },
+                                incrementIcon: { class: 'pi pi-plus' },
+                                decrementIcon: { class: 'pi pi-minus' }
+                            }" :suffix="` room${numOfRooms > 1 ? 's' : ''}`" />
+                        </FormField>
+                    </div>
+                </div>
+
+                <Button class="mt-6" severity="info" size="large" label="Tìm phòng" raised />
+            </Form>
+        </div>
+        <div class="container">
+            <div class="booking-section-content | grid grid-cols-[auto_1fr] mt-20">
+                <section class="booking-section-content__left">
+                    <div class="side-bar | flow" style="--flow-spacer:1em">
+                        <!-- slide price range -->
+                        <div class="box | flex flex-col flow">
+                            <label for="" class="admin-label">Giá mỗi đêm</label>
+                            <Slider v-model="roomPriceRange" range :min="0" :max="5000000" class="my-3" />
+                            <div class="flex justify-between items-center gap-x-2">
+                                <span>Tối thiểu</span>
+                                <InputNumber v-model="minRoomPrice" size="small" :maxFractionDigits="0" mode="currency"
+                                    currency="VND" locale="vi-VN" showButtons :step="5000" />
+                            </div>
+                            <div class="flex justify-between items-center gap-x-2">
+                                <span>Tối đa</span>
+                                <InputNumber v-model="maxRoomPrice" size="small" :maxFractionDigits="0" mode="currency"
+                                    currency="VND" locale="vi-VN" showButtons :step="5000" />
+                            </div>
+                        </div>
+
+                        <!-- filter room -->
+                        <Radioselect :list="bedTypeList" v-model="filterBedType" label="Loại giường" />
+
+                        <!-- filter room amenities and features-->
+                        <Checkboxselect :list="roomAmenitiesList" v-model="filterRoomAmenities"
+                            label="Tiện nghi phòng" />
+
+                        <!-- filter room services -->
+                        <Checkboxselect :list="roomServicesList" v-model="filterRoomServices"
+                            label="Dịch vụ phòng" />
+
+                        <!-- filter payment method -->
+                        <Checkboxselect :list="nonUserPaymentMethodList" v-model="filterPaymentMethod"
+                            label="Lựa chọn thanh toán" />
+
+                    </div>
+                </section>
+                <section class="booking-section-content__right">
+                </section>
             </div>
         </div>
     </div>
@@ -116,17 +156,22 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
 import DatePicker from 'primevue/datepicker';
-import InputNumber from 'primevue/inputnumber';
 import Button from 'primevue/button';
 import Popover from 'primevue/popover';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
+import Slider from 'primevue/slider';
+
+// component
+import Radioselect from "../../Components/Radioselect.vue";
+import Checkboxselect from "../../Components/Checkboxselect.vue";
 
 const props = defineProps({
     checkIn: String,
@@ -152,8 +197,8 @@ onMounted(() => {
 })
 
 const parseVNDate = (str) => {
-  const [day, month, year] = str.split('/');
-  return new Date(`${year}-${month}-${day}`); // chuẩn ISO, không bị ngược
+    const [day, month, year] = str.split('/');
+    return new Date(`${year}-${month}-${day}`); // chuẩn ISO, không bị ngược
 };
 
 const numOfRooms = ref(props.num_of_rooms);
@@ -179,4 +224,134 @@ const guestOptionMenu = ref();
 const toggle = (event) => {
     guestOptionMenu.value.toggle(event);
 }
+
+// slider price range
+const minRoomPrice = ref(0);
+const maxRoomPrice = ref(1000000);
+const roomPriceRange = computed({
+    get() {
+        return [minRoomPrice.value, maxRoomPrice.value];
+    },
+    set([min, max]) {
+        minRoomPrice.value = min;
+        maxRoomPrice.value = max;
+    },
+});
+
+// filter bed type
+const bedTypeList = reactive([
+    {
+        label: 'Đôi',
+        name: 'double bed'
+    },
+    {
+        label: 'Giường đôi lớn',
+        name: 'queen bed'
+    },
+    {
+        label: 'Đơn/hai giường đơn',
+        name: 'single bed/twin beds'
+    },
+    {
+        label: 'Giường đơn lớn',
+        name: 'large single bed'
+    },
+]);
+const filterBedType = ref();
+
+// filter room amenities and features
+const roomAmenitiesList = reactive([
+    {
+        label: 'TV',
+        name: 'television'
+    },
+    {
+        label: 'Điều hòa',
+        name: 'air conditioner'
+    },
+    {
+        label: 'Bếp',
+        name: 'kitchenette'
+    },
+    {
+        label: 'Máy pha trà/cà phê',
+        name: 'tea/coffee maker'
+    },
+    {
+        label: 'Sưởi',
+        name: 'heating'
+    },
+    {
+        label: 'Ban công/sân hiên',
+        name: 'balcony/patio'
+    },
+    {
+        label: 'View biển',
+        name: 'ocean view'
+    },
+    {
+        label: 'View city',
+        name: 'city view'
+    },
+]);
+const filterRoomAmenities = ref();
+
+// filter room services
+const roomServicesList = reactive([
+    {
+        label: 'Có ăn sáng',
+        name: 'breakfast'
+    },
+    {
+        label: 'Bữa tối',
+        name: 'dinner'
+    },
+    {
+        label: 'Bữa trưa',
+        name: 'lunch'
+    },
+    {
+        label: 'Miễn phí dịch vụ đưa đón',
+        name: 'free shuttle service'
+    },
+    {
+        label: 'Miễn phí đồ ăn nhẹ',
+        name: 'complimentary snacks'
+    },
+    {
+        label: 'Order đồ ăn bên ngoài',
+        name: 'order food from outside'
+    },
+]);
+const filterRoomServices = ref();
+
+// filter payment method
+const nonUserPaymentMethodList = reactive([
+    {
+        label: 'Thanh toán ngay',
+        name: 'pay now(non-refundable)'
+    },
+    {
+        label: 'Đặt cọc trước',
+        name: 'deposit required(30-50%)'
+    }
+])
+const userPaymentMethodList = reactive([
+    {
+        label: 'Đặt trước, trả sau',
+        name: 'book now, pay later',
+        note: 'free cancellation up to 24 hours before arrival'
+    },
+    {
+        label: 'Thanh toán ngay',
+        name: 'pay now(non-refundable)',
+        note: 'discount 5-10%'
+    },
+    {
+        label: 'Đặt cọc trước',
+        name: 'deposit required(10-20%)'
+    }
+]);
+const filterPaymentMethod = ref();
+
 </script>

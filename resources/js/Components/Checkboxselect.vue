@@ -9,13 +9,13 @@
                     <div class="flex flex-col gap-y-3">
                         <div v-for="(item, index) in list" :key="index" class="flex items-center gap-2">
                             <template v-if="item.label">
-                                <RadioButton :modelValue="modelValue"
+                                <Checkbox :modelValue="modelValue"
                                     @update:modelValue="value => emit('update:modelValue', value)" :inputId="item.name"
                                     :value="item.label"/>
                                 <label :for="item.name">{{ item.label }}</label>
                             </template>
                             <template v-else>
-                                <RadioButton :modelValue="modelValue"
+                                <Checkbox :modelValue="modelValue"
                                     @update:modelValue="value => emit('update:modelValue', value)" :inputId="item.name"
                                     :value="item.name"/>
                                 <label :for="item.name">{{ item.name }}</label>
@@ -44,6 +44,7 @@
 
 <script setup>
 import RadioButton from 'primevue/radiobutton';
+import Checkbox from 'primevue/checkbox';
 
 import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';
