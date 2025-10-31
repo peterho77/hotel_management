@@ -15,10 +15,15 @@ return new class extends Migration
             $table->smallIncrements('id');
             $table->string('name');
             $table->mediumText('description');
-            $table->smallInteger('quantity');
-            $table->float('hourly_rate');
-            $table->float('full_day_rate');
-            $table->float('overnight_rate');
+            $table->enum('bed_type',['queen','king','twin','single']);
+            $table->unsignedSmallInteger('max_adults')->default(1);
+            $table->unsignedSmallInteger('max_children')->default(1);
+            $table->smallInteger('total_quantity');
+            $table->decimal('base_price_per_night',9,2);
+            $table->float('hourly_rate')->nullable();
+            $table->float('full_day_rate')->nullable();
+            $table->float('overnight_rate')->nullable();
+            $table->json('amenities');
             $table->string('status', 50);
         });
     }
