@@ -15,7 +15,7 @@ return new class extends Migration
             $table->smallIncrements('id');
             $table->string('name');
             $table->mediumText('description');
-            $table->enum('bed_type',['queen','king','twin','single']);
+            $table->enum('bed_type',['queen','king','twin','single'])->default('queen');
             $table->unsignedSmallInteger('max_adults')->default(1);
             $table->unsignedSmallInteger('max_children')->default(1);
             $table->smallInteger('total_quantity');
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->float('full_day_rate')->nullable();
             $table->float('overnight_rate')->nullable();
             $table->json('amenities');
-            $table->string('status', 50);
+            $table->string('status', 10)->default('active');
         });
     }
 

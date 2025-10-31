@@ -3,7 +3,7 @@
         <div class="login-form__header | set-bg-img h-[300px]" :style="$getBgStyle(loginImg)">
             <i class="close-icon | pi pi-times | text-neutral-300 hover:text-neutral-100" @click="closeDialog()"></i>
         </div>
-        <Form v-slot="$form" :initialValues :resolver="loginSchema" :validateOnValueUpdate="false"
+        <Form v-focustrap v-slot="$form" :initialValues :resolver="loginSchema" :validateOnValueUpdate="false"
             :validateOnBlur="true" @submit="submit" class="px-12 py-8 flex flex-col gap-y-8">
             <div class="login-form-title | grid grid-cols-2 gap-20 mb-4">
                 <span class="fs-normal-heading">

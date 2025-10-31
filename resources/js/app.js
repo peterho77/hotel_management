@@ -16,7 +16,8 @@ import DialogService from 'primevue/dialogservice';
 import DynamicDialog from 'primevue/dynamicdialog';
 import ConfirmDialog from 'primevue/confirmdialog';
 import ToastService from 'primevue/toastservice';
-import ConfirmationService from 'primevue/confirmationservice'; 
+import ConfirmationService from 'primevue/confirmationservice';
+import FocusTrap from 'primevue/focustrap'; 
 
 createInertiaApp({
     title: (title) => `Sona Hotel ${title}`,
@@ -39,6 +40,7 @@ createInertiaApp({
             .use(ToastService)
             .use(ConfirmationService)
             .use(ZiggyVue)
+            .directive('focustrap', FocusTrap)
             .component("Head", Head)
             .component("Link", Link)
             .component("Breadcrumb", Breadcrumb)

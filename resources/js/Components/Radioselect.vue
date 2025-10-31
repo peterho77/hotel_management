@@ -11,7 +11,7 @@
                             <template v-if="item.label">
                                 <RadioButton :modelValue="modelValue"
                                     @update:modelValue="value => emit('update:modelValue', value)" :inputId="item.name"
-                                    :value="item.label"/>
+                                    :value="item.name"/>
                                 <label :for="item.name">{{ item.label }}</label>
                             </template>
                             <template v-else>

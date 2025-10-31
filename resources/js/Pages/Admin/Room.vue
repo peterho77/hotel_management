@@ -49,45 +49,54 @@
                                     sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                                     :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
                                     <Column expander style="width: 5rem" />
-                                    <template v-for="(col, index) of selectedColumns">
-                                        <Column v-if="!hiddenColumns.includes(col.field)" :key="col.field + '_' + index"
-                                            :field="col.field" :header="formatLabel(col.header)" sortable />
-                                    </template>
+                                    <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
+                                        :field="col.field" :header="formatLabel(col.header)" sortable />
                                     <template #expansion="slotProps">
                                         <Panel header="Detail information">
                                             <div class="p-4">
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4">
                                                     <template v-for="(value, key) in slotProps.data" :key="key">
-                                                        <div v-if="key !== 'amenities'"
-                                                            class="grid grid-cols-[auto_1fr] gap-x-3">
-                                                            <div class="font-semibold text-gray-700">
-                                                                {{ formatLabel(key) }}:
-                                                            </div>
-                                                            <div class="text-gray-900">
-                                                                <template
-                                                                    v-if="key === 'branch' || key === 'room_type'">
-                                                                    {{ value.name }}
-                                                                </template>
+                                                        <!-- Các field bình thường -->
+                                                        <template v-if="key !== 'rooms' && key !== 'amenities'">
+                                                            <div class="flex flex-col gap-y-1">
+                                                                <div class="flex">
+                                                                    <span
+                                                                        class="min-w-50 font-semibold text-gray-700 shrink-0">
+                                                                        {{ formatLabel(key) }}:
+                                                                    </span>
+                                                                    <span class="text-gray-900 flex-1">
+                                                                        <template
+                                                                            v-if="key === 'branch' || key === 'room_type'">
+                                                                            {{ value.name }}
+                                                                        </template>
 
-                                                                <template v-else-if="key === 'branches'">
-                                                                    {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                                </template>
+                                                                        <template v-else-if="key === 'branches'">
+                                                                            {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
+                                                                        </template>
 
-                                                                <template v-else>
-                                                                    {{ value }}
-                                                                </template>
+                                                                        <template v-else>
+                                                                            {{ value }}
+                                                                        </template>
+                                                                    </span>
+                                                                </div>
+                                                                <Divider type="dashed" />
                                                             </div>
-                                                        </div>
-                                                        <template v-else class="grid grid-cols-[auto_1fr] gap-x-3">
+                                                        </template>
+
+                                                        <!-- Field amenities -->
+                                                        <template v-if="key === 'amenities'">
                                                             <div v-for="(amenityValue, amenityKey) in JSON.parse(value)"
-                                                                :key="amenityKey"
-                                                                class="grid grid-cols-[auto_1fr] gap-x-3">
-                                                                <div class="font-semibold text-gray-700">
-                                                                    {{ formatLabel(amenityKey) }}:
+                                                                :key="amenityKey" class="flex flex-col gap-y-1">
+                                                                <div class="flex">
+                                                                    <span
+                                                                        class="min-w-50 font-semibold text-gray-700 shrink-0">
+                                                                        {{ formatLabel(amenityKey) }}:
+                                                                    </span>
+                                                                    <span class="text-gray-900 flex-1">
+                                                                        {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
+                                                                    </span>
                                                                 </div>
-                                                                <div class="text-gray-900">
-                                                                    {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
-                                                                </div>
+                                                                <Divider type="dashed" />
                                                             </div>
                                                         </template>
                                                     </template>
@@ -121,12 +130,16 @@ import Button from 'primevue/button';
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
 
+// sleketon
+import Skeleton from 'primevue/skeleton';
+
 // tabs
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Divider from 'primevue/divider';
 
 // panel
 import Panel from 'primevue/panel';
@@ -184,9 +197,6 @@ const props = defineProps({
 const tabs = ['room-type', 'room'];
 const currentTab = ref(props.activeTab);
 
-// hidden column
-const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities']);
-
 // row expansion
 const expandedRoomRows = ref({});
 const expandedRoomTypeRows = ref({});
@@ -217,14 +227,14 @@ const statusList = ref([
     },
 ]);
 const filterBranches = ref([])
-const filterStatus = ref('Tất cả');
+const filterStatus = ref('all');
 
 // filter room type by branch ans status
 const filteredRoomTypeList = computed(() => {
     return (props.roomTypeList || []).filter(roomType => {
         const branchIds = (roomType.branches || []).map(b => b.id)
         const branchMatch = !filterBranches.value.length || filterBranches.value.some(id => branchIds.includes(id));
-        const statusMatch = filterStatus.value === 'Tất cả' || roomType.status === filterStatus.value;
+        const statusMatch = filterStatus.value === 'all' || roomType.status === filterStatus.value;
         return branchMatch && statusMatch;
     })
 });
@@ -259,7 +269,7 @@ const addNewItems = ref([
 
 // toggle column
 const selectedColumns = ref([]);
-const currentColumns = ref({});
+const currentColumns = ref([]);
 
 watch(
     currentTab, (newValue) => {
@@ -271,10 +281,14 @@ watch(
 );
 
 onMounted(() => {
+    const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities','rooms']);
     currentColumns.value = currentTab.value === 'room'
         ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
         : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
-
+    console.log(currentColumns.value);    
+    currentColumns.value = currentColumns.value.filter(
+        item => !hiddenColumns.value.includes(item.field)
+    );
     selectedColumns.value = currentColumns.value;
 })
 
@@ -326,11 +340,11 @@ const showAddNewRoomType = () => {
         props: {
             header: 'Add new room type',
             style: {
-                width: '30vw',
+                width: '40%',
             },
             breakpoints: {
-                '960px': '50vw',
-                '640px': '40vw'
+                '960px': '80%',
+                '640px': '90%'
             },
             modal: true
         },

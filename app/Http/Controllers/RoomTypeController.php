@@ -15,7 +15,7 @@ class RoomTypeController extends Controller
      */
     public function index()
     {
-        $roomTypeList = RoomType::with('branches')->get();;
+        $roomTypeList = RoomType::with(['branches','rooms'])->get();;
         $columns = [];
 
         if ($roomTypeList->isNotEmpty()) {
