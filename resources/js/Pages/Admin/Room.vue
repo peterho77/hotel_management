@@ -245,11 +245,13 @@ const filteredRoomList = computed(() => {
     return (props.roomList || []).filter(room => {
         const branchMatch = filterBranches.value.length === 0 ||
             filterBranches.value.includes(room.branch.id)
-        const statusMatch = filterStatus.value === 'Tất cả' || room.status === filterStatus.value;
+        const statusMatch = filterStatus.value === 'all' || room.status === filterStatus.value;
 
         return branchMatch && statusMatch;
     });
 })
+
+console.log(filteredRoomList.value);
 
 // toggle add new item menu
 const addNewItems = ref([
@@ -280,23 +282,40 @@ watch(
     }
 );
 
+const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities', 'rooms']);
+watch(hiddenColumns, (val) => {
+    localStorage.setItem('hiddenColumns', JSON.stringify(val));
+}, { deep: true });
+
 onMounted(() => {
-    const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities','rooms']);
+    const savedHidden = localStorage.getItem('hiddenColumns');
+    if (savedHidden) {
+        hiddenColumns.value = JSON.parse(savedHidden);
+    }
+
     currentColumns.value = currentTab.value === 'room'
         ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
         : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
-    console.log(currentColumns.value);    
     currentColumns.value = currentColumns.value.filter(
         item => !hiddenColumns.value.includes(item.field)
     );
+
     selectedColumns.value = currentColumns.value;
 })
 
 watch(() => [props.roomColumns, props.roomTypeColumns, currentTab.value],
     () => {
+        const savedHidden = localStorage.getItem('hiddenColumns');
+        if (savedHidden) {
+            hiddenColumns.value = JSON.parse(savedHidden);
+        }
+
         currentColumns.value = currentTab.value === 'room'
             ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
             : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
+        currentColumns.value = currentColumns.value.filter(
+            item => !hiddenColumns.value.includes(item.field)
+        );
 
         selectedColumns.value = currentColumns.value;
     });

@@ -7,19 +7,19 @@
                 <Tab value="2">Danh sách phòng</Tab>
             </TabList>
             <TabPanels>
-                <Form ref="newRoomTypeForm" v-slot="$form" :resolver :initialValues validateOnUpdate="false"
+                <Form v-slot="$form" ref="newRoomTypeForm" :resolver :initialValues validateOnUpdate="false"
                     :validateOnBlur="true" @submit="submit">
                     <TabPanel value="0">
                         <div class="grid gap-y-4">
                             <div class="flex flex-col gap-2">
                                 <label for="name">Name</label>
-                                <InputText id="name" name="name" />
+                                <InputText v-model="form.name" name="name" />
                                 <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
                                     {{ $form.name.error.message }}</Message>
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label for="quantity">Quantity</label>
-                                <InputNumber name="quantity" :maxFractionDigits="0" :min="1" :max="10" showButtons
+                                <InputNumber name="total_quantity" :maxFractionDigits="0" :min="1" :max="10" showButtons
                                     default="1" />
                                 <Message v-if="$form.quantity?.invalid" severity="error" size="small" variant="simple">
                                     {{ $form.quantity.error.message }}</Message>
@@ -53,18 +53,18 @@
                                     <span>Tối đa:</span>
                                     <div class="flex gap-x-2 items-center">
                                         <div class="flex items-center gap-x-1">
-                                            <InputNumber name="max_adults" showButtons :min="1" :pt="{
-                                                incrementButton: { class: 'bg-gray-100' },
-                                                decrementButton: { class: 'bg-gray-100' },
-                                                incrementIcon: { class: 'pi pi-plus' },
-                                                decrementIcon: { class: 'pi pi-minus' },
+                                                <InputNumber v-model="form.max_adults" name="max_adults" showButtons :min="1" :pt="{
+                                                    incrementButton: { class: 'bg-gray-100' },
+                                                    decrementButton: { class: 'bg-gray-100' },
+                                                    incrementIcon: { class: 'pi pi-plus' },
+                                                    decrementIcon: { class: 'pi pi-minus' },
 
-                                            }" />
+                                                }" />
                                             <span class="w-2/3">người lớn</span>
                                         </div>
                                         <span>và</span>
                                         <div class="flex items-center gap-x-1">
-                                            <InputNumber name="max_children" showButtons :min="1" :pt="{
+                                            <InputNumber v-model="form.max_children" name="max_children" showButtons :min="1" :pt="{
                                                 incrementButton: { class: 'bg-gray-100' },
                                                 decrementButton: { class: 'bg-gray-100' },
                                                 incrementIcon: { class: 'pi pi-plus' },
@@ -97,8 +97,8 @@
                         <div class="flex flex-col gap-4">
                             <div class="flex flex-col gap-2">
                                 <label for="upload-img">Upload images:</label>
-                                <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                    :multiple="true" accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles">
+                                <FileUpload v-model="form.images" @upload="onTemplatedUpload($event)" :multiple="true"
+                                    accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles">
                                     <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
                                         <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
                                             <div class="flex gap-2">
@@ -107,8 +107,8 @@
                                                 <Button @click="uploadEvent(uploadCallback)" icon="pi pi-cloud-upload"
                                                     rounded variant="outlined" severity="success"
                                                     :disabled="!files || files.length === 0"></Button>
-                                                <Button @click="clearCallback()" icon="pi pi-times" rounded
-                                                    variant="outlined" severity="danger"
+                                                <Button @click="onClearTemplatingUpload(clearCallback)"
+                                                    icon="pi pi-times" rounded variant="outlined" severity="danger"
                                                     :disabled="!files || files.length === 0"></Button>
                                             </div>
                                         </div>
@@ -210,7 +210,7 @@
 </style>
 
 <script setup>
-import { ref, inject, onMounted } from "vue";
+import { ref, reactive, inject, onMounted, watch } from "vue";
 import { usePrimeVue } from 'primevue/config';
 import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
@@ -270,7 +270,6 @@ const resolver = zodResolver(
     z
         .object({
             name: z.string({ required_error: "name.required" }).min(1, { message: "name.required" }),
-            description: z.string({ required_error: "description.required" }).min(1, { message: "description.required" }),
 
             total_quantity: z.preprocess(toNumberOrUndefined,
                 z.number({
@@ -339,7 +338,7 @@ const resolver = zodResolver(
         }
         ));
 
-const initialValues = {
+const initialValues = reactive({
     name: '',
     description: '',
     total_quantity: 1,
@@ -350,17 +349,10 @@ const initialValues = {
     max_children: 1,
     status: '',
     branch_id: null,
-};
+    images: []
+});
 
 const newRoomTypeForm = ref(null);
-
-const submit = (e) => {
-    if (e.valid) {
-        router.post('/admin/room-type/add-new', JSON.parse(JSON.stringify(e.values)))
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        dialogRef.value.close();
-    }
-}
 
 // pass data from dynamic dialog primevue
 const roomList = ref([]);
@@ -375,30 +367,68 @@ onMounted(() => {
     }
 })
 
-// upload img
+// upload room type images
 const $primevue = usePrimeVue();
 
 const totalSize = ref(0);
 const totalSizePercent = ref(0);
 const files = ref([]);
+const previews = ref([])
+
+
+const form = reactive({
+    name: '',
+    images: [],
+    max_adults: 1,
+    max_children: 1,
+})
+
+// change image name
+function slugifyVietnamese(text) {
+    return text
+        .normalize('NFD') // tách dấu
+        .replace(/[\u0300-\u036f]/g, '') // xóa dấu
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D') // xử lý chữ đ/Đ
+        .toLowerCase()
+        .replace(/\s+/g, '_') // thay khoảng trắng thành "_"
+        .replace(/[^a-z0-9_]/g, '') // xóa ký tự đặc biệt
+}
+function renameImageFile(file, name, index) {
+    if (!file && !name) return file
+    const ext = file.name.split('.').pop()
+    const safeName = slugifyVietnamese(name)
+    const newName = `${safeName}_${index + 1}.${ext}`
+    return new File([file], newName, { type: file.type })
+}
+// change file name whenever change name of the room type
+watch(
+    () => form.name,
+    (newName) => {
+        if (form.images.length) {
+            form.images = form.images.map((image, index) => renameImageFile(image, newName, index))
+        }
+    }
+)
+const onSelectedFiles = (event) => {
+    form.images = event.files.map((file, index) => renameImageFile(file, form.name, index))
+    console.log(form.images);
+};
 
 const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
     removeFileCallback(index);
     totalSize.value -= parseInt(formatSize(file.size));
     totalSizePercent.value = totalSize.value / 10;
+    form.images.splice(index, 1);
+    if (form.images.length) {
+        form.images = form.images.map((image, index) => renameImageFile(image, newName, index))
+    }
+    console.log(form.images);
 };
 
 const onClearTemplatingUpload = (clear) => {
     clear();
     totalSize.value = 0;
     totalSizePercent.value = 0;
-};
-
-const onSelectedFiles = (event) => {
-    files.value = event.files;
-    files.value.forEach((file) => {
-        totalSize.value += parseInt(formatSize(file.size));
-    });
 };
 
 const uploadEvent = (callback) => {
@@ -428,5 +458,45 @@ const formatSize = (bytes) => {
 const closeDialog = () => {
     dialogRef.value.close();
 };
+
+// submit form
+const submit = (e) => {
+    if (e.valid) {
+        e.values.max_adults = form.max_adults;
+        e.values.max_children = form.max_children;
+        const data = new FormData()
+
+        // duyệt qua toàn bộ field trong form
+        for (const key in e.values) {
+            const value = e.values[key]
+
+            // Nếu là mảng các file room type img
+
+            // Nếu là date object (ví dụ birth_date)
+            if (value instanceof Date) {
+                data.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
+            }
+            // Còn lại là text / number
+            else {
+                data.append(key, value ?? '')
+            }
+        }
+        if (Array.isArray(form.images) && form.images.length && form.images[0] instanceof File) {
+            form.images.forEach((file, idx) => {
+                data.append(`image[${idx}]`, file, file.name);
+            });
+        }
+        
+        //Gửi form qua Inertia
+        router.post('/admin/room-type/add-new', data, {
+            forceFormData: true,
+            onSuccess: () => {
+                console.log('Tạo loại phòng thành công!')
+            },
+        })
+        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        dialogRef.value.close();
+    }
+}
 
 </script>

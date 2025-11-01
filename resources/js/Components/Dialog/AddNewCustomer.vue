@@ -240,16 +240,19 @@ const submit = (e) => {
                 data.append(key, value ?? '')
             }
         }
+        for (let [k, v] of data.entries()) {
+            console.log(k, v);
+        }
 
         // Gửi form qua Inertia
-        router.post('/manager/customer/add-new', data, {
-            forceFormData: true,
-            onSuccess: () => {
-                console.log('Tạo khách hàng thành công!')
-            },
-        })
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        dialogRef.value.close();
+        // router.post('/manager/customer/add-new', data, {
+        //     forceFormData: true,
+        //     onSuccess: () => {
+        //         console.log('Tạo khách hàng thành công!')
+        //     },
+        // })
+        // toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        // dialogRef.value.close();
     }
 }
 
@@ -270,6 +273,12 @@ const closeDialog = () => {
 // upload customer avatar
 
 // format full name and date to rename customer avatar
+const form = reactive({
+    full_name: '',
+    avatar: null
+})
+const src = ref(null);
+
 function slugifyVietnamese(text) {
     return text
         .normalize('NFD') // tách dấu
@@ -285,12 +294,6 @@ function formatDateNow() {
     const pad = (n) => n.toString().padStart(2, '0')
     return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
 }
-
-const form = reactive({
-    full_name: '',
-    avatar: null
-})
-const src = ref(null);
 
 function renameAvatarFile(file, fullName) {
     if (!file && !fullName) return file

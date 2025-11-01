@@ -51,7 +51,7 @@ class CustomerController extends Controller
             'note' => ['nullable', 'string'],
             'avatar' => 'nullable|image|max:2048|mimes:jpg,bmp,png',
         ]);
-        // dd($validated);
+        
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
             $avatarPath = $request->file('avatar')->store('uploads/customers', 'public');
