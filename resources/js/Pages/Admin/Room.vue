@@ -54,52 +54,72 @@
                                     <template #expansion="slotProps">
                                         <Panel header="Detail information">
                                             <div class="p-4">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4">
-                                                    <template v-for="(value, key) in slotProps.data" :key="key">
-                                                        <!-- Các field bình thường -->
-                                                        <template v-if="key !== 'rooms' && key !== 'amenities'">
-                                                            <div class="flex flex-col gap-y-1">
-                                                                <div class="flex">
-                                                                    <span
-                                                                        class="min-w-50 font-semibold text-gray-700 shrink-0">
-                                                                        {{ formatLabel(key) }}:
-                                                                    </span>
-                                                                    <span class="text-gray-900 flex-1">
-                                                                        <template
-                                                                            v-if="key === 'branch' || key === 'room_type'">
-                                                                            {{ value.name }}
-                                                                        </template>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                                    <div class="card">
+                                                        <Galleria :value="getGalleryImages(slotProps.data.images)"
+                                                            :responsiveOptions="responsiveOptions" :numVisible="5"
+                                                            containerStyle="max-width: 540px">
+                                                            <template #item="slotProps">
+                                                                <img :src="slotProps.item.itemImageSrc"
+                                                                    :alt="slotProps.item.alt"
+                                                                    class="w-full max-h-96 object-cover rounded-lg" />
+                                                            </template>
 
-                                                                        <template v-else-if="key === 'branches'">
-                                                                            {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                                        </template>
+                                                            <template #thumbnail="slotProps">
+                                                                <img :src="slotProps.item.itemImageSrc"
+                                                                    :alt="slotProps.item.alt"
+                                                                    class="max-h-20 w-20 object-cover rounded-md border-[0.5px]" />
+                                                            </template>
+                                                        </Galleria>
+                                                    </div>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2">
+                                                        <template v-for="(value, key) in slotProps.data" :key="key">
+                                                            <!-- Các field bình thường -->
+                                                            <template
+                                                                v-if="!['rooms','amenities','images','description'].includes(key)">
+                                                                <div class="flex flex-col gap-y-1">
+                                                                    <div class="flex">
+                                                                        <span
+                                                                            class="min-w-50 font-semibold text-gray-700 shrink-0">
+                                                                            {{ formatLabel(key) }}:
+                                                                        </span>
+                                                                        <span class="text-gray-900 flex-1">
+                                                                            <template
+                                                                                v-if="key === 'branch' || key === 'room_type'">
+                                                                                {{ value.name }}
+                                                                            </template>
 
-                                                                        <template v-else>
-                                                                            {{ value }}
-                                                                        </template>
-                                                                    </span>
+                                                                            <template v-else-if="key === 'branches'">
+                                                                                {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
+                                                                            </template>
+
+                                                                            <template v-else>
+                                                                                {{ value }}
+                                                                            </template>
+                                                                        </span>
+                                                                    </div>
+                                                                    <Divider type="dashed" />
                                                                 </div>
-                                                                <Divider type="dashed" />
-                                                            </div>
-                                                        </template>
+                                                            </template>
 
-                                                        <!-- Field amenities -->
-                                                        <template v-if="key === 'amenities'">
-                                                            <div v-for="(amenityValue, amenityKey) in JSON.parse(value)"
-                                                                :key="amenityKey" class="flex flex-col gap-y-1">
-                                                                <div class="flex">
-                                                                    <span
-                                                                        class="min-w-50 font-semibold text-gray-700 shrink-0">
-                                                                        {{ formatLabel(amenityKey) }}:
-                                                                    </span>
-                                                                    <span class="text-gray-900 flex-1">
-                                                                        {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
-                                                                    </span>
+                                                            <!-- Field amenities -->
+                                                            <template v-if="key === 'amenities'">
+                                                                <div v-for="(amenityValue, amenityKey) in JSON.parse(value)"
+                                                                    :key="amenityKey" class="flex flex-col gap-y-1">
+                                                                    <div class="flex">
+                                                                        <span
+                                                                            class="min-w-50 font-semibold text-gray-700 shrink-0">
+                                                                            {{ formatLabel(amenityKey) }}:
+                                                                        </span>
+                                                                        <span class="text-gray-900 flex-1">
+                                                                            {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Divider type="dashed" />
                                                                 </div>
-                                                                <Divider type="dashed" />
-                                                            </div>
+                                                            </template>
                                                         </template>
-                                                    </template>
+                                                    </div>
                                                 </div>
                                                 <div class="update-buttons | flex mr-10">
                                                     <Button raised severity="success"
@@ -147,6 +167,9 @@ import Panel from 'primevue/panel';
 // data-table
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+
+// galleria
+import Galleria from 'primevue/galleria';
 
 // dynamic dialog
 import { useDialog } from 'primevue/usedialog';
@@ -484,4 +507,35 @@ const exportCSV = () => {
         }
     }
 };
+
+// room type images gallery
+const getGalleryImages = (images) => {
+    // Nếu có ảnh thật từ DB
+    if (images && images.length > 0) {
+        return images.map(img => ({
+            itemImageSrc: `/storage/${img.path}`,
+            thumbnailImageSrc: `/storage/${img.path}`,
+            alt: img.alt_text
+        }))
+    }
+
+    // Nếu không có ảnh → trả về 5 ảnh mặc định
+    return Array.from({ length: 5 }, (_, i) => ({
+        itemImageSrc: `/img/default-blank-img.jpg`,
+        thumbnailImageSrc: `/img/default-blank-img.jpg`,
+        alt: `default-blank-${i + 1}`
+    }))
+}
+
+const responsiveOptions = ref([
+    {
+        breakpoint: '1300px',
+        numVisible: 4
+    },
+    {
+        breakpoint: '575px',
+        numVisible: 1
+    }
+]);
+
 </script>

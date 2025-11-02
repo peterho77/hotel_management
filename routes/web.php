@@ -9,6 +9,7 @@ use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+Route::redirect('/home','/');
 Route::inertia('/', 'Guest/Home')->name('home');
 
 // Role Authentication

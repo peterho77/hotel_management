@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\RoomType;
 use App\Models\Room;
@@ -16,7 +17,7 @@ class RoomTypeController extends Controller
      */
     public function index()
     {
-        $roomTypeList = RoomType::with(['branches', 'rooms'])->get();;
+        $roomTypeList = RoomType::with(['branches', 'rooms', 'images'])->get();;
         $columns = [];
 
         if ($roomTypeList->isNotEmpty()) {
@@ -50,11 +51,13 @@ class RoomTypeController extends Controller
             'full_day_rate' => 'required|numeric|gt:overnight_rate',
             'status' => 'required|max:50',
         ]);
-        dd($validated);
+
         $newRoomType = [
             'name' => $request->name,
-            'description' => $request->description,
-            'total_quantity' => $request->quantity,
+            'description' => $request->description ?? '',
+            'total_quantity' => $request->total_quantity,
+            'max_adults' => $request->max_adults,
+            'max_children' => $request->max_children,
             'hourly_rate' => $request->hourly_rate,
             'full_day_rate' => $request->full_day_rate,
             'overnight_rate' => $request->overnight_rate,
@@ -71,38 +74,44 @@ class RoomTypeController extends Controller
             foreach ($request->file('images') as $file) {
                 $filename = $file->getClientOriginalName(); // giữ nguyên tên file
                 $storedPath = $file->storeAs($path, $filename, 'public'); // => storage/app/public/room-type/deluxe-room/filename.jpg
-                $imagePaths[] = $storedPath; // lưu lại đường dẫn
+                $imagePaths[] = [
+                    'path' => $storedPath,
+                    'filename' => $filename
+                ]; // lưu lại đường dẫn 
             }
         }
 
         // Tạo và gán lại biến model
         $newRoomTypeModel = RoomType::create($newRoomType);
 
-        foreach ($imagePaths as $imgPath) {
+        foreach ($imagePaths as $index => $img) {
             $newRoomTypeModel->images()->create([
-                'path' => $imgPath,
+                'path' => $img['path'],
+                'is_featured' => $index === 0, 
+                'sort_order' => $index + 1,
+                'alt_text' => $img['filename'],
             ]);
         }
 
-        // Lấy danh sách branch id hợp lệ
-        // $branchIds = Branch::pluck('id');
+        //Lấy danh sách branch id hợp lệ
+        $branchIds = Branch::pluck('id');
 
-        // // Lấy input từ request (nếu là mảng thì xử lý mảng, nếu 1 id thì xử lý 1 id)
-        // $inputBranchIds = $request->input('branch_id');
+        // Lấy input từ request (nếu là mảng thì xử lý mảng, nếu 1 id thì xử lý 1 id)
+        $inputBranchIds = $request->input('branch_id');
 
-        // if (is_array($inputBranchIds)) {
-        //     // lọc các id hợp lệ
-        //     $validBranchIds = collect($inputBranchIds)->filter(fn($id) => $branchIds->contains($id));
+        if (is_array($inputBranchIds)) {
+            // lọc các id hợp lệ
+            $validBranchIds = collect($inputBranchIds)->filter(fn($id) => $branchIds->contains($id));
 
-        //     if ($validBranchIds->isNotEmpty()) {
-        //         $newRoomTypeModel->branches()->attach($validBranchIds->toArray());
-        //     }
-        // } else {
-        //     $branchId = (int)$inputBranchIds;
-        //     if ($branchIds->contains($branchId)) {
-        //         $newRoomTypeModel->branches()->attach($branchId);
-        //     }
-        // }
+            if ($validBranchIds->isNotEmpty()) {
+                $newRoomTypeModel->branches()->attach($validBranchIds->toArray());
+            }
+        } else {
+            $branchId = (int)$inputBranchIds;
+            if ($branchIds->contains($branchId)) {
+                $newRoomTypeModel->branches()->attach($branchId);
+            }
+        }
 
         return redirect()->route('admin.room-type-management');
     }
@@ -161,7 +170,24 @@ class RoomTypeController extends Controller
      */
     public function destroy(string $id)
     {
-        $roomType = RoomType::where('id', $id)->first();
+        $roomType = RoomType::with('images')->where('id', $id)->first();
+        if ($roomType) {
+            // Xóa từng ảnh vật lý trong storage
+            foreach ($roomType->images as $image) {
+                if (Storage::disk('public')->exists($image->path)) {
+                    Storage::disk('public')->delete($image->path);
+                }
+            }
+        }
+
+        // Xóa thư mục chứa ảnh (nếu có)
+        $folder = 'uploads/room-type/' . Str::slug($roomType->name);
+        if (Storage::disk('public')->exists($folder)) {
+            Storage::disk('public')->deleteDirectory($folder);
+        }
+
+        // Xóa record ảnh trong DB
+        $roomType->images()->delete();
         $roomType->delete();
         return redirect()->route('admin.room-type-management');
     }

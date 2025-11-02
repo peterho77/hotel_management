@@ -483,7 +483,7 @@ const submit = (e) => {
         }
         if (Array.isArray(form.images) && form.images.length && form.images[0] instanceof File) {
             form.images.forEach((file, idx) => {
-                data.append(`image[${idx}]`, file, file.name);
+                data.append(`images[${idx}]`, file, file.name);
             });
         }
         
