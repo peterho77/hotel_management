@@ -47,18 +47,18 @@
                                 <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
                                     :value="currentTab === 'room' ? filteredRoomList : filteredRoomTypeList"
                                     sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
-                                    :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem">
+                                    :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 60rem">
                                     <Column expander style="width: 5rem" />
                                     <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
                                         :field="col.field" :header="formatLabel(col.header)" sortable />
                                     <template #expansion="slotProps">
-                                        <Panel header="Detail information">
-                                            <div class="p-4">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                                    <div class="card">
+                                        <Panel>
+                                            <div class="p-2">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                    <div class="image-gallery">
                                                         <Galleria :value="getGalleryImages(slotProps.data.images)"
-                                                            :responsiveOptions="responsiveOptions" :numVisible="5"
-                                                            containerStyle="max-width: 540px">
+                                                            :responsiveOptions="responsiveOptions" :numVisible="4"
+                                                            containerStyle="max-width: 460px" :circular="true">
                                                             <template #item="slotProps">
                                                                 <img :src="slotProps.item.itemImageSrc"
                                                                     :alt="slotProps.item.alt"
@@ -68,56 +68,58 @@
                                                             <template #thumbnail="slotProps">
                                                                 <img :src="slotProps.item.itemImageSrc"
                                                                     :alt="slotProps.item.alt"
-                                                                    class="max-h-20 w-20 object-cover rounded-md border-[0.5px]" />
+                                                                    class="max-h-30 w-20 object-cover rounded-md border-[0.5px]" />
                                                             </template>
                                                         </Galleria>
                                                     </div>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2">
-                                                        <template v-for="(value, key) in slotProps.data" :key="key">
-                                                            <!-- Các field bình thường -->
-                                                            <template
-                                                                v-if="!['rooms','amenities','images','description'].includes(key)">
-                                                                <div class="flex flex-col gap-y-1">
-                                                                    <div class="flex">
-                                                                        <span
-                                                                            class="min-w-50 font-semibold text-gray-700 shrink-0">
-                                                                            {{ formatLabel(key) }}:
-                                                                        </span>
-                                                                        <span class="text-gray-900 flex-1">
-                                                                            <template
-                                                                                v-if="key === 'branch' || key === 'room_type'">
-                                                                                {{ value.name }}
-                                                                            </template>
-
-                                                                            <template v-else-if="key === 'branches'">
-                                                                                {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                                            </template>
-
-                                                                            <template v-else>
-                                                                                {{ value }}
-                                                                            </template>
-                                                                        </span>
+                                                    <div class="detail-infor">
+                                                        <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-x-3">
+                                                            <template v-for="(value, key) in slotProps.data" :key="key">
+                                                                <!-- Các field bình thường -->
+                                                                <template
+                                                                    v-if="!['rooms', 'amenities', 'images', 'description', 'branches', 'id'].includes(key)">
+                                                                    <div class="grid gap-y-1 gap-x-2 columns-2">
+                                                                        <div>
+                                                                            <div class="flex gap-x-1">
+                                                                                <span
+                                                                                    class="font-semibold text-gray-700 min-w-42">
+                                                                                    {{ formatLabel(key) }}:
+                                                                                </span>
+                                                                                <span class="text-gray-900 flex-grow">
+                                                                                    <template
+                                                                                        v-if="key === 'branch' || key === 'room_type'">
+                                                                                        {{ value.name }}
+                                                                                    </template>
+                                                                                    <!-- <template v-else-if="key === 'branches'">
+                                                                                        {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
+                                                                                    </template> -->
+                                                                                    <template v-else>
+                                                                                        {{ value }}
+                                                                                    </template>
+                                                                                </span>
+                                                                            </div>
+                                                                            <Divider type="dashed" />
+                                                                        </div>
                                                                     </div>
-                                                                    <Divider type="dashed" />
-                                                                </div>
+                                                                </template>
                                                             </template>
+                                                        </div>
 
-                                                            <!-- Field amenities -->
-                                                            <template v-if="key === 'amenities'">
-                                                                <div v-for="(amenityValue, amenityKey) in JSON.parse(value)"
-                                                                    :key="amenityKey" class="flex flex-col gap-y-1">
-                                                                    <div class="flex">
-                                                                        <span
-                                                                            class="min-w-50 font-semibold text-gray-700 shrink-0">
-                                                                            {{ formatLabel(amenityKey) }}:
-                                                                        </span>
-                                                                        <span class="text-gray-900 flex-1">
-                                                                            {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
-                                                                        </span>
-                                                                    </div>
-                                                                    <Divider type="dashed" />
+                                                        <!-- Field amenities -->
+                                                        <template v-if="slotProps.data.amenities">
+                                                            <div v-for="(amenityValue, amenityKey) in JSON.parse(slotProps.data.amenities)"
+                                                                :key="amenityKey" class="flex flex-col gap-y-1">
+                                                                <div class="flex">
+                                                                    <span
+                                                                        class="min-w-44 font-semibold text-gray-700 shrink-0">
+                                                                        {{ formatLabel(amenityKey) }}:
+                                                                    </span>
+                                                                    <span class="text-gray-900 flex-1">
+                                                                        {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
+                                                                    </span>
                                                                 </div>
-                                                            </template>
+                                                                <Divider type="dashed" />
+                                                            </div>
                                                         </template>
                                                     </div>
                                                 </div>
@@ -261,7 +263,6 @@ const filteredRoomTypeList = computed(() => {
         return branchMatch && statusMatch;
     })
 });
-console.log(filteredRoomTypeList.value);
 
 // filter room by branch and status
 const filteredRoomList = computed(() => {
@@ -273,8 +274,6 @@ const filteredRoomList = computed(() => {
         return branchMatch && statusMatch;
     });
 })
-
-console.log(filteredRoomList.value);
 
 // toggle add new item menu
 const addNewItems = ref([
