@@ -2,23 +2,15 @@
     <div class="booking-section pb-10">
         <div class="booking-section-header | padding-block-200">
 
-            <Form v-slot="$form" :initialValues
+            <Form v-slot="$form" :initialValues @submit="submit"
                 class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
                 <div class="flex gap-x-4 items-center">
-                    <!-- Check-in -->
+                    <!-- Check-in / Check-out -->
                     <div>
-                        <label class="block mb-1">Check-in</label>
-                        <FormField name="checkIn" v-slot="{ field, error }">
-                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
-                            <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
-                        </FormField>
-                    </div>
-
-                    <!-- Check-out -->
-                    <div>
-                        <label class="block mb-1">Check-out</label>
-                        <FormField name="checkOut" v-slot="{ field, error }">
-                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                        <label class="block mb-1">Check-in/Check-out</label>
+                        <FormField name="date" v-slot="{ field, error }">
+                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" selectionMode="range" :manualInput="false"
+                                showIcon fluid />
                             <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                         </FormField>
                     </div>
@@ -85,98 +77,130 @@
                     </div>
                 </div>
 
-                <Button class="mt-6" severity="info" size="large" label="Tìm phòng" raised />
+                <Button type="submit" class="mt-6" severity="info" size="large" label="Tìm phòng" raised />
             </Form>
         </div>
         <div class="container">
-            <div class="booking-section-content | grid grid-cols-[auto_1fr] mt-20">
-                <section class="booking-section-content__left">
-                    <div class="side-bar | flow" style="--flow-spacer:1em">
-                        <!-- slide price range -->
-                        <div class="box | flex flex-col flow">
-                            <label for="" class="admin-label">Giá mỗi đêm</label>
-                            <Slider v-model="roomPriceRange" range :min="0" :max="5000000" class="my-3" />
-                            <div class="flex justify-between items-center gap-x-2">
-                                <span>Tối thiểu</span>
-                                <InputNumber v-model="minRoomPrice" size="small" :maxFractionDigits="0" mode="currency"
-                                    currency="VND" locale="vi-VN" showButtons :step="5000" />
-                            </div>
-                            <div class="flex justify-between items-center gap-x-2">
-                                <span>Tối đa</span>
-                                <InputNumber v-model="maxRoomPrice" size="small" :maxFractionDigits="0" mode="currency"
-                                    currency="VND" locale="vi-VN" showButtons :step="5000" />
-                            </div>
-                        </div>
-
-                        <!-- filter room -->
-                        <Radioselect :list="bedTypeList" v-model="filterBedType" label="Loại giường" />
-
-                        <!-- filter room amenities and features-->
-                        <Checkboxselect :list="roomAmenitiesList" v-model="filterRoomAmenities"
-                            label="Tiện nghi phòng" />
-
-                        <!-- filter room services -->
-                        <Checkboxselect :list="roomServicesList" v-model="filterRoomServices" label="Dịch vụ phòng" />
-
-                        <!-- filter payment method -->
-                        <Checkboxselect :list="nonUserPaymentMethodList" v-model="filterPaymentMethod"
-                            label="Lựa chọn thanh toán" />
-
+            <div class="booking-section-content | mt-20 flow">
+                <div class="best-option">
+                    <div class="mb-2 p-2">
+                        <h3 class="fs-700">{{ summaryText }}</h3>
                     </div>
-                </section>
-                <section class="booking-section-content__right">
-                    <div class="card">
-                        <DataView :value="formattedRooms">
-                            <template #list="slotProps">
-                                <div class="flex flex-col">
-                                    <div v-for="(item, index) in slotProps.items" :key="index">
-                                        <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4"
-                                            :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
-                                            <div class="md:w-40 relative">
-                                                <img class="block xl:block mx-auto rounded w-full" :src="item.images
-                                                    ? `/storage/${item.images}`
-                                                    : '/img/default-blank-img.jpg'" />
-                                                <div class="absolute bg-black/70 rounded-border"
-                                                    style="left: 4px; top: 4px">
-                                                    <!-- <Tag :value="item.inventoryStatus" :severity="getSeverity(item)">
-                                                    </Tag> -->
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-                                                <div
-                                                    class="flex flex-row md:flex-col justify-between items-start gap-2">
-                                                    <div>
-                                                        <span
-                                                            class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
-                                                        <div class="text-lg font-medium mt-2">{{ item.name }}</div>
-                                                    </div>
-                                                    <div class="bg-surface-100 p-1" style="border-radius: 30px">
-                                                        <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
-                                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
-                                                            <span
-                                                                class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>
-                                                            <i class="pi pi-star-fill text-yellow-500"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="flex flex-col md:items-end gap-8">
-                                                    <span class="text-xl font-semibold">${{ item.price }}</span>
-                                                    <div class="flex flex-row-reverse md:flex-row gap-2">
-                                                        <Button variant="outlined" label="View details"></Button>
-                                                        <Button icon="pi pi-shopping-cart" label="Book Now"
-                                                            :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
-                                                            class="flex-auto md:flex-initial whitespace-nowrap"></Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                    <DataTable :value="roomOptions" rowGroupMode="rowspan" groupRowsBy="total_cost" :showHeaders="false"
+                        sortField="total_cost" showGridlines class="text-lg w-full">
+                        <!-- Cột thông tin phòng + chính sách -->
+                        <Column header="Danh sách phòng">
+                            <template #body="{ data }">
+                                <div class="flex flex-col gap-1 p-2">
+                                    <span class="font-semibold text-blue-700 hover:underline cursor-pointer">
+                                        {{ data.roomType.name }}
+                                    </span>
+                                    <span class="text-gray-600 text-sm">
+                                        {{ data.roomType.bedType }} • 👤 {{ data.roomType.maxAdults }} người lớn
+                                    </span>
+                                    <span class="text-red-600 font-medium text-sm">
+                                        {{ data.ratePolicy.name }}
+                                    </span>
+                                    <span class="text-gray-500 text-sm">
+                                        {{ data.ratePolicy.paymentRequirement }}
+                                    </span>
                                 </div>
                             </template>
-                        </DataView>
+                        </Column>
+
+                        <!-- Cột giá -->
+                        <Column header="Giá" style="text-align: center">
+                            <template #body="{ data }">
+                                <div class="flex flex-col items-center">
+                                    <span class="line-through text-gray-400 text-sm">
+                                        VND {{ data.price.original.toLocaleString() }}
+                                    </span>
+                                    <span class="font-bold text-red-600 text-md">
+                                        VND {{ data.price.discounted.toLocaleString() }}
+                                    </span>
+                                    <span class="text-gray-500 text-xs">Đã gồm thuế & phí</span>
+                                </div>
+                            </template>
+                        </Column>
+
+                        <!-- Cột nhóm: tổng giá -->
+                        <Column field="total_cost" header="Tổng giá (VNĐ)">
+                            <template #body="{ data }">
+                                <div class="text-left flex flex-col gap-3">
+                                    <span class="text-sm">{{ `${numOfNights} đêm, ${numOfGuests}` }}</span>
+                                    <div class="flex gap-x-2">
+                                        <span>Total: </span>
+                                        <h3 class="text-lg fw-bold">{{ data.total_cost }} VND</h3>
+                                    </div>
+                                    <Button label="Booking" fluid />
+                                </div>
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
+
+                <div class="other-options">
+                    <div class="p-2">
+                        <span class="text-md">Other empty options</span>
                     </div>
-                </section>
+                    <DataTable :value="filteredRoomTypeList" rowGroupMode="rowspan" groupRowsBy="name"
+                        :showHeaders="false" sortField="name" showGridlines class="text-lg w-full">
+                        <!-- Cột thông tin phòng + chính sách -->
+                        <Column field="name" header="Danh sách phòng">
+                            <template #body="{ data }">
+                                <div class="flex flex-col gap-1 p-2">
+                                    <span class="font-semibold text-blue-700 hover:underline cursor-pointer">
+                                        {{ data.name }}
+                                    </span>
+                                    <span class="text-red-600 text-sm">
+                                        {{ data.total_quantity }} left
+                                    </span>
+                                    <span class="text-gray-600 text-sm">
+                                        {{ data.bed_type }} bed
+                                    </span>
+                                    <span class="text-gray-500 text-sm">
+                                        Amenities
+                                    </span>
+                                </div>
+                            </template>
+                        </Column>
+
+                        <!-- Num of guests -->
+                        <Column header="capacity_options" style="text-align: center">
+                            <template #body="{ data }">
+                                <div class="flex gap-1">
+                                    <template v-for="i in data.capacity_option" :key="i">
+                                        <i class="pi pi-user" style="color: black"></i>
+                                    </template>
+                                </div>
+                            </template>
+                        </Column>   
+
+                        <!-- Cột giá -->
+                        <Column header="Giá" style="text-align: center">
+                            <template #body="{ data }">
+                                <div class="flex flex-col items-center">
+                                    <span class="line-through text-gray-400 text-sm">
+                                        VND {{ data.base_price_per_night }}
+                                    </span>
+                                    <span class="font-bold text-red-600 text-md">
+                                        VND Discounted
+                                    </span>
+                                    <span class="text-gray-500 text-xs">Đã gồm thuế & phí</span>
+                                </div>
+                            </template>
+                        </Column>
+
+                        <!-- Rate policy -->
+                        <!-- Cột giá -->
+                        <Column header="rate_policy" style="text-align: center">
+                            <template #body="{ data }">
+                                Rate policy
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
             </div>
         </div>
     </div>
@@ -206,11 +230,10 @@
 </style>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
-import DataView from 'primevue/dataview';
 import DatePicker from 'primevue/datepicker';
 import Button from 'primevue/button';
 import Popover from 'primevue/popover';
@@ -218,58 +241,67 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
-import Slider from 'primevue/slider';
 
-// component
-import Radioselect from "../../Components/Radioselect.vue";
-import Checkboxselect from "../../Components/Checkboxselect.vue";
+// data table
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 
 const props = defineProps({
+    roomTypeList: Array,
     checkIn: String,
     checkOut: String,
     num_of_guests: Number,
     num_of_rooms: Number,
-    roomTypeList: Array,
 });
-console.log(props.roomTypeList);
-const formattedRooms = computed(() =>
-    props.roomTypeList.map(room => {
-        const amenities = room.amenities ? JSON.parse(room.amenities) : {}
-        return {
-            id: room.id,
+
+const filteredRoomTypeList = computed(() => {
+    return props.roomTypeList.flatMap(room => {
+        return Array.from({ length: room.max_adults }, (_, i) => ({
+            ...room,
             name: room.name,
-            category: amenities.view || 'No View',
-            rating: 4.5,
-            price: room.base_price_per_night || 0,
-            images: room.images?.length
-                ? room.images[0].path
-                : null,
-            description: room.description,
-        }
-    })
-)
+            capacity_option: i + 1
+        }));
+    });
+});
+console.log(filteredRoomTypeList.value);
 
 const initialValues = ref({
-    checkIn: '',
-    checkOut: '',
+    date: [],
     num_of_guests: 1,
     num_of_rooms: 1,
 })
 
 onMounted(() => {
     initialValues.value = {
-        checkIn: parseVNDate(props.checkIn),
-        checkOut: parseVNDate(props.checkOut),
+        date: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)],
         num_of_guests: props.num_of_guests || 1,
         num_of_rooms: props.num_of_rooms || 1,
     }
 })
 
+// convert to VN format date dd/mm/yyyy
 const parseVNDate = (str) => {
     const [day, month, year] = str.split('/');
     return new Date(`${year}-${month}-${day}`); // chuẩn ISO, không bị ngược
 };
 
+// convert to ISO format
+function parseDate(value) {
+    if (!value) return null
+    const [day, month, year] = value.split('/').map(Number)
+    return new Date(year, month - 1, day)
+}
+
+// sample check in, check out search option event
+const checkInEg = ref(props.checkIn);
+const checkOutEg = ref(props.checkOut);
+
+console.log(checkInEg.value);
+console.log(checkOutEg.value);
+
+const numOfNights = ref(0);
+
+// num of rooms
 const numOfRooms = ref(props.num_of_rooms);
 
 // num of guests = num of adult + num of children
@@ -294,133 +326,76 @@ const toggle = (event) => {
     guestOptionMenu.value.toggle(event);
 }
 
-// slider price range
-const minRoomPrice = ref(0);
-const maxRoomPrice = ref(1000000);
-const roomPriceRange = computed({
-    get() {
-        return [minRoomPrice.value, maxRoomPrice.value];
-    },
-    set([min, max]) {
-        minRoomPrice.value = min;
-        maxRoomPrice.value = max;
-    },
+// filter best option results
+const submit = (e) => {
+    if (!e.valid) return;
+
+    console.log(e.values);
+
+    const range = e.values.date;
+
+    if (!Array.isArray(range) || range.length < 2) {
+        numOfNights.value = 0;
+        return;
+    }
+
+    // Convert từ ISO string sang Date object
+    const [checkIn, checkOut] = range.map(d => new Date(d));
+
+    // Kiểm tra hợp lệ
+    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+        numOfNights.value = 0;
+        return;
+    }
+
+    // Tính số đêm (đơn vị ngày)
+    const diffTime = checkOut.getTime() - checkIn.getTime();
+    const nights = diffTime / (1000 * 60 * 60 * 24);
+
+    numOfNights.value = nights > 0 ? nights : 0;
+
+    console.log('Số đêm:', numOfNights.value);
+}
+
+// best option results
+const summaryText = computed(() => {
+    let text = `${numOfRooms.value} room${numOfRooms.value > 1 ? 's' : ''} for `;
+    text += numOfGuests.value;
+    return text
 });
 
-// filter bed type
-const bedTypeList = reactive([
+// sample options
+const roomOptions = ref([
     {
-        label: 'Đôi',
-        name: 'double bed'
+        id: 1,
+        roomType: {
+            name: "Phòng 4 Người Có Ban Công",
+            bedType: "2 giường đôi lớn",
+            maxAdults: 4
+        },
+        ratePolicy: {
+            name: "Không hoàn tiền",
+            paymentRequirement: "Thanh toán cho chỗ nghỉ trước khi đến"
+        },
+        availableQuantity: 3,
+        price: { original: 4088700, discounted: 2371446 },
+        total_cost: 6554754
     },
     {
-        label: 'Giường đôi lớn',
-        name: 'queen bed'
-    },
-    {
-        label: 'Đơn/hai giường đơn',
-        name: 'single bed/twin beds'
-    },
-    {
-        label: 'Giường đơn lớn',
-        name: 'large single bed'
-    },
-]);
-const filterBedType = ref();
-
-// filter room amenities and features
-const roomAmenitiesList = reactive([
-    {
-        label: 'TV',
-        name: 'television'
-    },
-    {
-        label: 'Điều hòa',
-        name: 'air conditioner'
-    },
-    {
-        label: 'Bếp',
-        name: 'kitchenette'
-    },
-    {
-        label: 'Máy pha trà/cà phê',
-        name: 'tea/coffee maker'
-    },
-    {
-        label: 'Sưởi',
-        name: 'heating'
-    },
-    {
-        label: 'Ban công/sân hiên',
-        name: 'balcony/patio'
-    },
-    {
-        label: 'View biển',
-        name: 'ocean view'
-    },
-    {
-        label: 'View city',
-        name: 'city view'
-    },
-]);
-const filterRoomAmenities = ref();
-
-// filter room services
-const roomServicesList = reactive([
-    {
-        label: 'Có ăn sáng',
-        name: 'breakfast'
-    },
-    {
-        label: 'Bữa tối',
-        name: 'dinner'
-    },
-    {
-        label: 'Bữa trưa',
-        name: 'lunch'
-    },
-    {
-        label: 'Miễn phí dịch vụ đưa đón',
-        name: 'free shuttle service'
-    },
-    {
-        label: 'Miễn phí đồ ăn nhẹ',
-        name: 'complimentary snacks'
-    },
-    {
-        label: 'Order đồ ăn bên ngoài',
-        name: 'order food from outside'
-    },
-]);
-const filterRoomServices = ref();
-
-// filter payment method
-const nonUserPaymentMethodList = reactive([
-    {
-        label: 'Thanh toán ngay',
-        name: 'pay now(non-refundable)'
-    },
-    {
-        label: 'Đặt cọc trước',
-        name: 'deposit required(30-50%)'
+        id: 2,
+        roomType: {
+            name: "Phòng Có Giường Cỡ Queen Với Ban Công",
+            bedType: "1 giường đôi lớn",
+            maxAdults: 2
+        },
+        ratePolicy: {
+            name: "Không hoàn tiền",
+            paymentRequirement: "Thanh toán cho chỗ nghỉ trước khi đến"
+        },
+        availableQuantity: 2,
+        price: { original: 7212600, discounted: 4183308 },
+        total_cost: 6554754
     }
 ])
-const userPaymentMethodList = reactive([
-    {
-        label: 'Đặt trước, trả sau',
-        name: 'book now, pay later',
-        note: 'free cancellation up to 24 hours before arrival'
-    },
-    {
-        label: 'Thanh toán ngay',
-        name: 'pay now(non-refundable)',
-        note: 'discount 5-10%'
-    },
-    {
-        label: 'Đặt cọc trước',
-        name: 'deposit required(10-20%)'
-    }
-]);
-const filterPaymentMethod = ref();
 
 </script>

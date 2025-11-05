@@ -128,7 +128,7 @@
                                 <Link :href="route('user.dashboard', user.user_name)"><span>Dashboard</span></Link>
                             </li>
                             <li>
-                                <a href=""><span>Rooms</span></a>
+                                <Link :href="route('room')"><span>Rooms</span></Link>
                             </li>
                             <li>
                                 <a href=""><span>Blogs</span></a>

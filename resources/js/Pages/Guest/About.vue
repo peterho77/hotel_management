@@ -1,8 +1,12 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 
+// component
+import Breadcrumb from '../../Components/Breadcrumb.vue';
+
 const page = usePage();
 const breadcrumb = page.props.breadcrumb;
+console.log(breadcrumb);
 const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 
 let mainServiceList = [{
@@ -22,21 +26,16 @@ let galleryImageList = ['/img/gallery/gallery-1.jpg', '/img/gallery/gallery-4.jp
 </script>
 
 <template>
-     <Head :title="pageTitle" />
 
-    <Breadcrumb :model="breadcrumb" :pt="{ root: { class: 'justify-center' }, item: { class: 'text-xl' } }">
-        <template #item="{ item, props }">
-            <a v-if="item === breadcrumb[breadcrumb.length - 1]" class="font-medium text-orange-300">
-                {{ item.label }}
-            </a>
-            <a v-else v-bind="props.action">{{ item.label }}</a>
-        </template>
-    </Breadcrumb>
+    <Head :title="pageTitle" />
+
+    <Breadcrumb :breadcrumbList="breadcrumb"/>
 
     <div class="about-us-page-section | padding-block-600">
         <div class="container">
             <div class="about-us__text | even-columns padding-block-400" style="--custom-gap:3rem">
-                <div class="about-us__title | flow text-center flex flex-col justify-center align-center" style="--flow-spacer:1em">
+                <div class="about-us__title | flow text-center flex flex-col justify-center align-center"
+                    style="--flow-spacer:1em">
                     <h2 class="fs-secondary-heading">Welcome to Sona.</h2>
                     <p>Built in 1910 during the Belle Epoque period, this hotel is located in the center of Paris,
                         with easy access to the city’s tourist attractions. It offers tastefully decorated rooms.
@@ -90,8 +89,8 @@ let galleryImageList = ['/img/gallery/gallery-1.jpg', '/img/gallery/gallery-4.jp
                                 luxury</span></div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="gallery-item | set-bg-img"
-                            v-for="img in galleryImageList.slice(1, 3)" :style="$getBgStyle(img)">
+                        <div class="gallery-item | set-bg-img" v-for="img in galleryImageList.slice(1, 3)"
+                            :style="$getBgStyle(img)">
                             <div class="gallery-item__content | align-center justify-center">
                                 <span class="gallery-item__title">Room luxury
                                 </span>
