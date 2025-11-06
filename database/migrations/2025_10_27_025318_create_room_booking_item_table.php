@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('room_booking_item', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->nullable()->constrained('room_booking')->nullOnDelete();
-            $table->foreignId('room_type_id')->nullable()->constrained('room_type')->nullOnDelete();
+            $table->foreignId('room_rate_option_id')->nullable()->constrained('room_rate_option ')->nullOnDelete();
             $table->decimal('price_per_night', 9, 2);
             $table->unsignedTinyInteger('num_of_rooms');
             $table->unsignedTinyInteger('num_of_adults');

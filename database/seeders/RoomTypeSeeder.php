@@ -13,110 +13,62 @@ class RoomTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Khởi tạo mảng tiện nghi cơ bản
-        $basicAmenities = [
-            'view' => 'City View',
-            'bathroom' => 'Standing Shower',
-            'features' => ['Free Wi-Fi', 'Air Conditioning', 'Electric Kettle']
-        ];
-
-        // Khởi tạo mảng tiện nghi nâng cao
-        $premiumAmenities = [
-            'view' => 'Sea View / Premium Corner',
-            'bathroom' => 'Separate Bathtub and Shower',
-            'features' => array_merge($basicAmenities['features'], ['Minibar', 'Workspace Desk', 'Nespresso Machine', 'Complimentary Ironing Set', 'Premium Toiletries'])
-        ];
-
-
+       
         DB::table('room_type')->insert([
-            // --- STANDARD ROOM (ID 1 & 2) ---
+            // --- STANDARD ROOM ---
             [
                 'name' => 'Standard Room',
-                'bed_type' => 'single',
+                'bed_type' => 'single/twin',
                 'description' => 'Phòng tiêu chuẩn, yên tĩnh, phù hợp cho khách lẻ hoặc cặp đôi.',
-                'max_adults' => 2,
-                'max_children' => 1,
-                'total_quantity' => 15,
-                'base_price_per_night' => 850000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => NULL,
-                'overnight_rate' => NULL,
+                'max_adults' => 1,
+                'total_quantity' => 20,
                 'status' => 'active',
-                'amenities' => json_encode($basicAmenities), // Tiện nghi cơ bản
-            ],
-            [
-                'name' => 'Standard Room',
-                'bed_type' => 'twin',
-                'description' => 'Phòng tiêu chuẩn 2 giường đơn, lý tưởng cho đồng nghiệp hoặc bạn bè.',
-                'max_adults' => 2,
-                'max_children' => 1,
-                'total_quantity' => 10,
-                'base_price_per_night' => 850000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => NULL,
-                'overnight_rate' => NULL,
-                'status' => 'active',
-                'amenities' => json_encode($basicAmenities),
+                'base_price' => 500000,
+                'hourly_rate' => 30000
             ],
 
-            // --- SUPERIOR & DELUXE ROOM (ID 3-6) ---
+            // --- SUPERIOR & DELUXE ROOM ---
             [
                 'name' => 'Superior Room',
-                'bed_type' => 'king',
+                'bed_type' => 'queen',
                 'description' => 'Phòng cao cấp hơn với tầm nhìn đẹp hơn hoặc tiện nghi được nâng cấp.',
-                'max_adults' => 2,
+                'max_adults' => 3,
                 'max_children' => 1,
                 'total_quantity' => 8,
-                'base_price_per_night' => 1100000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => NULL,
-                'overnight_rate' => NULL,
                 'status' => 'active',
-                'amenities' => json_encode(array_merge($basicAmenities, ['view' => 'River View'])), // Nâng cấp tầm nhìn
+                'base_price' => 800000,
             ],
             [
                 'name' => 'Deluxe Room',
-                'bed_type' => 'king',
+                'bed_type' => 'queen',
                 'description' => 'Phòng rộng rãi, có ban công riêng biệt và khu vực tiếp khách nhỏ.',
-                'max_adults' => 3,
+                'max_adults' => 4,
                 'max_children' => 2,
                 'total_quantity' => 6,
-                'base_price_per_night' => 1500000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => 1200000.00,
-                'overnight_rate' => NULL,
                 'status' => 'active',
-                'amenities' => json_encode($premiumAmenities), // Tiện nghi nâng cao
+                'base_price' => 1000000,
             ],
 
-            // --- SUITE & VIP (ID 8 & 9) ---
+            // --- SUITE & VIP ---
             [
                 'name' => 'Executive Suite',
                 'bed_type' => 'king',
                 'description' => 'Suite cao cấp, có phòng khách riêng biệt và tiện nghi văn phòng, lý tưởng cho khách công tác.',
-                'max_adults' => 3,
+                'max_adults' => 5,
                 'max_children' => 2,
-                'total_quantity' => 3,
-                'base_price_per_night' => 3500000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => NULL,
-                'overnight_rate' => NULL,
+                'total_quantity' => 2,
                 'status' => 'active',
-                'amenities' => json_encode(array_merge($premiumAmenities, ['view' => 'Panoramic View', 'features' => array_merge($premiumAmenities['features'], ['Private Kitchenette'])])),
+                'base_price' => 1500000,
             ],
             [
                 'name' => 'Presidential Suite',
                 'bed_type' => 'king',
                 'description' => 'Phòng sang trọng nhất của khách sạn, dịch vụ 24/7, phòng ngủ và phòng khách riêng biệt.',
-                'max_adults' => 4,
+                'max_adults' => 6,
                 'max_children' => 2,
                 'total_quantity' => 1,
-                'base_price_per_night' => 12000000.00,
-                'hourly_rate' => NULL,
-                'full_day_rate' => NULL,
-                'overnight_rate' => NULL,
                 'status' => 'active',
-                'amenities' => json_encode(array_merge($premiumAmenities, ['view' => 'Panoramic View', 'features' => array_merge($premiumAmenities['features'], ['Private Butler Service', 'Jacuzzi'])])),
+                'base_price' => 2000000,
             ],
         ]);
     }

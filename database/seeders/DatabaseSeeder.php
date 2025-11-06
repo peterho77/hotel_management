@@ -32,12 +32,17 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             BranchSeeder::class,
+            AmenitiesSeeder::class,
+            DiscountSeeder::class,
             RoomTypeSeeder::class,
             RoomTypeBranchSeeder::class,
+            RoomTypeAmenitiesSeeder::class,
             RoomSeeder::class,
             CustomerTypeSeeder::class,
             CustomerGroupSeeder::class,
-            CustomerSeeder::class
+            CustomerSeeder::class,
+            RatePolicySeeder::class,
+            RoomRateOptionSeeder::class,
         ]);
     }
 }

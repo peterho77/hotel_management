@@ -21,9 +21,17 @@ class RoomType extends Model
     {
         return $this->hasMany(Room::class, 'room_type_id', 'id');
     }
-    public function images()
+    public function images() :HasMany   
     {
         return $this->hasMany(RoomTypeImage::class, 'room_type_id');
     }
-    protected $fillable = ['name', 'description', 'max_adults', 'max_children', 'total_quantity', 'base_price_per_night', 'hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities', 'status', 'branch_id'];
+    public function amenities(): HasMany
+    {
+        return $this->hasMany(Amenities::class, 'amenity_id', 'id');
+    }
+    public function room_rate_options(): HasMany
+    {
+        return $this->hasMany(RoomRateOption::class, 'room_rate_option_id', 'id');
+    }
+    protected $fillable = ['name', 'description', 'max_adults', 'max_children', 'total_quantity', 'status', 'branch_id'];
 }
