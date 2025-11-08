@@ -25,13 +25,13 @@ class RoomType extends Model
     {
         return $this->hasMany(RoomTypeImage::class, 'room_type_id');
     }
-    public function amenities(): HasMany
+    public function amenities(): BelongsToMany
     {
-        return $this->hasMany(Amenities::class, 'amenity_id', 'id');
+        return $this->belongsToMany(Amenities::class, 'room_type_amenities', 'room_type_id','amenity_id');
     }
     public function room_rate_options(): HasMany
     {
-        return $this->hasMany(RoomRateOption::class, 'room_rate_option_id', 'id');
+        return $this->hasMany(RoomRateOption::class, 'room_type_id', 'id');
     }
     protected $fillable = ['name', 'description', 'max_adults', 'max_children', 'total_quantity', 'status', 'branch_id'];
 }

@@ -10,7 +10,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $roomTypeList = RoomType::with(['images'])->get();
+        $roomTypeList = RoomType::with(['images','room_rate_options.rate_policy','amenities'])->get();
         return Inertia::render('Guest/Booking', [
             'checkIn' => $request->query('checkIn'),
             'checkOut' => $request->query('checkOut'),

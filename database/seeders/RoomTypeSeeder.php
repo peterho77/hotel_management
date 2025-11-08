@@ -13,8 +13,7 @@ class RoomTypeSeeder extends Seeder
      */
     public function run(): void
     {
-       
-        DB::table('room_type')->insert([
+        collect([
             // --- STANDARD ROOM ---
             [
                 'name' => 'Standard Room',
@@ -70,6 +69,6 @@ class RoomTypeSeeder extends Seeder
                 'status' => 'active',
                 'base_price' => 2000000,
             ],
-        ]);
+        ])->each(fn($data) => DB::table('room_type')->insert($data));
     }
 }

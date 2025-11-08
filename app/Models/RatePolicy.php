@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RatePolicy extends Model
 {
-    public function room_rate_option()
+    protected $table = "rate_policy";
+    public function room_rate_options(): HasMany
     {
-        return $this->belongsTo(RoomRateOption::class);
+        return $this->hasMany(RoomRateOption::class, 'rate_policy_id', 'id');
     }
 }

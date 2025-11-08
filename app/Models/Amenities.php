@@ -10,6 +10,6 @@ class Amenities extends Model
 {
     public function room_types(): BelongsToMany
     {
-        return $this->belongsToMany(RoomType::class, "room_type_amenities")->withPivot('room_type_id');
+        return $this->belongsToMany(RoomType::class, 'room_type_amenities', 'amenity_id', 'room_type_id');
     }
 }

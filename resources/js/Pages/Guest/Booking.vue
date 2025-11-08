@@ -8,9 +8,9 @@
                     <!-- Check-in / Check-out -->
                     <div>
                         <label class="block mb-1">Check-in/Check-out</label>
-                        <FormField name="date" v-slot="{ field, error }">
-                            <DatePicker v-bind="field" dateFormat="dd/mm/yy" selectionMode="range" :manualInput="false"
-                                showIcon fluid />
+                        <FormField name="rangeDate" v-slot="{ field, error }">
+                            <DatePicker v-model="filterRoomBookingForm.dateRange" dateFormat="dd/mm/yy"
+                                selectionMode="range" :manualInput="false" showIcon fluid />
                             <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                         </FormField>
                     </div>
@@ -23,7 +23,7 @@
                         <FormField @click="toggle">
                             <IconField>
                                 <InputIcon class="pi pi-users" />
-                                <InputText :placeholder="numOfGuests" disabled />
+                                <InputText :placeholder="guestLabel" disabled />
                                 <InputIcon class="pi pi-angle-down" />
                             </IconField>
                         </FormField>
@@ -33,12 +33,12 @@
                             <div class="py-2 px-3 space-y-3">
                                 <!-- Adult -->
                                 <div class="flex justify-between gap-x-3 items-center">
-                                    <div class="flex">
+                                    <div class="flex flex-col">
                                         <span class="text-base">Người lớn</span>
                                         <span class="fs-300 text-gray-500">18 tuổi trở lên</span>
                                     </div>
-                                    <InputNumber v-model="numOfAdult" name="num_of_guests" showButtons size="small"
-                                        :min="1" :pt="{
+                                    <InputNumber v-model="filterRoomBookingForm.numOfAdults" name="num_of_guests"
+                                        showButtons size="small" :min="1" :pt="{
                                             incrementButton: { class: 'bg-gray-100' },
                                             decrementButton: { class: 'bg-gray-100' },
                                             incrementIcon: { class: 'pi pi-plus' },
@@ -52,12 +52,13 @@
                                         <span class="text-base">Trẻ em</span>
                                         <span class="fs-300 text-gray-500">0-17 tuổi</span>
                                     </div>
-                                    <InputNumber v-model="numOfChild" showButtons size="small" :min="0" :max="10" :pt="{
-                                        incrementButton: { class: 'bg-gray-100' },
-                                        decrementButton: { class: 'bg-gray-100' },
-                                        incrementIcon: { class: 'pi pi-plus' },
-                                        decrementIcon: { class: 'pi pi-minus' }
-                                    }" />
+                                    <InputNumber v-model="filterRoomBookingForm.numOfChildren" showButtons size="small"
+                                        :min="0" :max="10" :pt="{
+                                            incrementButton: { class: 'bg-gray-100' },
+                                            decrementButton: { class: 'bg-gray-100' },
+                                            incrementIcon: { class: 'pi pi-plus' },
+                                            decrementIcon: { class: 'pi pi-minus' }
+                                        }" />
                                 </div>
                             </div>
                         </Popover>
@@ -67,12 +68,12 @@
                     <div>
                         <label class="block mb-1">Room</label>
                         <FormField name="num_of_rooms" v-slot="{ field, error }">
-                            <InputNumber v-model="numOfRooms" showButtons :min="1" :pt="{
+                            <InputNumber v-model="filterRoomBookingForm.numOfRooms" showButtons :min="1" :pt="{
                                 incrementButton: { class: 'bg-gray-100' },
                                 decrementButton: { class: 'bg-gray-100' },
                                 incrementIcon: { class: 'pi pi-plus' },
                                 decrementIcon: { class: 'pi pi-minus' }
-                            }" :suffix="` room${numOfRooms > 1 ? 's' : ''}`" />
+                            }" :suffix="` room${filterRoomBookingForm.numOfRooms > 1 ? 's' : ''}`" />
                         </FormField>
                     </div>
                 </div>
@@ -87,23 +88,23 @@
                         <h3 class="fs-700">{{ summaryText }}</h3>
                     </div>
 
-                    <DataTable :value="roomOptions" rowGroupMode="rowspan" groupRowsBy="total_cost" :showHeaders="false"
-                        sortField="total_cost" showGridlines class="text-lg w-full">
+                    <DataTable :value="roomOptions" rowGroupMode="rowspan" groupRowsBy="total_price" :showHeaders="false"
+                        sortField="total_price" showGridlines class="text-lg w-full">
                         <!-- Cột thông tin phòng + chính sách -->
                         <Column header="Danh sách phòng">
                             <template #body="{ data }">
                                 <div class="flex flex-col gap-1 p-2">
                                     <span class="font-semibold text-blue-700 hover:underline cursor-pointer">
-                                        {{ data.roomType.name }}
+                                        {{data.count + ' x ' +  data.name }}
                                     </span>
                                     <span class="text-gray-600 text-sm">
-                                        {{ data.roomType.bedType }} • 👤 {{ data.roomType.maxAdults }} người lớn
+                                        {{ data.bedType }} • 👤 {{ data.maxAdults }} người lớn
                                     </span>
                                     <span class="text-red-600 font-medium text-sm">
-                                        {{ data.ratePolicy.name }}
+                                        {{ data.rateOptions[0].ratePolicy.name }}
                                     </span>
                                     <span class="text-gray-500 text-sm">
-                                        {{ data.ratePolicy.paymentRequirement }}
+                                        {{ getPaymentRequired(data.rateOptions[0].ratePolicy.payment_requirement) }}
                                     </span>
                                 </div>
                             </template>
@@ -114,10 +115,11 @@
                             <template #body="{ data }">
                                 <div class="flex flex-col items-center">
                                     <span class="line-through text-gray-400 text-sm">
-                                        VND {{ data.price.original.toLocaleString() }}
+                                        VND {{ data.total_price_per_room_type }}
                                     </span>
                                     <span class="font-bold text-red-600 text-md">
-                                        VND {{ data.price.discounted.toLocaleString() }}
+                                        <!-- discount -->
+                                        VND {{ data.total_price_per_room_type }}
                                     </span>
                                     <span class="text-gray-500 text-xs">Đã gồm thuế & phí</span>
                                 </div>
@@ -125,13 +127,13 @@
                         </Column>
 
                         <!-- Cột nhóm: tổng giá -->
-                        <Column field="total_cost" header="Tổng giá (VNĐ)">
+                        <Column field="total_price" header="Tổng giá (VNĐ)">
                             <template #body="{ data }">
                                 <div class="text-left flex flex-col gap-3">
-                                    <span class="text-sm">{{ `${numOfNights} đêm, ${numOfGuests}` }}</span>
+                                    <span class="text-sm">{{ summaryText }}</span>
                                     <div class="flex gap-x-2">
                                         <span>Total: </span>
-                                        <h3 class="text-lg fw-bold">{{ data.total_cost }} VND</h3>
+                                        <h3 class="text-lg fw-bold">{{ data.total_price }} VND</h3>
                                     </div>
                                     <Button label="Booking" fluid />
                                 </div>
@@ -144,38 +146,58 @@
                     <div class="p-2">
                         <span class="text-md">Other empty options</span>
                     </div>
-                    <DataTable :value="filteredRoomTypeList" rowGroupMode="rowspan" groupRowsBy="name"
-                        :showHeaders="false" sortField="name" showGridlines class="text-lg w-full">
+                    <DataTable :value="roomTypeList" rowGroupMode="rowspan" groupRowsBy="name" :showHeaders="false"
+                        sortField="id" showGridlines class="text-lg w-full items-start" tableStyle="max-width: 74rem">
                         <!-- Cột thông tin phòng + chính sách -->
-                        <Column field="name" header="Danh sách phòng">
+                        <Column field="name" header="Danh sách phòng" style="width:fit-content;vertical-align:top;">
                             <template #body="{ data }">
-                                <div class="flex flex-col gap-1 p-2">
+                                <div class="flex flex-col items-start justify-start gap-1 p-2">
                                     <span class="font-semibold text-blue-700 hover:underline cursor-pointer">
                                         {{ data.name }}
                                     </span>
                                     <span class="text-red-600 text-sm">
-                                        {{ data.total_quantity }} left
+                                        {{ data.available_quantity + ' ' + (data.available_quantity > 1 ? 'rooms' : 'room') }}
+                                        left
                                     </span>
                                     <span class="text-gray-600 text-sm">
                                         {{ data.bed_type }} bed
                                     </span>
-                                    <span class="text-gray-500 text-sm">
-                                        Amenities
-                                    </span>
+                                    <div class="max-w-60 grid grid-cols-3 gap-y-2 gap-x-2 mt-2">
+                                        <template v-for="amenity in data.amenities">
+                                            <div class="flex items-center gap-1">
+                                                <p :class="amenity.icon"></p>
+                                                <span class="text-gray-500 text-sm">
+                                                    {{ amenity.name.charAt(0).toUpperCase() + amenity.name.slice(1) }}
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
                         </Column>
 
                         <!-- Num of guests -->
-                        <Column header="capacity_options" style="text-align: center">
+                        <Column header="room_rate_options" style="text-align: center; max-width:5%">
                             <template #body="{ data }">
-                                <div class="flex gap-1">
-                                    <template v-for="i in data.capacity_option" :key="i">
-                                        <i class="pi pi-user" style="color: black"></i>
+                                <div class="flex gap-2 items-center">
+                                    <template v-for="(item, idx) in data.num_adults">
+                                        <div>
+                                            <i class="pi pi-user" style="color: black"
+                                                v-tooltip.bottom="`${data.num_adults} adult` + (data.num_adults > 1 ? 's' : '')" />
+                                        </div>
+                                    </template>
+                                    <template v-if="data.num_children > 0">
+                                        <i class="pi pi-plus" style="color: black;font-size: .8rem"></i>
+                                        <template v-for="item in data.num_children">
+                                            <div>
+                                                <i class="pi pi-user" style="color: black"
+                                                    v-tooltip.bottom="`${data.num_children} ` + (data.num_children > 1 ? 'children' : 'child')" />
+                                            </div>
+                                        </template>
                                     </template>
                                 </div>
                             </template>
-                        </Column>   
+                        </Column>
 
                         <!-- Cột giá -->
                         <Column header="Giá" style="text-align: center">
@@ -194,9 +216,19 @@
 
                         <!-- Rate policy -->
                         <!-- Cột giá -->
-                        <Column header="rate_policy" style="text-align: center">
+                        <Column header="rate_policy" style="text-align: left">
                             <template #body="{ data }">
-                                Rate policy
+                                <div class="flex flex-col gap-1 p-2">
+                                    <span class="font-semibold text-blue-600 cursor-pointer">
+                                        {{ data.rate_policy.name }}
+                                    </span>
+                                    <span class="text-green-500 text-sm">
+                                        {{ getCancellationType(data.rate_policy.cancellation_type) }}
+                                    </span>
+                                    <span class="text-gray-600 text-sm">
+                                        {{ getPaymentRequired(data.rate_policy.payment_requirement) }}
+                                    </span>
+                                </div>
                             </template>
                         </Column>
                     </DataTable>
@@ -230,7 +262,7 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
@@ -254,71 +286,131 @@ const props = defineProps({
     num_of_rooms: Number,
 });
 
-const filteredRoomTypeList = computed(() => {
-    return props.roomTypeList.flatMap(room => {
-        return Array.from({ length: room.max_adults }, (_, i) => ({
-            ...room,
-            name: room.name,
-            capacity_option: i + 1
-        }));
+// label rooms, adults, child->children
+const getLabel = (key, num) => {
+    if (typeof num === 'number' && !isNaN(num) && num >= 1) {
+        switch (key) {
+            case 'room':
+            case 'adult':
+            case 'night':
+                return `${num} ${key}${num > 1 ? 's' : ''}`;
+            case 'child':
+                return `${num} ${key}${num > 1 ? 'ren' : ''}`;
+        }
+    }
+};
+
+const guestLabel = computed(() => {
+    let label = getLabel('adult', filterRoomBookingForm.numOfAdults);
+
+    if (filterRoomBookingForm.numOfChildren > 0) {
+        label += ' and ' + getLabel('child', filterRoomBookingForm.numOfChildren);
+    }
+    return label;
+});
+
+const summaryText = computed(() => {
+    let text = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for `;
+    text += guestLabel.value;
+    return text
+});
+
+// convert to ISO format
+const parseVNDate = (value) => {
+    if (!value) return null;
+
+    // Nếu là Date object thì giữ nguyên
+    if (value instanceof Date) return value;
+
+    // Nếu là ISO format (yyyy-mm-dd)
+    if (value.includes('-')) return new Date(value);
+
+    // Nếu là dạng VN dd/mm/yyyy
+    const [day, month, year] = value.split('/');
+    return new Date(`${year}-${month}-${day}`);
+};
+
+// other room booking options
+const roomTypeList = computed(() => {
+    let list = props.roomTypeList.flatMap(roomType =>
+        roomType.room_rate_options.map(option => ({
+            name: roomType.name,
+            ...option,
+            ...roomType,
+        }))).sort((a, b) => {
+            // Ưu tiên sort theo room_type_id (id gốc)
+            if (a.id !== b.id) return a.id - b.id;
+            // Nếu cùng id, sort theo num_adults
+            return a.num_adults - b.num_adults;
+        });;
+    return list.map(item => {
+        return Object.fromEntries(
+            Object.entries(item).filter(([key]) => !key.endsWith('_id'))
+        );
     });
 });
-console.log(filteredRoomTypeList.value);
+console.log(roomTypeList.value);
+
+const getCancellationType = (type) => {
+    switch (type) {
+        case 'free_cancellation':
+            return 'Hủy miễn phí';
+
+        case 'flexible_change':
+            return 'Linh hoạt đổi ngày';
+
+        case 'partial_refund':
+            return 'Hủy muộn giữ lại cọc';
+    }
+};
+
+const getPaymentRequired = (type) => {
+    switch (type) {
+        case 'full_prepayment':
+            return 'Thanh toán trước khi đến';
+
+        case 'deposit_required':
+            return 'Yêu cầu đặt cọc';
+
+        case 'pay_at_hotel':
+            return 'Không cần thanh toán trước, thanh toán tại chỗ nghỉ';
+    }
+};
+
+// form check in, check out, num of guests, num of rooms
+const calculateNumOfNights = (checkInStr, checkOutStr) => {
+    const checkIn = parseVNDate(checkInStr);
+    const checkOut = parseVNDate(checkOutStr);
+
+    if (!checkIn || !checkOut || isNaN(checkIn) || isNaN(checkOut)) return 0;
+
+    const diffTime = checkOut - checkIn;
+    const nights = diffTime / (1000 * 60 * 60 * 24);
+
+    return Math.max(0, Math.floor(nights));
+};
+
+const filterRoomBookingForm = reactive({
+    numOfNights: calculateNumOfNights(props.checkIn, props.checkOut),
+    numOfAdults: props.num_of_guests,
+    numOfChildren: 0,
+    numOfRooms: props.num_of_rooms,
+    dateRange: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)]
+})
 
 const initialValues = ref({
-    date: [],
+    rangeDate: null,
     num_of_guests: 1,
     num_of_rooms: 1,
 })
 
 onMounted(() => {
     initialValues.value = {
-        date: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)],
+        rangeDate: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)],
         num_of_guests: props.num_of_guests || 1,
         num_of_rooms: props.num_of_rooms || 1,
     }
 })
-
-// convert to VN format date dd/mm/yyyy
-const parseVNDate = (str) => {
-    const [day, month, year] = str.split('/');
-    return new Date(`${year}-${month}-${day}`); // chuẩn ISO, không bị ngược
-};
-
-// convert to ISO format
-function parseDate(value) {
-    if (!value) return null
-    const [day, month, year] = value.split('/').map(Number)
-    return new Date(year, month - 1, day)
-}
-
-// sample check in, check out search option event
-const checkInEg = ref(props.checkIn);
-const checkOutEg = ref(props.checkOut);
-
-console.log(checkInEg.value);
-console.log(checkOutEg.value);
-
-const numOfNights = ref(0);
-
-// num of rooms
-const numOfRooms = ref(props.num_of_rooms);
-
-// num of guests = num of adult + num of children
-const numOfAdult = ref(props.num_of_guests);
-const numOfChild = ref(0);
-
-const numOfGuests = computed(() => {
-    const adultLabel = numOfAdult.value > 1 ? "adults" : "adult";
-    let label = `${numOfAdult.value} ${adultLabel}`;
-
-    if (numOfChild.value > 0) {
-        const childLabel = numOfChild.value > 1 ? "children" : "child";
-        label += ` and ${numOfChild.value} ${childLabel}`;
-    }
-
-    return label;
-});
 
 // pop over guest option menu
 const guestOptionMenu = ref();
@@ -330,42 +422,178 @@ const toggle = (event) => {
 const submit = (e) => {
     if (!e.valid) return;
 
-    console.log(e.values);
-
-    const range = e.values.date;
-
-    if (!Array.isArray(range) || range.length < 2) {
-        numOfNights.value = 0;
-        return;
-    }
-
-    // Convert từ ISO string sang Date object
-    const [checkIn, checkOut] = range.map(d => new Date(d));
-
-    // Kiểm tra hợp lệ
-    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
-        numOfNights.value = 0;
-        return;
-    }
-
-    // Tính số đêm (đơn vị ngày)
-    const diffTime = checkOut.getTime() - checkIn.getTime();
-    const nights = diffTime / (1000 * 60 * 60 * 24);
-
-    numOfNights.value = nights > 0 ? nights : 0;
-
-    console.log('Số đêm:', numOfNights.value);
+    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
+    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
+    console.log(filterRoomBookingForm);
+    const result = findCheapestCombination(roomTypeList.value, filterRoomBookingForm);
+    console.log(result);
+    console.log(result.selection);
+    roomOptions.value = result.selection.map(room => ({
+        ...room,
+        total_price: result.total_price,
+        total_price_per_room_type: room.rateOptions[0].price * result.num_of_nights
+    }));
+    console.log(roomOptions.value);
 }
 
 // best option results
-const summaryText = computed(() => {
-    let text = `${numOfRooms.value} room${numOfRooms.value > 1 ? 's' : ''} for `;
-    text += numOfGuests.value;
-    return text
-});
+function findCheapestCombination(roomTypeList, request) {
+    const {
+        numOfAdults: totalAdults,
+        numOfChildren: totalChildren,
+        numOfRooms: numRooms,
+        numOfNights: numNights,
+    } = request;
+
+    // Chuẩn hóa roomTypes từ dữ liệu room_rate_options
+    const roomTypes = roomTypeList.map(rt => {
+        const rates = (rt.room_rate_options || []).map(opt => ({
+            numAdult: opt.num_adults,
+            numChild: opt.num_children,
+            price: opt.price,
+            availableQuantity: opt.available_quantity,
+            ratePolicy: opt.rate_policy,
+        })).sort((a, b) => a.price - b.price); // sắp xếp giá tăng dần
+
+        return {
+            id: rt.id,
+            name: rt.name,
+            bedType: rt.bed_type,
+            maxAdults: rt.max_adults,
+            maxChildren: rt.max_children,
+            max_total: rt.max_adults + rt.max_children,
+            totalQuantity: rt.total_quantity,
+            rates,
+        };
+    });
+
+    // Kiểm tra sơ bộ khả năng tổng
+    const maxTotalCapacity =
+        Math.max(...roomTypes.map(r => r.max_total)) * numRooms;
+    if (maxTotalCapacity < totalAdults + totalChildren) {
+        return {
+            valid: false,
+            reason: "Không đủ tổng sức chứa tối đa cho số khách.",
+        };
+    }
+
+    let best = { pricePerNight: Infinity, selection: null };
+
+    // Sinh tổ hợp phòng (có lặp)
+    function genCombinations(startIdx, remaining, combo) {
+        if (remaining === 0) {
+            evaluateCombination(combo);
+            return;
+        }
+        for (let i = startIdx; i < roomTypes.length; i++) {
+            combo.push(roomTypes[i]);
+            genCombinations(i, remaining - 1, combo);
+            combo.pop();
+        }
+    }
+
+    // Đánh giá tổ hợp
+    function evaluateCombination(combo) {
+        const sumMaxTotal = combo.reduce((s, r) => s + r.max_total, 0);
+        if (sumMaxTotal < totalAdults + totalChildren) return;
+
+        const N = combo.length;
+        const rateOptions = Array.from({ length: N }, () => ({
+            adults: 0,
+            children: 0,
+        }));
+
+        const prefixMaxTotal = new Array(N + 1).fill(0);
+        for (let i = N - 1; i >= 0; i--) {
+            prefixMaxTotal[i] = prefixMaxTotal[i + 1] + combo[i].max_total;
+        }
+        const sumMaxTotalOfRange = i => prefixMaxTotal[i] || 0;
+
+        function assignAt(i, remAdults, remChildren, accPrice) {
+            if (accPrice >= best.pricePerNight) return;
+            if (i === N) {
+                if (remAdults === 0 && remChildren === 0) {
+                    if (accPrice < best.pricePerNight) {
+                        const summary = {};
+                        for (let k = 0; k < N; k++) {
+                            const rt = combo[k];
+                            const key = rt.id;
+                            if (!summary[key])
+                                summary[key] = {
+                                    ...rt,
+                                    count: 0,
+                                    rateOptions: [],
+                                };
+                            summary[key].count += 1;
+                            summary[key].rateOptions.push(rateOptions[k].rateOption)
+                        }
+                        best = {
+                            pricePerNight: accPrice,
+                            selection: Object.values(summary),
+                        };
+                    }
+                }
+                return;
+            }
+
+            const rt = combo[i];
+            for (let a = 0; a <= remAdults; a++) {
+                for (let c = 0; c <= remChildren; c++) {
+                    const total = a + c;
+                    if (total === 0) continue;
+                    if (total > rt.max_total) continue;
+
+                    const remainingTotal = sumMaxTotalOfRange(i + 1);
+                    if (remainingTotal < remAdults + remChildren - total) continue;
+
+                    // Chọn rate phù hợp: đủ số người
+                    const matchingRate = rt.rates.find(rate => {
+                        const rateTotal = rate.numAdult + rate.numChild;
+                        return (
+                            rateTotal >= total &&
+                            rate.numAdult >= a &&
+                            rateTotal <= rt.max_total
+                        );
+                    });
+                    if (!matchingRate) continue;
+
+                    rateOptions[i].rateOption = {
+                        numAdult: matchingRate.numAdult,
+                        numChild: matchingRate.numChild,
+                        price: matchingRate.price,
+                        ratePolicy: matchingRate.ratePolicy,
+                    };
+
+                    assignAt(
+                        i + 1,
+                        remAdults - a,
+                        remChildren - c,
+                        accPrice + matchingRate.price
+                    );
+                }
+            }
+        }
+
+        assignAt(0, totalAdults, totalChildren, 0);
+    }
+
+    genCombinations(0, numRooms, []);
+
+    if (!best.selection) {
+        return { valid: false, reason: "Không tìm được tổ hợp phù hợp." };
+    }
+
+    return {
+        valid: true,
+        total_price_per_night: best.pricePerNight,
+        num_of_nights: numNights,
+        total_price: best.pricePerNight * numNights,
+        selection: best.selection,
+    };
+}
 
 // sample options
-const roomOptions = ref([
+const room1Options = ref([
     {
         id: 1,
         roomType: {
@@ -379,7 +607,7 @@ const roomOptions = ref([
         },
         availableQuantity: 3,
         price: { original: 4088700, discounted: 2371446 },
-        total_cost: 6554754
+        total_price: 6554754
     },
     {
         id: 2,
@@ -394,8 +622,10 @@ const roomOptions = ref([
         },
         availableQuantity: 2,
         price: { original: 7212600, discounted: 4183308 },
-        total_cost: 6554754
+        total_price: 6554754
     }
 ])
+
+const roomOptions = ref();
 
 </script>
