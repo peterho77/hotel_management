@@ -19,4 +19,9 @@ class BookingController extends Controller
             'roomTypeList' => $roomTypeList,
         ]);
     }
+
+    public function infor(Request $request)
+    {
+        return Inertia::render('Guest/Booking-infor');
+    }
 }

@@ -23,7 +23,7 @@
                         <FormField @click="toggle">
                             <IconField>
                                 <InputIcon class="pi pi-users" />
-                                <InputText :placeholder="guestLabel" disabled />
+                                <InputText :placeholder="numOfGuestsSummary" disabled />
                                 <InputIcon class="pi pi-angle-down" />
                             </IconField>
                         </FormField>
@@ -85,26 +85,46 @@
             <div class="booking-section-content | mt-20 flow">
                 <div class="best-option">
                     <div class="mb-2 p-2">
-                        <h3 class="fs-700">{{ summaryText }}</h3>
+                        <h3 class="fs-700">{{ summarySearchInfor }}</h3>
                     </div>
 
-                    <DataTable :value="roomOptions" rowGroupMode="rowspan" groupRowsBy="total_price" :showHeaders="false"
-                        sortField="total_price" showGridlines class="text-lg w-full">
+                    <DataTable :value="roomOptions" rowGroupMode="rowspan" groupRowsBy="total_price"
+                        :showHeaders="false" sortField="total_price" showGridlines class="text-lg w-full">
                         <!-- Cột thông tin phòng + chính sách -->
                         <Column header="Danh sách phòng">
                             <template #body="{ data }">
                                 <div class="flex flex-col gap-1 p-2">
                                     <span class="font-semibold text-blue-700 hover:underline cursor-pointer">
-                                        {{data.count + ' x ' +  data.name }}
+                                        {{ data.count + ' x ' + data.name }}
                                     </span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm">Price for</span>
+                                        <div class="flex gap-1 items-center">
+                                            <template v-for="item in data.rateOptions.numAdult">
+                                                <i class="pi pi-user" style="color: black;font-size: .85rem"
+                                                    v-tooltip.bottom="getLabel('adult', data.rateOptions.numAdult)" />
+                                            </template>
+                                        </div>
+                                        <template v-if="data.rateOptions.numChild > 0">
+                                            <div class="flex items-center gap-2">
+                                                <i class="pi pi-plus" style="color: black;font-size: .7rem"></i>
+                                                <template v-for="item in data.rateOptions.numChild">
+                                                    <div>
+                                                        <i class="pi pi-user" style="color: black; font-size:0.75rem"
+                                                            v-tooltip.bottom="getLabel('child', data.rateOptions.numChild)" />
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
                                     <span class="text-gray-600 text-sm">
-                                        {{ data.bedType }} • 👤 {{ data.maxAdults }} người lớn
+                                        {{ data.bedType }} bed
                                     </span>
                                     <span class="text-red-600 font-medium text-sm">
-                                        {{ data.rateOptions[0].ratePolicy.name }}
+                                        {{ data.rateOptions.ratePolicy.name }}
                                     </span>
                                     <span class="text-gray-500 text-sm">
-                                        {{ getPaymentRequired(data.rateOptions[0].ratePolicy.payment_requirement) }}
+                                        {{ getPaymentRequired(data.rateOptions.ratePolicy.payment_requirement) }}
                                     </span>
                                 </div>
                             </template>
@@ -113,7 +133,8 @@
                         <!-- Cột giá -->
                         <Column header="Giá" style="text-align: center">
                             <template #body="{ data }">
-                                <div class="flex flex-col items-center">
+                                <div class="flex flex-col items-center"
+                                    :v.tooltip.html="getPriceDesc(data.rateOptions.price, filterRoomBookingForm.numOfNights)">
                                     <span class="line-through text-gray-400 text-sm">
                                         VND {{ data.total_price_per_room_type }}
                                     </span>
@@ -130,12 +151,12 @@
                         <Column field="total_price" header="Tổng giá (VNĐ)">
                             <template #body="{ data }">
                                 <div class="text-left flex flex-col gap-3">
-                                    <span class="text-sm">{{ summaryText }}</span>
+                                    <span class="text-sm">{{ summaryBookingInfor }}</span>
                                     <div class="flex gap-x-2">
                                         <span>Total: </span>
                                         <h3 class="text-lg fw-bold">{{ data.total_price }} VND</h3>
                                     </div>
-                                    <Button label="Booking" fluid />
+                                    <Button label="Booking" @click="router.get(route('booking-infor'))" fluid />
                                 </div>
                             </template>
                         </Column>
@@ -183,15 +204,15 @@
                                     <template v-for="(item, idx) in data.num_adults">
                                         <div>
                                             <i class="pi pi-user" style="color: black"
-                                                v-tooltip.bottom="`${data.num_adults} adult` + (data.num_adults > 1 ? 's' : '')" />
+                                                v-tooltip.bottom="getLabel('adult', data.num_adults)" />
                                         </div>
                                     </template>
                                     <template v-if="data.num_children > 0">
-                                        <i class="pi pi-plus" style="color: black;font-size: .8rem"></i>
+                                        <i class="pi pi-plus" style="color: black;font-size: .75rem"></i>
                                         <template v-for="item in data.num_children">
                                             <div>
-                                                <i class="pi pi-user" style="color: black"
-                                                    v-tooltip.bottom="`${data.num_children} ` + (data.num_children > 1 ? 'children' : 'child')" />
+                                                <i class="pi pi-user" style="color: black; font-size:0.85rem"
+                                                    v-tooltip.bottom="getLabel('child', data.num_children)" />
                                             </div>
                                         </template>
                                     </template>
@@ -215,7 +236,6 @@
                         </Column>
 
                         <!-- Rate policy -->
-                        <!-- Cột giá -->
                         <Column header="rate_policy" style="text-align: left">
                             <template #body="{ data }">
                                 <div class="flex flex-col gap-1 p-2">
@@ -262,7 +282,7 @@
 </style>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
@@ -277,6 +297,9 @@ import InputNumber from 'primevue/inputnumber';
 // data table
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+
+// router
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     roomTypeList: Array,
@@ -300,7 +323,7 @@ const getLabel = (key, num) => {
     }
 };
 
-const guestLabel = computed(() => {
+const numOfGuestsSummary = computed(() => {
     let label = getLabel('adult', filterRoomBookingForm.numOfAdults);
 
     if (filterRoomBookingForm.numOfChildren > 0) {
@@ -308,12 +331,16 @@ const guestLabel = computed(() => {
     }
     return label;
 });
+const summarySearchInfor = ref('');
+const summaryBookingInfor = ref('');
 
-const summaryText = computed(() => {
-    let text = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for `;
-    text += guestLabel.value;
-    return text
-});
+// tool tip
+const getPriceDesc = (price, night) => `
+    <div class="flex justify-between">
+        <span>VND ${price} x ${getLabel('night', night)}</span>
+        <span>VND ${price * night}</span>   
+    </div>
+`;
 
 // convert to ISO format
 const parseVNDate = (value) => {
@@ -410,6 +437,23 @@ onMounted(() => {
         num_of_guests: props.num_of_guests || 1,
         num_of_rooms: props.num_of_rooms || 1,
     }
+
+    // summary text
+    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
+    summarySearchInfor.value = `${getLabel('room', props.num_of_rooms)} for ${numOfGuestsSummary.value}`;
+
+    // caculate num of nights
+    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
+    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
+
+    // find best rate option
+    const result = findCheapestCombination(roomTypeList.value, filterRoomBookingForm);
+    roomOptions.value = result.selection.map(room => ({
+        ...room,
+        total_price: result.total_price,
+        total_price_per_room_type: room.rateOptions.price * result.num_of_nights
+    }));
+    console.log(roomOptions.value);
 })
 
 // pop over guest option menu
@@ -422,16 +466,20 @@ const toggle = (event) => {
 const submit = (e) => {
     if (!e.valid) return;
 
+    // summary text
+    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
+    summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
+
+    // caculate num of nights
     const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
     filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
-    console.log(filterRoomBookingForm);
+
+    // find best rate option
     const result = findCheapestCombination(roomTypeList.value, filterRoomBookingForm);
-    console.log(result);
-    console.log(result.selection);
     roomOptions.value = result.selection.map(room => ({
         ...room,
         total_price: result.total_price,
-        total_price_per_room_type: room.rateOptions[0].price * result.num_of_nights
+        total_price_per_room_type: room.rateOptions.price * result.num_of_nights
     }));
     console.log(roomOptions.value);
 }
@@ -522,10 +570,10 @@ function findCheapestCombination(roomTypeList, request) {
                                 summary[key] = {
                                     ...rt,
                                     count: 0,
-                                    rateOptions: [],
+                                    rateOptions: []
                                 };
                             summary[key].count += 1;
-                            summary[key].rateOptions.push(rateOptions[k].rateOption)
+                            summary[key].rateOptions = rateOptions[k].rateOption
                         }
                         best = {
                             pricePerNight: accPrice,
@@ -592,39 +640,9 @@ function findCheapestCombination(roomTypeList, request) {
     };
 }
 
-// sample options
-const room1Options = ref([
-    {
-        id: 1,
-        roomType: {
-            name: "Phòng 4 Người Có Ban Công",
-            bedType: "2 giường đôi lớn",
-            maxAdults: 4
-        },
-        ratePolicy: {
-            name: "Không hoàn tiền",
-            paymentRequirement: "Thanh toán cho chỗ nghỉ trước khi đến"
-        },
-        availableQuantity: 3,
-        price: { original: 4088700, discounted: 2371446 },
-        total_price: 6554754
-    },
-    {
-        id: 2,
-        roomType: {
-            name: "Phòng Có Giường Cỡ Queen Với Ban Công",
-            bedType: "1 giường đôi lớn",
-            maxAdults: 2
-        },
-        ratePolicy: {
-            name: "Không hoàn tiền",
-            paymentRequirement: "Thanh toán cho chỗ nghỉ trước khi đến"
-        },
-        availableQuantity: 2,
-        price: { original: 7212600, discounted: 4183308 },
-        total_price: 6554754
-    }
-])
+function getBestRateOption() {
+
+}
 
 const roomOptions = ref();
 
