@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             RatePolicySeeder::class,
             RoomRateOptionSeeder::class,
+            RoomRateDiscountSeeder::class,
         ]);
     }
 }

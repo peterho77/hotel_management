@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('booking_item_discount_detail_table_', function (Blueprint $table) {
+        Schema::create('room_rate_discount', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_item_id')->constrained('room_booking_item')->nullOnDelete();
+            $table->foreignId('room_rate_option_id')->constrained('room_rate_option')->nullOnDelete();
             $table->foreignId('discount_id')->constrained('discount')->nullOnDelete();
-            $table->decimal('applied_value',8,2);
-            $table->unsignedSmallInteger('applied_order');
+            $table->decimal('applied_value', 8, 2); 
+            $table->unsignedSmallInteger('applied_order'); 
+            $table->decimal('discount_applied', 9, 2);
+            $table->boolean('is_active');
             $table->timestamps();
         });
     }
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('booking_item_discount_detail_table_');
+        Schema::dropIfExists('room_rate_discount');
     }
 };

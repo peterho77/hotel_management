@@ -12,7 +12,7 @@ class Discount extends Model
     {
         return $this->belongsToMany(
             RoomRateOption::class,
-            "rate_option_discount",
+            "room_rate_discount",
             'discount_id',
             'room_rate_option_id'
         );

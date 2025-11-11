@@ -225,10 +225,10 @@
                             <template #body="{ data }">
                                 <div class="flex flex-col items-center">
                                     <span class="line-through text-gray-400 text-sm">
-                                        VND {{ data.base_price_per_night }}
+                                        VND {{ data.price }}
                                     </span>
                                     <span class="font-bold text-red-600 text-md">
-                                        VND Discounted
+                                        VND {{ data.final_price }}
                                     </span>
                                     <span class="text-gray-500 text-xs">Đã gồm thuế & phí</span>
                                 </div>

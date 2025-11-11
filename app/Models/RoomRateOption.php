@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RoomRateOption extends Model
 {
     protected $table = "room_rate_option";
-    protected $appends = ['price'];
+    protected $appends = ['price','final_price'];
     public function room_type()
     {
         return $this->belongsTo(RoomType::class);
@@ -18,10 +18,10 @@ class RoomRateOption extends Model
     {
         return $this->belongsToMany(
             Discount::class,
-            'rate_option_discount',
+            'room_rate_discount',
             'room_rate_option_id',
             'discount_id'
-        );
+        )->withPivot(['applied_value', 'applied_order', 'discount_applied', 'is_active']);
     }
     public function rate_policy(): BelongsTo
     {
@@ -42,5 +42,19 @@ class RoomRateOption extends Model
         }
 
         return max($basePrice, 0);
+    }
+
+    public function getFinalPriceAttribute()
+    {
+        $basePrice = $this->price; // accessor hiện tại
+
+        // Lấy pivot discounts đã active và theo applied_order
+        $totalDiscount = $this->discounts()
+            ->get()
+            ->where('pivot.is_active', true)
+            ->sortBy('pivot.applied_order')
+            ->sum('pivot.discount_applied');
+
+        return max($basePrice - $totalDiscount, 0);
     }
 }

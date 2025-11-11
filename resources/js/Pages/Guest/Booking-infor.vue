@@ -130,7 +130,7 @@
                                             </AccordionPanel>
                                         </Accordion>
                                     </div>
-                                    <div class="box | flow !p-0">
+                                    <div class="box | flow p-0!">
                                         <div class="detail-price | p-3 flow" style="--flow-spacer:1rem">
                                             <h3 class="text-lg text-center font-semibold">Tóm tắt giá</h3>
                                             <div class="price | flex justify-between items-center gap-1">
@@ -145,7 +145,7 @@
                                             </div>
                                         </div>
                                         <div
-                                            class="summary-price | overflow-hidden flex items-center justify-between px-2 py-3">
+                                            class="summary-price | overflow-hidden flex items-center justify-between p-4">
                                             <h3 class="text-2xl font-semibold">Giá</h3>
                                             <div class="flex flex-col items-end">
                                                 <span class="text-red-500 line-through">VND 200000</span>
@@ -236,7 +236,7 @@
                                             <div class="flex flex-col gap-1">
                                                 <label for="floor-option" class="font-semibold">Tùy chọn tầng</label>
                                                 <Select name="floor-option" :options="countries" optionLabel="name"
-                                                    placeholder="Không có" class="max-w-40" />
+                                                    placeholder="Không có" class="max-w-60" />
                                             </div>
                                         </div>
                                         <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
@@ -260,7 +260,47 @@
                                             <div class="flex flex-col gap-1">
                                                 <label for="floor-option" class="font-semibold">Tùy chọn tầng</label>
                                                 <Select name="floor-option" :options="countries" optionLabel="name"
-                                                    placeholder="Không có" class="max-w-40" />
+                                                    placeholder="Không có" class="max-w-60" />
+                                            </div>
+                                        </div>
+                                        <div class="add-service | box flow" style="--flow-spacer:1rem">
+                                            <h3 class="text-xl font-semibold">Thêm vào kỳ nghỉ</h3>
+                                            <div>
+                                                <CheckboxGroup name="service" class="flex flex-col flex-wrap gap-4">
+                                                    <div class="flex items-center gap-2">
+                                                        <Checkbox value="book-airport-transfer" />
+                                                        <label for="book-airport-transfer">Đặt xe đưa đón/taxi</label>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <Checkbox value="air-ticket" />
+                                                        <label for="air-ticket">Đặt vé máy bay cho chuyến đi</label>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <Checkbox value="car-rental" />
+                                                        <label for="car-rental">Thuê xe</label>
+                                                    </div>
+                                                </CheckboxGroup>
+                                            </div>
+                                        </div>
+                                        <div class="special-request | box flow" style="--flow-spacer:1rem">
+                                            <h3 class="text-xl font-semibold">Các yêu cầu đặc biệt</h3>
+                                            <div class="flex flex-col gap-2">
+                                                <span>Vui lòng ghi yêu cầu của bạn vào đây.(không bắt buộc)</span>
+                                                <Textarea name="special_request" rows="4" cols="30"
+                                                    style="resize: none" />
+                                                <div class="flex items-center gap-2">
+                                                    <Checkbox name="special_request" value="close-room" />
+                                                    <label for="air-ticket">Tôi muốn các phòng ở gần nhau</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="special-request | box flow" style="--flow-spacer:1rem">
+                                            <h3 class="text-xl font-semibold">Thời gian đến của bạn</h3>
+                                            <div class="flex flex-col gap-2">
+                                                <span>Thêm thời gian đến dự kiến của bạn.(không bắt buộc)</span>
+                                                <Select name="check_in_time" :options="checkInTimeSlots"
+                                                    optionLabel="name" optionValue="value" placeholder="Vui lòng chọn"
+                                                    class="max-w-60" />
                                             </div>
                                         </div>
                                     </Form>
@@ -318,6 +358,7 @@
 import { ref } from 'vue';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
+import Message from 'primevue/message';
 
 // form
 import { Form, FormField } from '@primevue/forms';
@@ -325,6 +366,9 @@ import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import RadioButton from 'primevue/radiobutton';
 import RadioButtonGroup from 'primevue/radiobuttongroup';
+import Checkbox from 'primevue/checkbox';
+import CheckboxGroup from 'primevue/checkboxgroup';
+import Textarea from 'primevue/textarea';
 
 // accordian
 import Accordion from 'primevue/accordion';
@@ -364,5 +408,16 @@ const countries = ref([
         code: 'Russian'
     }
 ])
+
+// check in time slots
+const checkInTimeSlots = Array.from({ length: 24 }, (_, i) => {
+    const start = String(i).padStart(2, "0") + ":00";
+    const end = String((i + 1) % 24).padStart(2, "0") + ":00";
+    const label = `${start} - ${end}`;
+    return {
+        name: label,
+        value: label
+    };
+});
 
 </script>
