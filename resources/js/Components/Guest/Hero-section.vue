@@ -139,13 +139,13 @@ const schema = z
 
 // Submit handler
 const onSubmit = (e) => {
-    console.log(e.values);
     if (e.valid) {
         const values = {
             ...e.values,
             checkIn: e.values.checkIn instanceof Date ? e.values.checkIn.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkIn,
             checkOut: e.values.checkOut instanceof Date ? e.values.checkOut.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkOut,
         }
+        localStorage.setItem('bookingFromHomePage', '1');
         router.get(route('booking'), values);
     }
 }

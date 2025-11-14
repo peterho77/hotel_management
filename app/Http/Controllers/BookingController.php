@@ -20,8 +20,19 @@ class BookingController extends Controller
         ]);
     }
 
-    public function infor(Request $request)
+    public function detail(Request $request)
     {
-        return Inertia::render('Guest/Booking-infor');
+        $detail = $request->validate([
+            'date_range' => 'required',
+            'num_adults' => 'required|integer',
+            'num_children' => 'required|integer',
+            'num_rooms' => 'required|integer',
+            'num_nights' => 'required|integer',
+            'selected_rooms' => 'required|array',
+        ]);
+
+        return Inertia::render('Guest/Booking-infor',[
+            'detail' => $detail
+        ]);
     }
 }

@@ -2,14 +2,14 @@
     <div class="booking-infor-section | padding-block-200">
         <div class="container">
             <div class="p-2">
-                <Stepper v-model:value="activeStep" class="basis-[40rem]">
+                <Stepper v-model:value="activeStep" class="basis-160">
                     <StepList>
                         <Step v-slot="{ activateCallback, value, a11yAttrs }" asChild :value="1">
                             <div class="flex flex-row flex-auto gap-2" v-bind="a11yAttrs.root">
                                 <button class="bg-transparent border-0 inline-flex gap-2 items-center"
                                     @click="activateCallback" v-bind="a11yAttrs.header">
                                     <span :class="[
-                                        'rounded-full border-1 w-7 h-7 inline-flex items-center justify-center transition-colors duration-200',
+                                        'rounded-full border w-7 h-7 inline-flex items-center justify-center transition-colors duration-200',
                                         {
                                             'bg-sky-500 text-white border-sky-500': value <= activeStep,
                                             'text-gray-500 border-gray-300 dark:border-gray-600': value > activeStep,
@@ -34,7 +34,7 @@
                                 <button class="bg-transparent border-0 inline-flex gap-2 items-center"
                                     @click="activateCallback" v-bind="a11yAttrs.header">
                                     <span :class="[
-                                        'rounded-full border-1 w-7 h-7 inline-flex items-center justify-center transition-colors duration-200',
+                                        'rounded-full border w-7 h-7 inline-flex items-center justify-center transition-colors duration-200',
                                         {
                                             'bg-sky-500 text-white border-sky-500': value <= activeStep,
                                             'text-gray-500 border-gray-300 dark:border-gray-600': value > activeStep,
@@ -96,18 +96,18 @@
                                                 class="check-in | flex flex-col items-center gap-1 border-r-1 border-gray-200">
                                                 <label for="">Nhận phòng</label>
                                                 <!-- checkin -->
-                                                <span>11/7/2025</span>
+                                                <span>{{ bookingDetail.date_range[0] }}</span>
                                             </div>
                                             <div class="check-out | flex flex-col items-center gap-1">
                                                 <label for="">Trả phòng</label>
                                                 <!-- checkout -->
-                                                <span>11/7/2025</span>
+                                                <span>{{ bookingDetail.date_range[1] }}</span>
                                             </div>
                                         </div>
                                         <div class="num-of-nights | grid">
                                             <label for="">Tổng thời gian lưu trú:</label>
                                             <!-- num of nights -->
-                                            <span class="font-semibold">4 đêm</span>
+                                            <span class="font-semibold">{{ bookingDetail.num_nights }} đêm</span>
                                         </div>
                                         <Divider />
                                         <Accordion value="0">
@@ -116,15 +116,16 @@
                                                     <div class="grid p-2">
                                                         <label class="font-light">Bạn đã chọn</label>
                                                         <!-- summary text -->
-                                                        <span class="font-semibold">2 phòng cho 4 người lớn và 2 trẻ
-                                                            em</span>
+                                                        <span
+                                                            class="font-semibold">{{ getSummaryText(bookingDetail.num_rooms, bookingDetail.num_adults, bookingDetail.num_children) }}</span>
                                                     </div>
                                                 </AccordionHeader>
                                                 <AccordionContent>
                                                     <!-- num of rooms -->
                                                     <div class="grid p-2">
-                                                        <span>1 x phòng Standard</span>
-                                                        <span>1 x phòng Deluxe</span>
+                                                        <template v-for="room in bookingDetail.selected_rooms">
+                                                            <span>{{ room.count }} x {{ room.name }}</span>
+                                                        </template>
                                                     </div>
                                                 </AccordionContent>
                                             </AccordionPanel>
@@ -135,21 +136,24 @@
                                             <h3 class="text-lg text-center font-semibold">Tóm tắt giá</h3>
                                             <div class="price | flex justify-between items-center gap-1">
                                                 <label for="">Giá gốc</label>
-                                                <!-- price -->
-                                                <span>VND 1000000</span>
+                                                <!-- base price -->
+                                                <span>VND {{ bookingDetail.selected_rooms[0].total_base_price }}</span>
                                             </div>
                                             <div class="discount | flex justify-between items-center gap-1">
                                                 <label for="">Ưu đãi</label>
                                                 <!-- discount -->
-                                                <span>- VND 200000</span>
+                                                <span>- VND
+                                                    {{ bookingDetail.selected_rooms[0].total_base_price - bookingDetail.selected_rooms[0].total_price }}</span>
                                             </div>
                                         </div>
                                         <div
                                             class="summary-price | overflow-hidden flex items-center justify-between p-4">
                                             <h3 class="text-2xl font-semibold">Giá</h3>
                                             <div class="flex flex-col items-end">
-                                                <span class="text-red-500 line-through">VND 200000</span>
-                                                <h3 class="text-2xl font-semibold">VND 800000</h3>
+                                                <span class="text-red-500 line-through">VND
+                                                    {{ bookingDetail.selected_rooms[0].total_base_price }}</span>
+                                                <h3 class="text-xl font-semibold">VND
+                                                    {{ bookingDetail.selected_rooms[0].total_price }}</h3>
                                                 <span>Bao gồm thuế và phí</span>
                                             </div>
                                         </div>
@@ -159,110 +163,104 @@
                                     <Form v-slot="$form" class="grid gap-y-6">
                                         <div class="booker-infor | box px-6 py-4 flow" style="--flow-spacer:.75em">
                                             <h3 class="font-semibold text-2xl">Nhập thông tin chi tiết của bạn</h3>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                                <FormField v-slot="$field" name="surname" class="flex flex-col gap-1">
-                                                    <label for="">Họ</label>
-                                                    <InputText type="text" />
-                                                    <Message v-if="$field?.invalid" severity="error" size="small"
-                                                        variant="simple">{{ $field.error?.message }}</Message>
-                                                </FormField>
-                                                <FormField v-slot="$field" name="firstname" class="flex flex-col gap-1">
-                                                    <label for="">Tên</label>
-                                                    <InputText type="text" />
-                                                    <Message v-if="$field?.invalid" severity="error" size="small"
-                                                        variant="simple">{{ $field.error?.message }}</Message>
-                                                </FormField>
-                                                <FormField v-slot="$field" name="email" class="flex flex-col gap-1">
-                                                    <label for="">Địa chỉ email</label>
-                                                    <InputText type="text" />
-                                                    <Message v-if="$field?.invalid" severity="error" size="small"
-                                                        variant="simple">{{ $field.error?.message }}</Message>
-                                                </FormField>
-                                                <FormField v-slot="$field" name="confirm-email"
-                                                    class="flex flex-col gap-1">
-                                                    <label for="">Xác nhận địa chỉ email</label>
-                                                    <InputText type="text" />
-                                                    <Message v-if="$field?.invalid" severity="error" size="small"
-                                                        variant="simple">{{ $field.error?.message }}</Message>
-                                                </FormField>
-                                            </div>
-                                            <div class="flex flex-col gap-1">
-                                                <label for="country">Vùng/Quốc gia</label>
-                                                <Select name="country" :options="countries" optionLabel="name"
-                                                    placeholder="Select a country" />
-                                                <Message v-if="$form.city?.name?.invalid" severity="error" size="small"
-                                                    variant="simple">
-                                                    {{ $form.city.name.error?.message }}</Message>
-                                            </div>
-                                            <div class="flex flex-col gap-1">
-                                                <label for="">Số điện thoại</label>
-                                                <InputText name="phone" />
-                                                <Message v-if="$form.city?.name?.invalid" severity="error" size="small"
-                                                    variant="simple">
-                                                    {{ $form.city.name.error?.message }}</Message>
-                                            </div>
-                                            <div class="flex flex-col gap-2">
-                                                <label for="">Bạn sắp đi công tác? (không bắt buộc)</label>
-                                                <RadioButtonGroup name="business-trip" class="flex flex-wrap gap-4">
-                                                    <div class="flex items-center gap-2">
-                                                        <RadioButton value="true" />
-                                                        <label for="cheese">Đúng</label>
-                                                    </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <RadioButton value="false" />
-                                                        <label for="mushroom">Sai</label>
-                                                    </div>
-                                                </RadioButtonGroup>
-                                            </div>
-                                        </div>
-                                        <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
-                                            <!-- room type name -->
-                                            <h3 class="text-xl font-semibold">Phòng standard</h3>
-                                            <!-- rate policy -->
-                                            <div class="flex items-center gap-x-2 text-green-600">
-                                                <i class="pi pi-check"></i>
-                                                <p>Nhận phòng trễ + internet tốc độ cao</p>
-                                            </div>
-                                            <div class="flex items-center gap-x-2 text-green-600">
-                                                <i class="pi pi-check"></i>
-                                                <p><b>Hủy phòng miễn phí</b> trước 25/11/2025</p>
-                                            </div>
-                                            <!-- capacity -->
-                                            <div class="flex items-center gap-x-2">
-                                                <i class="pi pi-user"></i>
-                                                <p><b>Khách: </b> 1 người lớn, 1 trẻ em</p>
-                                            </div>
-                                            <Divider />
-                                            <div class="flex flex-col gap-1">
-                                                <label for="floor-option" class="font-semibold">Tùy chọn tầng</label>
-                                                <Select name="floor-option" :options="countries" optionLabel="name"
-                                                    placeholder="Không có" class="max-w-60" />
+                                            <div class="grid gap-y-6">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                                    <FormField v-slot="$field" name="surname"
+                                                        class="flex flex-col gap-1">
+                                                        <label for="">Họ</label>
+                                                        <InputText type="text" />
+                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                            variant="simple">
+                                                            {{ $field.error?.message }}</Message>
+                                                    </FormField>
+                                                    <FormField v-slot="$field" name="firstname"
+                                                        class="flex flex-col gap-1">
+                                                        <label for="">Tên</label>
+                                                        <InputText type="text" />
+                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                            variant="simple">
+                                                            {{ $field.error?.message }}</Message>
+                                                    </FormField>
+                                                    <FormField v-slot="$field" name="email" class="flex flex-col gap-1">
+                                                        <label for="">Địa chỉ email</label>
+                                                        <InputText type="text" />
+                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                            variant="simple">
+                                                            {{ $field.error?.message }}</Message>
+                                                    </FormField>
+                                                    <FormField v-slot="$field" name="confirm-email"
+                                                        class="flex flex-col gap-1">
+                                                        <label for="">Xác nhận địa chỉ email</label>
+                                                        <InputText type="text" />
+                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                            variant="simple">
+                                                            {{ $field.error?.message }}</Message>
+                                                    </FormField>
+                                                </div>
+                                                <div class="flex flex-col gap-1">
+                                                    <label for="country">Vùng/Quốc gia</label>
+                                                    <Select name="country" :options="countries" optionLabel="name"
+                                                        placeholder="Select a country" />
+                                                    <Message v-if="$form.city?.name?.invalid" severity="error"
+                                                        size="small" variant="simple">
+                                                        {{ $form.city.name.error?.message }}</Message>
+                                                </div>
+                                                <div class="flex flex-col gap-1">
+                                                    <label for="">Số điện thoại</label>
+                                                    <InputText name="phone" />
+                                                    <Message v-if="$form.city?.name?.invalid" severity="error"
+                                                        size="small" variant="simple">
+                                                        {{ $form.city.name.error?.message }}</Message>
+                                                </div>
+                                                <div class="flex flex-col gap-2">
+                                                    <label for="">Bạn sắp đi công tác? (không bắt buộc)</label>
+                                                    <RadioButtonGroup name="business-trip" class="flex flex-wrap gap-4">
+                                                        <div class="flex items-center gap-2">
+                                                            <RadioButton value="true" />
+                                                            <label for="cheese">Đúng</label>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <RadioButton value="false" />
+                                                            <label for="mushroom">Sai</label>
+                                                        </div>
+                                                    </RadioButtonGroup>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
-                                            <!-- room type name -->
-                                            <h3 class="text-xl font-semibold">Phòng standard</h3>
-                                            <!-- rate policy -->
-                                            <div class="flex items-center gap-x-2 text-green-600">
-                                                <i class="pi pi-check"></i>
-                                                <p>Nhận phòng trễ + internet tốc độ cao</p>
+
+                                        <!-- room list -->
+                                        <template v-for="room in bookingDetail.selected_rooms">
+                                            <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
+                                                <!-- room type name -->
+                                                <h3 class="text-xl font-semibold">{{ room.name }}</h3>
+                                                <!-- rate policy -->
+                                                <div class="flex items-center gap-x-2 text-green-600">
+                                                    <i class="pi pi-check"></i>
+                                                    <p>{{ getPaymentRequired(room.rate_policy.payment_requirement) }}
+                                                    </p>
+                                                </div>
+                                                <div class="flex items-center gap-x-2 text-green-600">
+                                                    <i class="pi pi-check"></i>
+                                                    <p><b>{{ getCancellationType(room.rate_policy.cancellation_type) }}</b>
+                                                        trước 3-7 ngày</p>
+                                                </div>
+                                                <!-- capacity -->
+                                                <div class="flex items-center gap-x-2">
+                                                    <i class="pi pi-user"></i>
+                                                    <p><b>Khách: </b>
+                                                        {{ room.num_adults + ' người lớn ' + (room.num_children > 0 ? `và ${room.num_children} trẻ em` : '') }}
+                                                    </p>
+                                                </div>
+                                                <Divider />
+                                                <div class="flex flex-col gap-1">
+                                                    <label for="floor-option" class="font-semibold">Tùy chọn
+                                                        tầng</label>
+                                                    <Select name="floor-option" :options="countries" optionLabel="name"
+                                                        placeholder="Không có" class="max-w-60" />
+                                                </div>
                                             </div>
-                                            <div class="flex items-center gap-x-2 text-green-600">
-                                                <i class="pi pi-check"></i>
-                                                <p><b>Hủy phòng miễn phí</b> trước 25/11/2025</p>
-                                            </div>
-                                            <!-- capacity -->
-                                            <div class="flex items-center gap-x-2">
-                                                <i class="pi pi-user"></i>
-                                                <p><b>Khách: </b> 1 người lớn, 1 trẻ em</p>
-                                            </div>
-                                            <Divider />
-                                            <div class="flex flex-col gap-1">
-                                                <label for="floor-option" class="font-semibold">Tùy chọn tầng</label>
-                                                <Select name="floor-option" :options="countries" optionLabel="name"
-                                                    placeholder="Không có" class="max-w-60" />
-                                            </div>
-                                        </div>
+                                        </template>
+
                                         <div class="add-service | box flow" style="--flow-spacer:1rem">
                                             <h3 class="text-xl font-semibold">Thêm vào kỳ nghỉ</h3>
                                             <div>
@@ -355,7 +353,7 @@
 </style>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import Message from 'primevue/message';
@@ -383,6 +381,44 @@ import StepPanels from 'primevue/steppanels';
 import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage();
+const bookingDetail = reactive(page.props.detail);
+console.log(bookingDetail);
+const getSummaryText = (numOfRooms, numOfAdults, numOfChildren) => {
+    let text = `${numOfRooms} phòng cho ${numOfAdults} người lớn`;
+    if (numOfChildren > 0) {
+        text += ` và ${numOfChildren} trẻ em`
+    }
+    return text;
+}
+
+const getCancellationType = (type) => {
+    switch (type) {
+        case 'free_cancellation':
+            return 'Hủy miễn phí';
+
+        case 'flexible_change':
+            return 'Linh hoạt đổi ngày';
+
+        case 'partial_refund':
+            return 'Hủy muộn giữ lại cọc';
+    }
+};
+
+const getPaymentRequired = (type) => {
+    switch (type) {
+        case 'full_prepayment':
+            return 'Thanh toán trước khi đến';
+
+        case 'deposit_required':
+            return 'Yêu cầu đặt cọc';
+
+        case 'pay_at_hotel':
+            return 'Không cần thanh toán trước, thanh toán tại chỗ nghỉ';
+    }
+};
 
 const activeStep = ref(2);
 

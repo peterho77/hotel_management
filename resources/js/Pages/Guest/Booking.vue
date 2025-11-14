@@ -287,7 +287,7 @@
                                         class="ml-2 *:text-lg">{{ (totalFinalPrice > 0 ? `${totalFinalPrice} VND` : '') }}</span>
                                 </div>
                             </div>
-                            <Button @click="router.get(route('booking-infor'))">Booking</Button>
+                            <Button @click="onBookingDetail">Booking</Button>
                         </div>
                     </div>
                 </div>
@@ -339,6 +339,7 @@ import Column from 'primevue/column';
 
 // router
 import { router } from '@inertiajs/vue3';
+import { Inertia } from '@inertiajs/inertia';
 
 const props = defineProps({
     roomTypeList: Array,
@@ -346,6 +347,7 @@ const props = defineProps({
     checkOut: String,
     num_of_guests: Number,
     num_of_rooms: Number,
+    newData: String,
 });
 
 // label rooms, adults, child->children
@@ -434,7 +436,6 @@ const updateAllRoomQuantityOptions = () => {
     totalSelectedRooms.value = roomTypeList.value.reduce((sum, r) => sum + (r.selectedRooms || 0), 0);
     totalFinalPrice.value = roomTypeList.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.final_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
     totalBasePrice.value = roomTypeList.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.base_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
-    console.log(totalFinalPrice.value);
 };
 
 watch(
@@ -500,6 +501,19 @@ const filterRoomBookingForm = reactive({
     dateRange: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)]
 })
 
+watch(
+    () => ({
+        adults: filterRoomBookingForm.numOfAdults,
+        children: filterRoomBookingForm.numOfChildren,
+        rooms: filterRoomBookingForm.numOfRooms,
+        dateRange: filterRoomBookingForm.dateRange
+    }),
+    (value) => {
+        localStorage.setItem('bookingFilter', JSON.stringify(value));
+    },
+    { deep: true }
+);
+
 const initialValues = ref({
     rangeDate: null,
     num_of_guests: 1,
@@ -511,6 +525,46 @@ onMounted(() => {
         rangeDate: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)],
         num_of_guests: props.num_of_guests || 1,
         num_of_rooms: props.num_of_rooms || 1,
+    }
+
+    const saved = localStorage.getItem('bookingFilter');
+    const fromHome = localStorage.getItem('bookingFromHomePage') === '1';
+
+    if (fromHome) {
+        // Từ Home → Booking: dùng props và xoá storage cũ
+        localStorage.removeItem('bookingFilter');
+        localStorage.removeItem('bookingFromHomePage');
+
+        filterRoomBookingForm.numOfAdults = props.num_of_guests;
+        filterRoomBookingForm.numOfChildren = 0;
+        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
+        filterRoomBookingForm.dateRange = [
+            parseVNDate(props.checkIn),
+            parseVNDate(props.checkOut)
+        ];
+        filterRoomBookingForm.numOfNights = calculateNumOfNights(props.checkIn, props.checkOut);
+
+    } else if (saved) {
+        // Quay lại từ Booking Info → ưu tiên storage
+        const parsed = JSON.parse(saved);
+        filterRoomBookingForm.numOfAdults = parsed.adults;
+        filterRoomBookingForm.numOfChildren = parsed.children;
+        filterRoomBookingForm.numOfRooms = parsed.rooms;
+        filterRoomBookingForm.dateRange = parsed.dateRange.map(d => new Date(d));
+        filterRoomBookingForm.numOfNights = calculateNumOfNights(
+            parsed.dateRange[0],
+            parsed.dateRange[1]
+        );
+    } else {
+        // fallback props (Home → Booking) nếu storage rỗng
+        filterRoomBookingForm.numOfAdults = props.num_of_guests;
+        filterRoomBookingForm.numOfChildren = 0;
+        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
+        filterRoomBookingForm.dateRange = [
+            parseVNDate(props.checkIn),
+            parseVNDate(props.checkOut)
+        ];
+        filterRoomBookingForm.numOfNights = calculateNumOfNights(props.checkIn, props.checkOut);
     }
 
     // summary text
@@ -827,23 +881,22 @@ function findCheapestCombination(roomTypeList, request) {
 
 function getBestRateOption(roomTypeList, filterOptions) {
     const result = findCheapestCombination(roomTypeList.value, filterOptions);
-    console.log(result);
-    const selectionRoomType = result.selection.map(room => ({
+    const bestOptions = result.selection.map(room => ({
         ...room,
         total_price: result.total_price,
         total_base_price_per_room_type: room.base_price * result.num_of_nights,
         total_price_per_room_type: room.final_price * result.num_of_nights
     }));
 
-    const total_base_price = selectionRoomType.reduce(
+    const total_base_price = bestOptions.reduce(
         (sum, room) => sum + room.total_base_price_per_room_type,
         0
     );
-    selectionRoomType.forEach(room => {
+    bestOptions.forEach(room => {
         room.total_base_price = total_base_price;
     })
-    console.log(selectionRoomType);
-    return selectionRoomType;
+    console.log(bestOptions);
+    return bestOptions;
 }
 
 const bestRateOptions = ref([]);
@@ -867,6 +920,31 @@ const onSelectOptions = () => {
             }
         });
     }
+}
+
+// get to booking detail page
+const onBookingDetail = () => {
+    let selectedRooms = bestRateOptions.value.map(({ room_rate_options, ...rest }) => rest)
+    const details = {
+        date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
+        num_adults: filterRoomBookingForm.numOfAdults,
+        num_children: filterRoomBookingForm.numOfChildren,
+        num_rooms: filterRoomBookingForm.numOfRooms,
+        num_nights: filterRoomBookingForm.numOfNights,
+        selected_rooms: JSON.parse(JSON.stringify(selectedRooms || [])),
+    }
+    console.log(details);
+    router.post(route('booking.detail'), details);
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+
+    return `${dd}/${mm}/${yyyy}`;
 }
 
 </script>

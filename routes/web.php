@@ -18,7 +18,7 @@ Route::middleware('guest')->group(function () {
     Route::inertia('/about', 'Guest/About')->name('about');
     Route::get('/room', [GuestController::class, 'rooms'])->name('room');
     Route::get('/booking', [BookingController::class, 'index'])->name('booking');
-    Route::get('/booking/infor', [BookingController::class, 'infor'])->name('booking-infor');
+    Route::post('/booking/detail', [BookingController::class, 'detail'])->name('booking.detail');
 });
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
