@@ -129,6 +129,8 @@
                                                     </div>
                                                 </AccordionContent>
                                             </AccordionPanel>
+                                            <Button class="mt-2" label="Đổi các lựa chọn của bạn" severity="info"
+                                                size="small" variant="text" @click="onChangeBookingOptions" />
                                         </Accordion>
                                     </div>
                                     <div class="box | flow p-0!">
@@ -378,10 +380,12 @@ import AccordionContent from 'primevue/accordioncontent';
 import Stepper from 'primevue/stepper';
 import StepList from 'primevue/steplist';
 import StepPanels from 'primevue/steppanels';
-import StepItem from 'primevue/stepitem';
 import Step from 'primevue/step';
 import StepPanel from 'primevue/steppanel';
 import { usePage } from '@inertiajs/vue3'
+
+// router
+import { router } from '@inertiajs/vue3';
 
 const page = usePage();
 const bookingDetail = reactive(page.props.detail);
@@ -455,5 +459,18 @@ const checkInTimeSlots = Array.from({ length: 24 }, (_, i) => {
         value: label
     };
 });
+
+// change booking options
+const onChangeBookingOptions = () => {
+    localStorage.removeItem('bookingFromHomePage');
+    localStorage.setItem('bookingFromDetailPage', '1');
+    localStorage.setItem('bookingFilterOptions', JSON.stringify({
+        adults: bookingDetail.num_adults,
+        children: bookingDetail.num_children,
+        rooms: bookingDetail.num_rooms,
+        dateRange: bookingDetail.date_range
+    }));
+    router.get(route('booking'));
+}
 
 </script>

@@ -145,6 +145,7 @@ const onSubmit = (e) => {
             checkIn: e.values.checkIn instanceof Date ? e.values.checkIn.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkIn,
             checkOut: e.values.checkOut instanceof Date ? e.values.checkOut.toLocaleDateString('vi-VN') .split('T')[0] : e.values.checkOut,
         }
+        localStorage.removeItem('bookingFromDetailPage');
         localStorage.setItem('bookingFromHomePage', '1');
         router.get(route('booking'), values);
     }

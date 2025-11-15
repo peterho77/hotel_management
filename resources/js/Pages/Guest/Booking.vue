@@ -2,13 +2,13 @@
     <div class="booking-section pb-10">
         <div class="booking-section-header | padding-block-200">
 
-            <Form v-slot="$form" :initialValues @submit="submit"
+            <Form @submit="submit"
                 class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
                 <div class="flex gap-x-4 items-center">
                     <!-- Check-in / Check-out -->
                     <div>
                         <label class="block mb-1">Check-in/Check-out</label>
-                        <FormField name="rangeDate" v-slot="{ field, error }">
+                        <FormField name="dateRange" v-slot="{ field, error }">
                             <DatePicker v-model="filterRoomBookingForm.dateRange" dateFormat="dd/mm/yy"
                                 selectionMode="range" :manualInput="false" showIcon fluid />
                             <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
@@ -157,7 +157,7 @@
                                         <h3 class="text-lg fw-bold">{{ data.total_price }} VND</h3>
                                     </div>
                                     <Button label="Đặt các lựa chọn của bạn" class="max-w-60"
-                                        @click="onSelectOptions" />
+                                        @click="setSelectedOptions" />
                                 </div>
                             </template>
                         </Column>
@@ -169,7 +169,7 @@
                         <span class="text-md">Other empty options</span>
                     </div>
                     <div class="grid grid-cols-[auto_1fr] gap-x-2">
-                        <DataTable :value="roomTypeList" rowGroupMode="rowspan" groupRowsBy="name" sortField="id"
+                        <DataTable :value="emptyRoomOptions" rowGroupMode="rowspan" groupRowsBy="name" sortField="id"
                             showGridlines class="text-lg w-full items-start" tableStyle="max-width: 74rem">
                             <!-- Cột thông tin phòng -->
                             <Column field="name" header="Danh sách phòng"
@@ -269,7 +269,8 @@
                             <Column header="Chọn phòng" style="vertical-align:top">
                                 <template #body="{ data }">
                                     <Select v-model="data.selectedRooms" :options="data.options" optionLabel="label"
-                                        optionValue="value" optionDisabled="disabled">
+                                        optionValue="value" optionDisabled="disabled"
+                                        @change="onSelectedRooms(data.id, data.selectedRooms)">
                                     </Select>
                                 </template>
                             </Column>
@@ -320,7 +321,7 @@
 </style>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, watchEffect } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
@@ -339,7 +340,6 @@ import Column from 'primevue/column';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { Inertia } from '@inertiajs/inertia';
 
 const props = defineProps({
     roomTypeList: Array,
@@ -384,18 +384,44 @@ const getPriceDesc = (price, night) => `
 `;
 
 // convert to ISO format
+// const parseVNDate = (value) => {
+//     if (!value) return null;
+
+//     // Nếu là Date object thì giữ nguyên
+//     if (value instanceof Date) return value;
+
+//     // Nếu là ISO format (yyyy-mm-dd)
+//     if (value.includes('-')) return new Date(value);
+
+//     // Nếu là dạng VN dd/mm/yyyy
+//     const [day, month, year] = value.split('/');
+//     return new Date(`${year}-${month}-${day}`);
+// };
 const parseVNDate = (value) => {
     if (!value) return null;
 
-    // Nếu là Date object thì giữ nguyên
-    if (value instanceof Date) return value;
+    // Nếu là Date object -> giữ nguyên
+    if (value instanceof Date) {
+        return isNaN(value.getTime()) ? null : value;
+    }
 
-    // Nếu là ISO format (yyyy-mm-dd)
-    if (value.includes('-')) return new Date(value);
+    // Nếu có dạng dd/mm/yyyy
+    if (typeof value === 'string' && value.includes('/')) {
+        const [d, m, y] = value.split('/').map(Number);
+        const date = new Date(y, m - 1, d);
 
-    // Nếu là dạng VN dd/mm/yyyy
-    const [day, month, year] = value.split('/');
-    return new Date(`${year}-${month}-${day}`);
+        return isNaN(date.getTime()) ? null : date;
+    }
+
+    // Nếu là ISO thuần yyyy-mm-dd -> an toàn
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const date = new Date(value + "T00:00:00");
+        return isNaN(date.getTime()) ? null : date;
+    }
+
+    // fallback: cố parse
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
 };
 
 // other room booking options
@@ -415,7 +441,7 @@ const initRoomTypeList = () => {
 
 // Hàm tạo options cho mỗi select room quantity
 const getOptions = (row) => {
-    const sameGroup = roomTypeList.value.filter(r => r.name === row.name);
+    const sameGroup = emptyRoomOptions.value.filter(r => r.name === row.name);
     // Tổng số phòng đã chọn của các select khác
     const totalOthers = sameGroup
         .filter(r => (r.rate_policy_id !== row.rate_policy_id) || (r.num_adults !== row.num_adults || r.num_children !== row.num_children))
@@ -430,19 +456,13 @@ const getOptions = (row) => {
 };
 
 const updateAllRoomQuantityOptions = () => {
-    roomTypeList.value.forEach(row => {
+    emptyRoomOptions.value.forEach(row => {
         row.options = getOptions(row);
     });
-    totalSelectedRooms.value = roomTypeList.value.reduce((sum, r) => sum + (r.selectedRooms || 0), 0);
-    totalFinalPrice.value = roomTypeList.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.final_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
-    totalBasePrice.value = roomTypeList.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.base_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
+    totalSelectedRooms.value = emptyRoomOptions.value.reduce((sum, r) => sum + (r.selectedRooms || 0), 0);
+    totalFinalPrice.value = emptyRoomOptions.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.final_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
+    totalBasePrice.value = emptyRoomOptions.value.filter(r => r.selectedRooms > 0).reduce((sum, r) => sum + r.base_price * r.selectedRooms * filterRoomBookingForm.numOfNights, 0);
 };
-
-watch(
-    () => roomTypeList.value.map(r => r.selectedRooms),
-    updateAllRoomQuantityOptions,
-    { deep: true }
-);
 
 // summary booking
 const totalSelectedRooms = ref(0);
@@ -451,8 +471,99 @@ const totalBasePrice = ref(0);
 
 // Initialize
 initRoomTypeList();
+
+// form check in, check out, num of guests, num of rooms
+const calculateNumOfNights = (checkInStr, checkOutStr) => {
+    const checkIn = parseVNDate(checkInStr);
+    const checkOut = parseVNDate(checkOutStr);
+
+    if (!checkIn || !checkOut || isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) return 0;
+
+    const diffTime = checkOut - checkIn;
+    const nights = diffTime / (1000 * 60 * 60 * 24);
+
+    return Math.max(0, Math.floor(nights));
+};
+
+const filterRoomBookingForm = reactive({
+    numOfNights: 0,
+    numOfAdults: 1,
+    numOfChildren: 0,
+    numOfRooms: 1,
+    dateRange: []
+})
+
+// find other room options
+const emptyRoomOptions = ref(findEmptyRoomOptions(roomTypeList.value, filterRoomBookingForm));
+
 updateAllRoomQuantityOptions();
-console.log(roomTypeList.value);
+
+watch(
+    () => emptyRoomOptions.value.map(r => r.selectedRooms),
+    updateAllRoomQuantityOptions,
+    { deep: true }
+);
+
+console.log(emptyRoomOptions.value);
+
+watch(
+    () => ({
+        adults: filterRoomBookingForm.numOfAdults,
+        children: filterRoomBookingForm.numOfChildren,
+        rooms: filterRoomBookingForm.numOfRooms,
+        dateRange: filterRoomBookingForm.dateRange
+    }),
+    (value) => {
+        localStorage.setItem('bookingFilterOptions', JSON.stringify(value));
+    },
+    { deep: true }
+);
+
+onMounted(() => {
+    const savedBookingData = JSON.parse(localStorage.getItem("bookingFilterOptions") || "{}");
+
+    const fromHome = localStorage.getItem('bookingFromHomePage') === '1';
+    const fromDetail = localStorage.getItem('bookingFromDetailPage') === '1';
+
+    console.log(fromHome, fromDetail);
+
+    // 1. Trường hợp quay về từ Booking Detail → ưu tiên storage
+    if ((fromDetail && savedBookingData) || (!fromHome && !fromDetail)) {
+        filterRoomBookingForm.numOfAdults = savedBookingData.adults;
+        filterRoomBookingForm.numOfChildren = savedBookingData.children;
+        filterRoomBookingForm.numOfRooms = savedBookingData.rooms;
+        const d1 = parseVNDate(savedBookingData.dateRange[0]);
+        const d2 = parseVNDate(savedBookingData.dateRange[1]);
+        filterRoomBookingForm.dateRange = (d1 && d2) ? [d1, d2] : [];
+
+        localStorage.removeItem('bookingFromDetailPage');
+
+    } // 2. Từ Home → Booking (props đầy đủ)
+    else if (fromHome) {
+        localStorage.removeItem('bookingFilterOptions');
+        localStorage.removeItem('bookingFromHomePage');
+
+        filterRoomBookingForm.numOfAdults = props.num_of_guests;
+        filterRoomBookingForm.numOfChildren = 0;
+        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
+        filterRoomBookingForm.dateRange = [
+            parseVNDate(props.checkIn),
+            parseVNDate(props.checkOut)
+        ];
+    }
+
+    // caculate num of nights
+    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
+    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
+
+    // summary text
+    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
+    summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
+
+    // find best rate option
+    bestRateOptions.value = getBestRateOption(roomTypeList, filterRoomBookingForm);
+    console.log(bestRateOptions.value);
+})
 
 const getCancellationType = (type) => {
     switch (type) {
@@ -480,105 +591,6 @@ const getPaymentRequired = (type) => {
     }
 };
 
-// form check in, check out, num of guests, num of rooms
-const calculateNumOfNights = (checkInStr, checkOutStr) => {
-    const checkIn = parseVNDate(checkInStr);
-    const checkOut = parseVNDate(checkOutStr);
-
-    if (!checkIn || !checkOut || isNaN(checkIn) || isNaN(checkOut)) return 0;
-
-    const diffTime = checkOut - checkIn;
-    const nights = diffTime / (1000 * 60 * 60 * 24);
-
-    return Math.max(0, Math.floor(nights));
-};
-
-const filterRoomBookingForm = reactive({
-    numOfNights: calculateNumOfNights(props.checkIn, props.checkOut),
-    numOfAdults: props.num_of_guests,
-    numOfChildren: 0,
-    numOfRooms: props.num_of_rooms,
-    dateRange: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)]
-})
-
-watch(
-    () => ({
-        adults: filterRoomBookingForm.numOfAdults,
-        children: filterRoomBookingForm.numOfChildren,
-        rooms: filterRoomBookingForm.numOfRooms,
-        dateRange: filterRoomBookingForm.dateRange
-    }),
-    (value) => {
-        localStorage.setItem('bookingFilter', JSON.stringify(value));
-    },
-    { deep: true }
-);
-
-const initialValues = ref({
-    rangeDate: null,
-    num_of_guests: 1,
-    num_of_rooms: 1,
-})
-
-onMounted(() => {
-    initialValues.value = {
-        rangeDate: [parseVNDate(props.checkIn), parseVNDate(props.checkOut)],
-        num_of_guests: props.num_of_guests || 1,
-        num_of_rooms: props.num_of_rooms || 1,
-    }
-
-    const saved = localStorage.getItem('bookingFilter');
-    const fromHome = localStorage.getItem('bookingFromHomePage') === '1';
-
-    if (fromHome) {
-        // Từ Home → Booking: dùng props và xoá storage cũ
-        localStorage.removeItem('bookingFilter');
-        localStorage.removeItem('bookingFromHomePage');
-
-        filterRoomBookingForm.numOfAdults = props.num_of_guests;
-        filterRoomBookingForm.numOfChildren = 0;
-        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
-        filterRoomBookingForm.dateRange = [
-            parseVNDate(props.checkIn),
-            parseVNDate(props.checkOut)
-        ];
-        filterRoomBookingForm.numOfNights = calculateNumOfNights(props.checkIn, props.checkOut);
-
-    } else if (saved) {
-        // Quay lại từ Booking Info → ưu tiên storage
-        const parsed = JSON.parse(saved);
-        filterRoomBookingForm.numOfAdults = parsed.adults;
-        filterRoomBookingForm.numOfChildren = parsed.children;
-        filterRoomBookingForm.numOfRooms = parsed.rooms;
-        filterRoomBookingForm.dateRange = parsed.dateRange.map(d => new Date(d));
-        filterRoomBookingForm.numOfNights = calculateNumOfNights(
-            parsed.dateRange[0],
-            parsed.dateRange[1]
-        );
-    } else {
-        // fallback props (Home → Booking) nếu storage rỗng
-        filterRoomBookingForm.numOfAdults = props.num_of_guests;
-        filterRoomBookingForm.numOfChildren = 0;
-        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
-        filterRoomBookingForm.dateRange = [
-            parseVNDate(props.checkIn),
-            parseVNDate(props.checkOut)
-        ];
-        filterRoomBookingForm.numOfNights = calculateNumOfNights(props.checkIn, props.checkOut);
-    }
-
-    // summary text
-    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
-    summarySearchInfor.value = `${getLabel('room', props.num_of_rooms)} for ${numOfGuestsSummary.value}`;
-
-    // caculate num of nights
-    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
-    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
-
-    // find best rate option
-    bestRateOptions.value = getBestRateOption(roomTypeList, filterRoomBookingForm);
-    console.log(bestRateOptions.value);
-})
 
 // pop over guest option menu
 const guestOptionMenu = ref();
@@ -604,146 +616,8 @@ const submit = (e) => {
 }
 
 // best option results
-// function findCheapestCombination(roomTypeList, request) {
-//     const {
-//         numOfAdults: totalAdults,
-//         numOfChildren: totalChildren,
-//         numOfRooms: numRooms,
-//         numOfNights: numNights,
-//     } = request;
+const bestRateOptions = ref([]);
 
-//     // Chuẩn hóa roomTypes từ dữ liệu room_rate_options
-//     const roomTypes = roomTypeList.map(rt => {
-//         return {
-//             ...rt,
-//             max_total: rt.max_adults + rt.max_children,
-//         }
-//     }).sort((a, b) => a.final_price - b.final_price); // sắp xếp giá tăng dần;
-//     console.log(roomTypes);
-
-//     // Kiểm tra sơ bộ khả năng tổng
-//     const maxTotalCapacity =
-//         Math.max(...roomTypes.map(r => r.max_total)) * numRooms;
-//     if (maxTotalCapacity < totalAdults + totalChildren) {
-//         return {
-//             valid: false,
-//             reason: "Không đủ tổng sức chứa tối đa cho số khách.",
-//         };
-//     }
-
-//     let best = { pricePerNight: Infinity, selection: null };
-
-//     // Sinh tổ hợp phòng (có lặp)
-//     function genCombinations(startIdx, remaining, combo) {
-//         if (remaining === 0) {
-//             evaluateCombination(combo);
-//             return;
-//         }
-//         for (let i = startIdx; i < roomTypes.length; i++) {
-//             combo.push(roomTypes[i]);
-//             genCombinations(i, remaining - 1, combo);
-//             combo.pop();
-//         }
-//     }
-
-//     // Đánh giá tổ hợp
-//     function evaluateCombination(combo) {
-//         const sumMaxTotal = combo.reduce((s, r) => s + r.max_total, 0);
-//         if (sumMaxTotal < totalAdults + totalChildren) return;
-
-//         const N = combo.length;
-//         const rateOptions = Array.from({ length: N }, () => ({
-//             adults: 0,
-//             children: 0,
-//         }));
-
-//         const prefixMaxTotal = new Array(N + 1).fill(0);
-//         for (let i = N - 1; i >= 0; i--) {
-//             prefixMaxTotal[i] = prefixMaxTotal[i + 1] + combo[i].max_total;
-//         }
-//         const sumMaxTotalOfRange = i => prefixMaxTotal[i] || 0;
-
-//         function assignAt(i, remAdults, remChildren, accPrice) {
-//             if (accPrice >= best.pricePerNight) return;
-//             if (i === N) {
-//                 if (remAdults === 0 && remChildren === 0) {
-//                     if (accPrice < best.pricePerNight) {
-//                         const summary = {};
-//                         for (let k = 0; k < N; k++) {
-//                             const rt = combo[k];
-//                             const key = rt.id;
-//                             if (!summary[key])
-//                                 summary[key] = {
-//                                     ...rt,
-//                                     count: 0,
-//                                     rateOptions: []
-//                                 };
-//                             summary[key].count += 1;
-//                             summary[key].rateOptions = rateOptions[k].rateOption
-//                         }
-//                         best = {
-//                             pricePerNight: accPrice,
-//                             selection: Object.values(summary),
-//                         };
-//                     }
-//                 }
-//                 return;
-//             }
-
-//             const rt = combo[i];
-//             for (let a = 0; a <= remAdults; a++) {
-//                 for (let c = 0; c <= remChildren; c++) {
-//                     const total = a + c;
-//                     if (total === 0) continue;
-//                     if (total > rt.max_total) continue;
-
-//                     const remainingTotal = sumMaxTotalOfRange(i + 1);
-//                     if (remainingTotal < remAdults + remChildren - total) continue;
-
-//                     // Chọn rate phù hợp: đủ số người
-//                     let rateTotal = rt.num_adults + rt.num_children;
-//                     const matchingRate =
-//                         rateTotal >= total &&
-//                         rt.num_adults >= a &&
-//                         rateTotal <= rt.max_total;
-
-//                     if (!matchingRate) continue;
-
-//                     rateOptions[i].rateOption = {
-//                         numAdult: matchingRate.numAdult,
-//                         numChild: matchingRate.numChild,
-//                         base_price: matchingRate.base_price,
-//                         final_price: matchingRate.final_price,
-//                         ratePolicy: matchingRate.ratePolicy,
-//                     };
-
-//                     assignAt(
-//                         i + 1,
-//                         remAdults - a,
-//                         remChildren - c,
-//                         accPrice + matchingRate.final_price
-//                     );
-//                 }
-//             }
-//         }
-
-//         assignAt(0, totalAdults, totalChildren, 0);
-//     }
-
-//     genCombinations(0, numRooms, []);
-
-//     if (!best.selection) {
-//         return { valid: false, reason: "Không tìm được tổ hợp phù hợp." };
-//     }
-
-//     return {
-//         valid: true,
-//         total_price_per_night: best.pricePerNight,
-//         num_of_nights: numNights,
-//         total_price: best.pricePerNight * numNights,
-//         selection: best.selection,
-//     };
-// }
 function findCheapestCombination(roomTypeList, request) {
     const {
         numOfAdults: totalAdults,
@@ -752,22 +626,17 @@ function findCheapestCombination(roomTypeList, request) {
         numOfNights: numNights,
     } = request;
 
-    // Chuẩn hóa roomTypes
     const roomTypes = roomTypeList.map(rt => ({
         ...rt,
         max_total: rt.max_adults + rt.max_children,
-    })).sort((a, b) => a.final_price - b.final_price); // sắp xếp giá tăng dần
+    }));
 
-    // Kiểm tra khả năng tổng sức chứa
     const maxTotalCapacity = Math.max(...roomTypes.map(r => r.max_total)) * numRooms;
     if (maxTotalCapacity < totalAdults + totalChildren) {
-        return {
-            valid: false,
-            reason: "Không đủ tổng sức chứa tối đa cho số khách.",
-        };
+        return { valid: false, reason: "Không đủ tổng sức chứa." };
     }
 
-    let best = { pricePerNight: Infinity, selection: null };
+    let allCombos = [];
 
     // Sinh tổ hợp phòng (có lặp)
     function genCombinations(startIdx, remaining, combo) {
@@ -782,44 +651,18 @@ function findCheapestCombination(roomTypeList, request) {
         }
     }
 
-    // Đánh giá tổ hợp phòng
+    // Đánh giá 1 combo
     function evaluateCombination(combo) {
-        const sumMaxTotal = combo.reduce((s, r) => s + r.max_total, 0);
-        if (sumMaxTotal < totalAdults + totalChildren) return;
-
         const N = combo.length;
         const rateOptions = Array.from({ length: N }, () => ({}));
-
         const prefixMaxTotal = new Array(N + 1).fill(0);
-        for (let i = N - 1; i >= 0; i--) {
-            prefixMaxTotal[i] = prefixMaxTotal[i + 1] + combo[i].max_total;
-        }
+        for (let i = N - 1; i >= 0; i--) prefixMaxTotal[i] = prefixMaxTotal[i + 1] + combo[i].max_total;
         const sumMaxTotalOfRange = i => prefixMaxTotal[i] || 0;
 
-        function assignAt(i, remAdults, remChildren, accPrice) {
-            if (accPrice >= best.pricePerNight) return;
+        function assignAt(i, remAdults, remChildren, accPrice, guestsPerRoom) {
             if (i === N) {
                 if (remAdults === 0 && remChildren === 0) {
-                    if (accPrice < best.pricePerNight) {
-                        // Tổng hợp kết quả tốt nhất
-                        const summary = {};
-                        for (let k = 0; k < N; k++) {
-                            const rt = combo[k];
-                            const key = rt.id;
-                            if (!summary[key]) {
-                                summary[key] = {
-                                    ...rt,
-                                    count: 0,
-                                    rateOption: rateOptions[k],
-                                };
-                            }
-                            summary[key].count += 1;
-                        }
-                        best = {
-                            pricePerNight: accPrice,
-                            selection: Object.values(summary),
-                        };
-                    }
+                    allCombos.push({ guestsPerRoom: [...guestsPerRoom], pricePerNight: accPrice, combo: [...combo] });
                 }
                 return;
             }
@@ -828,55 +671,74 @@ function findCheapestCombination(roomTypeList, request) {
             for (let a = 0; a <= remAdults; a++) {
                 for (let c = 0; c <= remChildren; c++) {
                     const total = a + c;
-                    if (total === 0) continue;
-                    if (total > rt.max_total) continue;
-
+                    if (total === 0 || total > rt.max_total) continue;
                     const remainingTotal = sumMaxTotalOfRange(i + 1);
                     if (remainingTotal < remAdults + remChildren - total) continue;
+                    if (a > rt.num_adults || c > rt.num_children) continue;
 
-                    // kiểm tra rate có đủ sức chứa không
-                    const rateTotal = rt.num_adults + rt.num_children;
-                    const isMatching =
-                        rateTotal >= total &&
-                        rt.num_adults >= a &&
-                        rateTotal <= rt.max_total;
+                    guestsPerRoom[i] = total;
 
-                    if (!isMatching) continue;
+                    assignAt(i + 1, remAdults - a, remChildren - c, accPrice + rt.final_price, guestsPerRoom);
 
-                    rateOptions[i] = {
-                        numAdult: rt.num_adults,
-                        numChild: rt.num_children,
-                        base_price: rt.base_price,
-                        final_price: rt.final_price,
-                        ratePolicy: rt.ratePolicy,
-                    };
-
-                    assignAt(
-                        i + 1,
-                        remAdults - a,
-                        remChildren - c,
-                        accPrice + rt.final_price
-                    );
+                    guestsPerRoom[i] = 0;
                 }
             }
         }
 
-        assignAt(0, totalAdults, totalChildren, 0);
+        assignAt(0, totalAdults, totalChildren, 0, Array(N).fill(0));
     }
 
     genCombinations(0, numRooms, []);
 
-    if (!best.selection) {
-        return { valid: false, reason: "Không tìm được tổ hợp phù hợp." };
-    }
+    if (allCombos.length === 0) return { valid: false, reason: "Không tìm được tổ hợp phù hợp." };
+
+    //Bước 2: chọn combo cân bằng nhất
+    allCombos.sort((a, b) => {
+        const maxDiffA = Math.max(...a.guestsPerRoom) - Math.min(...a.guestsPerRoom);
+        const maxDiffB = Math.max(...b.guestsPerRoom) - Math.min(...b.guestsPerRoom);
+        if (maxDiffA !== maxDiffB) return maxDiffA - maxDiffB;
+        return a.pricePerNight - b.pricePerNight;
+    });
+
+    const bestCombo = allCombos[0];
+    const summary = {};
+    bestCombo.combo.forEach((rt, idx) => {
+        const key = rt.id;
+        if (!summary[key]) summary[key] = { ...rt, count: 0 };
+        summary[key].count += 1;
+    });
 
     return {
         valid: true,
-        total_price_per_night: best.pricePerNight,
+        total_price_per_night: bestCombo.pricePerNight,
         num_of_nights: numNights,
-        total_price: best.pricePerNight * numNights,
-        selection: best.selection,
+        total_price: bestCombo.pricePerNight * numNights,
+        selection: Object.values(summary),
+        guestsPerRoom: bestCombo.guestsPerRoom,
     };
+}
+
+function findEmptyRoomOptions(roomTypeList, request) {
+    const { numOfAdults, numOfChildren, numOfRooms } = request;
+    const results = [];
+
+    roomTypeList.forEach(room => {
+        const { num_adults, num_children, available_quantity } = room;
+
+        // tính tổng sức chứa nếu dùng tất cả số phòng yêu cầu nhưng không vượt quá số phòng trống
+        const roomsToUse = Math.min(numOfRooms, available_quantity);
+        const totalAdultsCapacity = num_adults * roomsToUse;
+        const totalChildrenCapacity = num_children * roomsToUse;
+
+        // nếu tổng sức chứa đủ cho số khách và còn ít nhất 1 phòng
+        if (totalAdultsCapacity >= numOfAdults && totalChildrenCapacity >= numOfChildren && roomsToUse >= 1) {
+            results.push({
+                ...room,
+            });
+        }
+    });
+
+    return results;
 }
 
 function getBestRateOption(roomTypeList, filterOptions) {
@@ -895,21 +757,18 @@ function getBestRateOption(roomTypeList, filterOptions) {
     bestOptions.forEach(room => {
         room.total_base_price = total_base_price;
     })
-    console.log(bestOptions);
     return bestOptions;
 }
 
-const bestRateOptions = ref([]);
-
 // set best rate options
-const onSelectOptions = () => {
+const setSelectedOptions = () => {
     if (bestRateOptions.value) {
         // reset room selection from other options
-        roomTypeList.value.map(roomType => {
+        emptyRoomOptions.value.map(roomType => {
             roomType.selectedRooms = 0;
         })
 
-        roomTypeList.value.forEach(roomType => {
+        emptyRoomOptions.value.forEach(roomType => {
             const matched = bestRateOptions.value.find(
                 room =>
                     room.id === roomType.id
@@ -922,9 +781,45 @@ const onSelectOptions = () => {
     }
 }
 
+// add other options to booking detail
+const selectedRooms = ref([]);
+
+// Sync lại selectedRooms mỗi khi bestRateOptions thay đổi
+watchEffect(() => {
+    selectedRooms.value = bestRateOptions.value.map(({ room_rate_options, ...rest }) => ({
+        ...rest,
+    }));
+});
+console.log(selectedRooms.value);
+
+const onSelectedRooms = (roomId, selectedCount) => {
+    const room = emptyRoomOptions.value.find(r => r.id === roomId)
+    if (!room) return;
+
+    const { room_rate_options, ...rest } = room;
+
+    // Kiểm tra nếu phòng đã tồn tại trong selectedRooms
+    const existing = selectedRooms.value.find(r => r.id === roomId);
+
+    if (existing) {
+        // Nếu chọn count = 0 thì xóa khỏi danh sách
+        if (selectedCount === 0) {
+            const idx = selectedRooms.value.indexOf(existing);
+            selectedRooms.value.splice(idx, 1);
+        } else {
+            // Nếu đã tồn tại, cập nhật count
+            existing.count = selectedCount;
+        }
+    } else if (selectedCount > 0) {
+        // Nếu chưa tồn tại và chọn số lượng > 0, thêm mới
+        selectedRooms.value.push(rest);
+        rest.count = selectedCount;
+    }
+    console.log(selectedRooms.value);
+}
+
 // get to booking detail page
 const onBookingDetail = () => {
-    let selectedRooms = bestRateOptions.value.map(({ room_rate_options, ...rest }) => rest)
     const details = {
         date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
         num_adults: filterRoomBookingForm.numOfAdults,
