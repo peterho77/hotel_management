@@ -15,7 +15,7 @@ return new class extends Migration
             $table->mediumIncrements('id');
             $table->string('name', 20);
             $table->foreignId('room_type_id')->constrained('room_type')->onDelete('cascade');
-            $table->string('area', 20);
+            $table->unsignedTinyInteger('floor')->default(1);
             $table->string('status', 50);
             $table->text('note')->nullable();
             $table->foreignId('branch_id')->nullable()->constrained('branch')->onDelete('cascade');

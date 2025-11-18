@@ -525,8 +525,6 @@ onMounted(() => {
     const fromHome = localStorage.getItem('bookingFromHomePage') === '1';
     const fromDetail = localStorage.getItem('bookingFromDetailPage') === '1';
 
-    console.log(fromHome, fromDetail);
-
     // 1. Trường hợp quay về từ Booking Detail → ưu tiên storage
     if ((fromDetail && savedBookingData) || (!fromHome && !fromDetail)) {
         filterRoomBookingForm.numOfAdults = savedBookingData.adults;
@@ -792,6 +790,29 @@ watchEffect(() => {
 });
 console.log(selectedRooms.value);
 
+const updateTotalPriceSelectedRooms = () => {
+    let totalBasePrice = 0;
+    let totalFinalPrice = 0;
+
+    selectedRooms.value.forEach(room => {
+        const { base_price, final_price, count } = room;
+
+        // Tính tổng cho từng room type
+        room.total_base_price_per_room_type = base_price * count * filterRoomBookingForm.numOfNights;
+        room.total_price_per_room_type = final_price * count * filterRoomBookingForm.numOfNights;
+
+        // Cộng vào tổng toàn bộ
+        totalBasePrice += room.total_base_price_per_room_type;
+        totalFinalPrice += room.total_price_per_room_type;
+    });
+
+    selectedRooms.value.forEach(room => {
+        // Cập nhật tổng toàn bộ
+        room.total_base_price = totalBasePrice;
+        room.total_price = totalFinalPrice;
+    });
+};
+
 const onSelectedRooms = (roomId, selectedCount) => {
     const room = emptyRoomOptions.value.find(r => r.id === roomId)
     if (!room) return;
@@ -815,6 +836,7 @@ const onSelectedRooms = (roomId, selectedCount) => {
         selectedRooms.value.push(rest);
         rest.count = selectedCount;
     }
+    updateTotalPriceSelectedRooms();
     console.log(selectedRooms.value);
 }
 
@@ -826,7 +848,7 @@ const onBookingDetail = () => {
         num_children: filterRoomBookingForm.numOfChildren,
         num_rooms: filterRoomBookingForm.numOfRooms,
         num_nights: filterRoomBookingForm.numOfNights,
-        selected_rooms: JSON.parse(JSON.stringify(selectedRooms || [])),
+        selected_rooms: JSON.parse(JSON.stringify(selectedRooms.value || [])),
     }
     console.log(details);
     router.post(route('booking.detail'), details);

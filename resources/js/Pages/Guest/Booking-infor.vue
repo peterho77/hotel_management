@@ -231,7 +231,8 @@
                                         </div>
 
                                         <!-- room list -->
-                                        <template v-for="room in bookingDetail.selected_rooms">
+                                        <template
+                                            v-for="room in bookingDetail.selected_rooms.sort((a, b) => a.name.localeCompare(b.name))">
                                             <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
                                                 <!-- room type name -->
                                                 <h3 class="text-xl font-semibold">{{ room.name }}</h3>
@@ -312,12 +313,52 @@
                             </div>
                         </StepPanel>
                         <StepPanel v-slot="{ activateCallback }" :value="3">
-                            <div class="flex flex-col gap-2 mx-auto" style="min-height: 16rem; max-width: 24rem">
-                                <div class="text-center mt-4 mb-4 text-xl font-semibold">Account created
-                                    successfully</div>
-                                <div class="flex justify-center">
-                                    <img alt="logo"
-                                        src="https://primefaces.org/cdn/primevue/images/stepper/content.svg" />
+                            <div class="flow" style="--flow-spacer:1rem">
+                                <div class="payment-section | box flow p-6" style="--flow-spacer:1rem">
+                                    <h3 class="text-xl font-semibold">Thông tin thanh toán</h3>
+                                    <Button class="flex items-center gap-x-2" severity="info" variant="text" fluid
+                                        @click="showAddPaymentMethod">
+                                        <template #default>
+                                            <div v-if="selectedPayment" class="flex items-center justify-between w-full">
+                                                <div class="flex items-center gap-x-2 w-full">
+                                                    <img :src="selectedPayment.imgPath" alt=""
+                                                        class="h-15 w-15 object-contain">
+                                                    <span
+                                                        class="text-gray-700 font-medium">{{ selectedPayment.label }}</span>
+                                                </div>
+                                                <i class="pi pi-angle-right" style="font-size:1.75rem"></i>
+                                            </div>
+                                            <div v-else class="flex items-center gap-x-2 w-full">
+                                                <i class="pi pi-credit-card" style="font-size:1.5rem"></i>
+                                                <span class="text-md">Chọn phương thức thanh toán</span>
+                                            </div>
+                                        </template>
+                                    </Button>
+                                </div>
+                                <div class="room-booking-item | box flow p-6" style="--flow-spacer:1rem">
+                                    <h3 class="text-xl font-semibold">Thông tin người đặt phòng</h3>
+                                    <div class="grid gap-3">
+                                        <div class="flex justify-between">
+                                            <label class="text-gray-500">Khách hàng</label>
+                                            <span>Phạm Chí Trọng</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <label class="text-gray-500">Số điện thoại</label>
+                                            <span>0376193244</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <label class="text-gray-500">Email</label>
+                                            <span>pct2002@gmail.com</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <label class="text-gray-500">Dịch vụ</label>
+                                            <span>Đưa đón bằng xe taxi</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <label class="text-gray-500">Yêu cầu đặc biệt</label>
+                                            <span>LGBT</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex p-2 justify-start">
@@ -355,7 +396,7 @@
 </style>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, defineAsyncComponent } from 'vue';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import Message from 'primevue/message';
@@ -471,6 +512,37 @@ const onChangeBookingOptions = () => {
         dateRange: bookingDetail.date_range
     }));
     router.get(route('booking'));
+}
+
+// open payment method dialog
+import { useDialog } from 'primevue/usedialog';
+
+const dialog = useDialog();
+const selectedPayment = ref({});
+
+const addPaymentMethod = defineAsyncComponent(() => import('../../Components/Dialog/AddPaymentMethod.vue'));
+
+const showAddPaymentMethod = () => {
+    const dialogRef = dialog.open(addPaymentMethod, {
+        props: {
+            header: 'Chọn phương thức thanh toán',
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true
+        },
+        emits: {
+            onConfirmPaymentMethod: (payment) => {
+                selectedPayment.value = payment;
+                console.log(selectedPayment.value);
+                dialogRef.close(); // đóng dialog khi xác nhận
+            }
+        }
+    });
 }
 
 </script>
