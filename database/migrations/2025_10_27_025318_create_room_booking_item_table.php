@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('booking_id')->nullable()->constrained('room_booking')->nullOnDelete();
             $table->foreignId('room_rate_option_id')->nullable()->constrained('room_rate_option ')->nullOnDelete();
-            $table->decimal('price_per_night', 9, 2);
-            $table->unsignedTinyInteger('num_of_rooms');
-            $table->unsignedTinyInteger('num_of_adults');
-            $table->unsignedTinyInteger('num_of_children')->nullable();
+            $table->foreignId('assigned_room_id')->nullable()->constrained('room')->nullOnDelete();
+            $table->foreignId('applied_discount_id')->nullable()->constrained('discount')->nullOnDelete();
+            $table->decimal('total_base_price',9,2);
+            $table->decimal('discount_amount',9,2)->nullable();
+            $table->decimal('final_price',9,2);
             $table->timestamps();
         });
     }

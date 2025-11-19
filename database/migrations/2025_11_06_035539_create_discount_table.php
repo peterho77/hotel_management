@@ -16,10 +16,13 @@ return new class extends Migration
             $table->string('name');
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 8, 2);
-            $table->enum('scope', ['rate_policy', 'member_only', 'all'])->default('all');
+            $table->enum('category', ['SEASONAL', 'CORPORATE', 'LOYALTY', 'GROUP'])->nullable();
+            $table->enum('scope', ['rate_policy', 'member_only', 'all', 'voucher', 'promotion'])->default('all');
             $table->enum('stacking_rule', ['cumulative', 'exclusive', 'best_rate']);
             $table->unsignedSmallInteger('priority_level');
             $table->json('condition')->nullable();
+            $table->timestamp('valid_from')->nullable();
+            $table->timestamp('valid_to')->nullable();
             $table->timestamps();
         });
     }

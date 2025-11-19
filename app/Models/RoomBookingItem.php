@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class RoomBookingItem extends Model
 {
-    public function discounts(): BelongsToMany
+    public function room_rate_otion()
     {
-        return $this->belongsToMany(
-            Discount::class,
-            'booking_item_discount_detail',
-            'booking_item_id',
-            'discount_id'
-        );
+        return $this->belongsTo(RoomRateOption::class, 'room_rate_option_id');
+    }
+
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class, 'booking_id');
     }
 }

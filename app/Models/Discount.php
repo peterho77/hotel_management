@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Discount extends Model
 {
     protected $table = 'discount';
-    public function room_types(): BelongsToMany
+    public function room_rate_options(): BelongsToMany
     {
         return $this->belongsToMany(
             RoomRateOption::class,
-            "room_rate_discount",
+            "room_discount_detail",
             'discount_id',
             'room_rate_option_id'
         );
@@ -21,7 +21,7 @@ class Discount extends Model
     {
         return $this->belongsToMany(
             RoomRateOption::class,
-            "booking_item_discount_detail",
+            "room_discount_detail",
             'discount_id',
             'booking_item_id'
         );

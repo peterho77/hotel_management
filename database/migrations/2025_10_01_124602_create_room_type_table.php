@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('bed_type')->default('single');
             $table->mediumText('description')->nullable();
-            $table->unsignedSmallInteger('max_adults')->default(1);
+            $table->unsignedSmallInteger('max_adults')->default(2);
             $table->unsignedSmallInteger('max_children')->default(0);
             $table->smallInteger('total_quantity');
             $table->decimal('base_price',9,2);
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('full_day_rate',9,2)->nullable();
             $table->decimal('overnight_rate',9,2)->nullable();
             $table->string('status', 10);
-        });
+        }); 
     }
 
     /**

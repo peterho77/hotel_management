@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\RoomRateOption;
 
-class RoomRateDiscountSeeder extends Seeder
+class RoomDiscountDetailSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -43,10 +43,10 @@ class RoomRateDiscountSeeder extends Seeder
                 }
 
                 // Ghi vào bảng room_rate_discount
-                DB::table('room_rate_discount')->insert([
+                DB::table('room_discount_detail')->insert([
                     'room_rate_option_id' => $option->id,
                     'discount_id' => $discount->id,
-                    'applied_value' => $discount->discount_value,
+                    'applied_amount' => $discount->discount_value,
                     'applied_order' => $discount->priority_level,
                     'discount_applied' => $discountAmount,
                     'is_active' => true,

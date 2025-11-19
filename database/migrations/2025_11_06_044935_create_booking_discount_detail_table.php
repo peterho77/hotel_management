@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('booking_item_discount_detail', function (Blueprint $table) {
+        Schema::create('booking_discount_detail', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_item_id')->constrained('room_booking_item')->nullOnDelete();
             $table->foreignId('discount_id')->constrained('discount')->nullOnDelete();
-            $table->decimal('applied_value',8,2);
             $table->unsignedSmallInteger('applied_order');
-            $table->decimal('discount_applied',9,2);
+            $table->decimal('applied_amount',8,2);
+            $table->decimal('final_price',9,2);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

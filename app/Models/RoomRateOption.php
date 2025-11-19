@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RoomRateOption extends Model
 {
     protected $table = "room_rate_option";
-    protected $appends = ['price','final_price'];
+    protected $appends = ['price', 'final_price'];
     public function room_type()
     {
         return $this->belongsTo(RoomType::class);
@@ -18,14 +18,24 @@ class RoomRateOption extends Model
     {
         return $this->belongsToMany(
             Discount::class,
-            'room_rate_discount',
+            'room_discount_detail',
             'room_rate_option_id',
             'discount_id'
-        )->withPivot(['applied_value', 'applied_order', 'discount_applied', 'is_active']);
+        )->withPivot(['applied_amount', 'applied_order', 'discount_applied', 'is_active']);
     }
-    public function rate_policy(): BelongsTo
+    public function rate_policies(): BelongsToMany
     {
-        return $this->belongsTo(RatePolicy::class, 'rate_policy_id', 'id');
+        return $this->belongsToMany(
+            RatePolicy::class,
+            'room_rate_policy',
+            'room_rate_option_id',
+            'rate_policy_id'
+        );
+    }
+
+    public function room_booking_items()
+    {
+        return $this->hasMany(RoomBookingItem::class, 'room_rate_option_id');
     }
 
     public function getPriceAttribute()
@@ -37,7 +47,7 @@ class RoomRateOption extends Model
 
         $basePrice = $roomType->base_price;
 
-        if (isset($this->rate_policy['is_refundable']) && !$this->rate_policy['is_refundable']) {
+        if (isset($this->rate_policies['is_refundable']) && !$this->rate_policies['is_refundable']) {
             $basePrice = $basePrice * 0.95;
         }
 
@@ -53,7 +63,7 @@ class RoomRateOption extends Model
             ->get()
             ->where('pivot.is_active', true)
             ->sortBy('pivot.applied_order')
-            ->sum('pivot.discount_applied');
+            ->sum('pivot.applied_amount');
 
         return max($basePrice - $totalDiscount, 0);
     }
