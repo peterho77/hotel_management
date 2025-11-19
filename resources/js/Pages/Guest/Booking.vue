@@ -270,7 +270,7 @@
                                 <template #body="{ data }">
                                     <Select v-model="data.selectedRooms" :options="data.options" optionLabel="label"
                                         optionValue="value" optionDisabled="disabled"
-                                        @change="onSelectedRooms(data.id, data.selectedRooms)">
+                                        @change="onSelectedRooms(data.id, data.rate_policy.id, data.selectedRooms)">
                                     </Select>
                                 </template>
                             </Column>
@@ -428,15 +428,46 @@ const parseVNDate = (value) => {
 const roomTypeList = ref([]);
 
 const initRoomTypeList = () => {
-    roomTypeList.value = props.roomTypeList.flatMap(roomType =>
-        roomType.room_rate_options.map(option => ({
-            ...roomType,
-            ...option,
-            name: roomType.name,
-            selectedRooms: 0,
-            options: []
-        }))
-    );
+    roomTypeList.value = props.roomTypeList.flatMap(roomType => {
+        const roomRateOptions = roomType.room_rate_options ?? [];
+
+        // Nếu không có room_rate_options thì tạo một entry "trống"
+        if (roomRateOptions.length === 0) {
+            return [{
+                ...roomType,
+                rate_option_id: null,
+                rate_policy: null,
+                selectedRooms: 0,
+                options: []
+            }];
+        }
+
+        return roomRateOptions.flatMap(option => {
+            const policies = option.rate_policies ?? [null];
+            // const maxQty = option.available_quantity ?? roomType.total_quantity ?? 0;
+            // const generatedOptions = Array.from(
+            //     { length: maxQty + 1 },
+            //     (_, i) => ({ label: String(i), value: i, disabled: false })
+            // );
+
+            return policies.map(policy => {
+                const item = {
+                    ...roomType,       
+                    ...option,       
+                    rate_policy: policy, 
+                    selectedRooms: 0,
+                    options: []
+                };
+
+                // Xoá các trường lồng nhau không cần thiết để tránh duplication
+                delete item.room_rate_options;
+                delete item.rate_policies;
+                delete item.room_type;
+                delete item.room_type_id;
+                return item;
+            });
+        })
+    })
 };
 
 // Hàm tạo options cho mỗi select room quantity
@@ -444,7 +475,7 @@ const getOptions = (row) => {
     const sameGroup = emptyRoomOptions.value.filter(r => r.name === row.name);
     // Tổng số phòng đã chọn của các select khác
     const totalOthers = sameGroup
-        .filter(r => (r.rate_policy_id !== row.rate_policy_id) || (r.num_adults !== row.num_adults || r.num_children !== row.num_children))
+        .filter(r => (r.rate_policy.id !== row.rate_policy.id) || (r.num_adults !== row.num_adults || r.num_children !== row.num_children))
         .reduce((sum, r) => sum + (r.selectedRooms || 0), 0);
 
     // Tạo options từ 0 -> available_quantity, disable nếu vượt quá
@@ -495,6 +526,7 @@ const filterRoomBookingForm = reactive({
 
 // find other room options
 const emptyRoomOptions = ref(findEmptyRoomOptions(roomTypeList.value, filterRoomBookingForm));
+console.log(emptyRoomOptions.value);
 
 updateAllRoomQuantityOptions();
 
@@ -503,8 +535,6 @@ watch(
     updateAllRoomQuantityOptions,
     { deep: true }
 );
-
-console.log(emptyRoomOptions.value);
 
 watch(
     () => ({
@@ -761,15 +791,10 @@ function getBestRateOption(roomTypeList, filterOptions) {
 // set best rate options
 const setSelectedOptions = () => {
     if (bestRateOptions.value) {
-        // reset room selection from other options
-        emptyRoomOptions.value.map(roomType => {
-            roomType.selectedRooms = 0;
-        })
-
         emptyRoomOptions.value.forEach(roomType => {
             const matched = bestRateOptions.value.find(
                 room =>
-                    room.id === roomType.id
+                    room.id === roomType.id && room.rate_policy.id === roomType.rate_policy.id
             );
 
             if (matched) {
@@ -788,7 +813,6 @@ watchEffect(() => {
         ...rest,
     }));
 });
-console.log(selectedRooms.value);
 
 const updateTotalPriceSelectedRooms = () => {
     let totalBasePrice = 0;
@@ -813,28 +837,23 @@ const updateTotalPriceSelectedRooms = () => {
     });
 };
 
-const onSelectedRooms = (roomId, selectedCount) => {
-    const room = emptyRoomOptions.value.find(r => r.id === roomId)
-    if (!room) return;
-
-    const { room_rate_options, ...rest } = room;
-
+const onSelectedRooms = (roomId, ratePolicyId, selectedCount) => {
+    const roomOption = selectedRooms.value.find(r => r.id === roomId && r.rate_policy.id === ratePolicyId)
+    console.log(roomOption);
     // Kiểm tra nếu phòng đã tồn tại trong selectedRooms
-    const existing = selectedRooms.value.find(r => r.id === roomId);
-
-    if (existing) {
+    if (roomOption) {
         // Nếu chọn count = 0 thì xóa khỏi danh sách
         if (selectedCount === 0) {
-            const idx = selectedRooms.value.indexOf(existing);
+            const idx = selectedRooms.value.indexOf(roomOption);
             selectedRooms.value.splice(idx, 1);
         } else {
             // Nếu đã tồn tại, cập nhật count
-            existing.count = selectedCount;
+            roomOption.count = selectedCount;
         }
     } else if (selectedCount > 0) {
-        // Nếu chưa tồn tại và chọn số lượng > 0, thêm mới
-        selectedRooms.value.push(rest);
-        rest.count = selectedCount;
+        let newRoomOptions = emptyRoomOptions.value.find(r => r.id === roomId && r.rate_policy.id === ratePolicyId);
+        selectedRooms.value.push(newRoomOptions);
+        newRoomOptions.count = selectedCount;
     }
     updateTotalPriceSelectedRooms();
     console.log(selectedRooms.value);

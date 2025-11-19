@@ -35,4 +35,9 @@ class BookingController extends Controller
             'detail' => $detail
         ]);
     }
+
+    public function confirm(Request $request)
+    {
+        
+    }
 }

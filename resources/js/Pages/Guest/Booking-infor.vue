@@ -123,7 +123,7 @@
                                                 <AccordionContent>
                                                     <!-- num of rooms -->
                                                     <div class="grid p-2">
-                                                        <template v-for="room in bookingDetail.selected_rooms">
+                                                        <template v-for="room in summaryNumOfRoomsList">
                                                             <span>{{ room.count }} x {{ room.name }}</span>
                                                         </template>
                                                     </div>
@@ -167,56 +167,53 @@
                                             <h3 class="font-semibold text-2xl">Nhập thông tin chi tiết của bạn</h3>
                                             <div class="grid gap-y-6">
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                                    <FormField v-slot="$field" name="surname"
-                                                        class="flex flex-col gap-1">
+                                                    <FormField class="flex flex-col gap-1">
                                                         <label for="">Họ</label>
-                                                        <InputText type="text" />
-                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                        <InputText v-model="bookingForm.surname" type="text" />
+                                                        <Message v-if="errors.surname" severity="error" size="small"
                                                             variant="simple">
-                                                            {{ $field.error?.message }}</Message>
+                                                            {{ errors.surname }}</Message>
                                                     </FormField>
-                                                    <FormField v-slot="$field" name="firstname"
-                                                        class="flex flex-col gap-1">
+                                                    <FormField class="flex flex-col gap-1">
                                                         <label for="">Tên</label>
-                                                        <InputText type="text" />
-                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                        <InputText v-model="bookingForm.firstname" type="text" />
+                                                        <Message v-if="errors.firstname" severity="error" size="small"
                                                             variant="simple">
-                                                            {{ $field.error?.message }}</Message>
+                                                            {{ errors.firstname }}</Message>
                                                     </FormField>
-                                                    <FormField v-slot="$field" name="email" class="flex flex-col gap-1">
+                                                    <FormField class="flex flex-col gap-1">
                                                         <label for="">Địa chỉ email</label>
-                                                        <InputText type="text" />
-                                                        <Message v-if="$field?.invalid" severity="error" size="small"
+                                                        <InputText v-model="bookingForm.email" type="text" />
+                                                        <Message v-if="errors.email" severity="error" size="small"
                                                             variant="simple">
-                                                            {{ $field.error?.message }}</Message>
+                                                            {{ errors.email }}</Message>
                                                     </FormField>
-                                                    <FormField v-slot="$field" name="confirm-email"
-                                                        class="flex flex-col gap-1">
+                                                    <FormField class="flex flex-col gap-1">
                                                         <label for="">Xác nhận địa chỉ email</label>
-                                                        <InputText type="text" />
-                                                        <Message v-if="$field?.invalid" severity="error" size="small"
-                                                            variant="simple">
-                                                            {{ $field.error?.message }}</Message>
+                                                        <InputText v-model="bookingForm.confirm_email" type="text" />
+                                                        <Message v-if="errors.confirm_email" severity="error"
+                                                            size="small" variant="simple">
+                                                            {{ errors.confirm_email }}</Message>
                                                     </FormField>
                                                 </div>
                                                 <div class="flex flex-col gap-1">
                                                     <label for="country">Vùng/Quốc gia</label>
-                                                    <Select name="country" :options="countries" optionLabel="name"
-                                                        placeholder="Select a country" />
+                                                    <Select v-model="bookingForm.country" :options="countries"
+                                                        optionLabel="name" placeholder="Select a country" />
                                                     <Message v-if="$form.city?.name?.invalid" severity="error"
                                                         size="small" variant="simple">
                                                         {{ $form.city.name.error?.message }}</Message>
                                                 </div>
                                                 <div class="flex flex-col gap-1">
                                                     <label for="">Số điện thoại</label>
-                                                    <InputText name="phone" />
-                                                    <Message v-if="$form.city?.name?.invalid" severity="error"
-                                                        size="small" variant="simple">
-                                                        {{ $form.city.name.error?.message }}</Message>
+                                                    <InputText v-model="bookingForm.phone" />
+                                                    <Message v-if="errors.phone" severity="error" size="small"
+                                                        variant="simple">
+                                                        {{ errors.phone }}</Message>
                                                 </div>
                                                 <div class="flex flex-col gap-2">
                                                     <label for="">Bạn sắp đi công tác? (không bắt buộc)</label>
-                                                    <RadioButtonGroup name="business-trip" class="flex flex-wrap gap-4">
+                                                    <RadioButtonGroup name="business_trip" class="flex flex-wrap gap-4">
                                                         <div class="flex items-center gap-2">
                                                             <RadioButton value="true" />
                                                             <label for="cheese">Đúng</label>
@@ -287,7 +284,7 @@
                                             <h3 class="text-xl font-semibold">Các yêu cầu đặc biệt</h3>
                                             <div class="flex flex-col gap-2">
                                                 <span>Vui lòng ghi yêu cầu của bạn vào đây.(không bắt buộc)</span>
-                                                <Textarea name="special_request" rows="4" cols="30"
+                                                <Textarea v-model="bookingForm.special_request" rows="4" cols="30"
                                                     style="resize: none" />
                                                 <div class="flex items-center gap-2">
                                                     <Checkbox name="special_request" value="close-room" />
@@ -295,11 +292,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="special-request | box flow" style="--flow-spacer:1rem">
+                                        <div class="arrival-time | box flow" style="--flow-spacer:1rem">
                                             <h3 class="text-xl font-semibold">Thời gian đến của bạn</h3>
                                             <div class="flex flex-col gap-2">
                                                 <span>Thêm thời gian đến dự kiến của bạn.(không bắt buộc)</span>
-                                                <Select name="check_in_time" :options="checkInTimeSlots"
+                                                <Select name="arrival_time" :options="checkInTimeSlots"
                                                     optionLabel="name" optionValue="value" placeholder="Vui lòng chọn"
                                                     class="max-w-60" />
                                             </div>
@@ -319,7 +316,8 @@
                                     <Button class="flex items-center gap-x-2" severity="info" variant="text" fluid
                                         @click="showAddPaymentMethod">
                                         <template #default>
-                                            <div v-if="selectedPayment" class="flex items-center justify-between w-full">
+                                            <div v-if="selectedPayment"
+                                                class="flex items-center justify-between w-full">
                                                 <div class="flex items-center gap-x-2 w-full">
                                                     <img :src="selectedPayment.imgPath" alt=""
                                                         class="h-15 w-15 object-contain">
@@ -361,9 +359,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex p-2 justify-start">
+                            <div class="flex px-2 mt-4 justify-between">
                                 <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                    @click="activateCallback(2)" />
+                                    @click="activateCallback(2)" raised />
+                                <Button label="Thanh toán" severity="info" raised
+                                    @click="confirmPayment(() => activateCallback(2))" />
                             </div>
                         </StepPanel>
                     </StepPanels>
@@ -396,7 +396,7 @@
 </style>
 
 <script setup>
-import { ref, reactive, defineAsyncComponent } from 'vue';
+import { ref, reactive, defineAsyncComponent, computed, watch } from 'vue';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import Message from 'primevue/message';
@@ -438,6 +438,19 @@ const getSummaryText = (numOfRooms, numOfAdults, numOfChildren) => {
     }
     return text;
 }
+
+const summaryNumOfRoomsList = computed(() => {
+    const map = {};
+
+    bookingDetail.selected_rooms.forEach(room => {
+        if (!map[room.name]) {
+            map[room.name] = { name: room.name, count: 0 };
+        }
+        map[room.name].count += room.count;
+    });
+
+    return Object.values(map);
+});
 
 const getCancellationType = (type) => {
     switch (type) {
@@ -518,7 +531,7 @@ const onChangeBookingOptions = () => {
 import { useDialog } from 'primevue/usedialog';
 
 const dialog = useDialog();
-const selectedPayment = ref({});
+const selectedPayment = ref(null);
 
 const addPaymentMethod = defineAsyncComponent(() => import('../../Components/Dialog/AddPaymentMethod.vue'));
 
@@ -543,6 +556,89 @@ const showAddPaymentMethod = () => {
             }
         }
     });
+}
+
+// add customer infor
+const bookingForm = reactive({
+    surname: '',
+    firstname: '',
+    phone: '',
+    email: '',
+    confirm_email: '',
+    country: '',
+    special_request: '',
+    arrival_time: '',
+    payment_instrument: '',
+});
+
+const errors = reactive({
+    surname: null,
+    firstname: null,
+    phone: null,
+    email: null,
+    confirm_email: null,
+});
+
+// REGEX ĐIỆN THOẠI VIỆT NAM (09, 03, 07, 08, 05)
+const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+
+// REGEX EMAIL CHUẨN
+const emailRegex = /^\S+@\S+\.\S+$/;
+
+const validateForm = () => {
+    // surname
+    errors.surname = bookingForm.surname.trim()
+        ? null
+        : "Vui lòng nhập họ";
+
+    // firstname
+    errors.firstname = bookingForm.firstname.trim()
+        ? null
+        : "Vui lòng nhập tên";
+
+    // phone
+    if (!bookingForm.phone.trim()) {
+        errors.phone = "Vui lòng nhập số điện thoại";
+    } else if (!phoneRegex.test(bookingForm.phone)) {
+        errors.phone = "Số điện thoại không hợp lệ";
+    } else {
+        errors.phone = null;
+    }
+
+    // email
+    if (!bookingForm.email.trim()) {
+        errors.email = "Vui lòng nhập email";
+    } else if (!emailRegex.test(bookingForm.email)) {
+        errors.email = "Email không hợp lệ";
+    } else {
+        errors.email = null;
+    }
+
+    // confirm email
+    if (!bookingForm.confirm_email.trim()) {
+        errors.confirm_email = "Vui lòng nhập lại email";
+    } else if (bookingForm.confirm_email !== bookingForm.email) {
+        errors.confirm_email = "Email xác nhận không trùng";
+    } else {
+        errors.confirm_email = null;
+    }
+
+    // nếu không có lỗi → true
+    return Object.values(errors).every(e => e === null);
+};
+
+// get payment instrument
+watch(() => selectedPayment.value, (newValue) => {
+    bookingForm.payment_instrument = newValue.value;
+});
+
+const confirmPayment = (backToBookingForm) => {
+    if (!validateForm()) {
+        backToBookingForm();
+    }
+    else {
+        console.log(bookingForm);
+    }
 }
 
 </script>
