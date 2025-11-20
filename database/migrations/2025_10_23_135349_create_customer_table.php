@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->date('birth_date')->nullable();
             $table->string('address')->nullable();
-            $table->string('country')->default('Việt Nam');
+            $table->string('country')->nullable()->default('Việt Nam');
             $table->string('email')->nullable()->unique();
             $table->string('phone')->nullable()->unique();
             $table->foreignId('customer_type_id')->default(1)->constrained('customer_type')->nullOnDelete();

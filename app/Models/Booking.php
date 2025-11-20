@@ -10,8 +10,8 @@ class Booking extends Model
 
     protected $fillable = [
         'customer_id',
-        'check_in_date',
-        'check_out_date',
+        'check_in',
+        'check_out',
         'num_nights',
         'num_rooms',
         'num_adults',
@@ -19,15 +19,18 @@ class Booking extends Model
         'total_price',
         'amount_paid',
         'deposit_amount',
-        'booking_status',
-        'payment_status',
-        'payment_method',
-        'payment_instrument',
+        'status',
+        'payment_option',
         'special_request'
     ];
 
     public function room_booking_items()
     {
         return $this->hasMany(RoomBookingItem::class, 'booking_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

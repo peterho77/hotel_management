@@ -3,40 +3,43 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\Payment\VNPayService;
+use App\Models\Booking;
 
 class PaymentController extends Controller
 {
-    // protected VNPayService $vnpayService;
+    protected VNPayService $vnpayService;
 
-    // public function __construct(VNPayService $vnpayService)
-    // {
-    //     $this->vnpayService = $vnpayService;
-    // }
+    public function __construct(VNPayService $vnpayService)
+    {
+        $this->vnpayService = $vnpayService;
+    }
 
-    // // Khởi tạo thanh toán VNPAY cho đơn hàng cụ thể và lấy orderid
-    // public function vnpayCheckout(int $order_id)
-    // {
-    //     $order = Order::findOrFail($order_id);
-    //     $url = $this->vnpayService->generatePaymentUrl($order);
-    //     return redirect()->away($url);
-    // }
+    // init VNPAY payment 
+    public function vnpayCheckout(int $booking_id)
+    {
+        $booking = Booking::findOrFail($booking_id);
+        $url = $this->vnpayService->generatePaymentUrl($booking);
 
-    // // Return URL từ VNPAY
-    // public function vnpayReturn(Request $request)
-    // {
-    //     $result = $this->vnpayService->processReturn($request->all());
-    //     if ($result['success']) {
-    //         return redirect()->route('checkout.success', ['order_id' => $result['order']->id]);
-    //     }
-    //     return redirect()->route('checkout.failed')->with('error', $result['message']);
-    // }
+        return redirect()->away($url);
+    }
 
-    // public function vnpayIpn(Request $request)
-    // {
-    //     $result = $this->vnpayService->processReturn($request->all());
-    //     return response()->json([
-    //         'RspCode' => $result['success'] ? '00' : '97',
-    //         'Message' => $result['message'] ?? 'Invalid signature',
-    //     ]);
-    // }
+    // return URL from VNPAY
+    public function vnpayReturn(Request $request)
+    {
+        $result = $this->vnpayService->processReturn($request->all());
+        if ($result['success']) {
+            return redirect()->route('booking.index', ['success' => $result['message']]);
+        }
+        return redirect()->route('booking.index')->with('error', $result['message']);
+    }
+
+    public function vnpayIpn(Request $request)
+    {
+        $result = $this->vnpayService->processReturn($request->all());
+        return response()->json([
+            'RspCode' => $result['success'] ? '00' : '97',
+            'Message' => $result['message'] ?? 'Invalid signature',
+        ]);
+    }
 }

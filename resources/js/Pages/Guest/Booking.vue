@@ -157,7 +157,7 @@
                                         <h3 class="text-lg fw-bold">{{ data.total_price }} VND</h3>
                                     </div>
                                     <Button label="Đặt các lựa chọn của bạn" class="max-w-60"
-                                        @click="setSelectedOptions" />
+                                        @click="setSelectedRoomOptions" />
                                 </div>
                             </template>
                         </Column>
@@ -288,7 +288,7 @@
                                         class="ml-2 *:text-lg">{{ (totalFinalPrice > 0 ? `${totalFinalPrice} VND` : '') }}</span>
                                 </div>
                             </div>
-                            <Button @click="onBookingDetail">Booking</Button>
+                            <Button @click="sendRoomBookingDetail">Booking</Button>
                         </div>
                     </div>
                 </div>
@@ -341,6 +341,12 @@ import Column from 'primevue/column';
 // router
 import { router } from '@inertiajs/vue3';
 
+// page
+import { usePage } from '@inertiajs/vue3';
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
+const page = usePage();
+
 const props = defineProps({
     roomTypeList: Array,
     checkIn: String,
@@ -383,20 +389,6 @@ const getPriceDesc = (price, night) => `
     </div>
 `;
 
-// convert to ISO format
-// const parseVNDate = (value) => {
-//     if (!value) return null;
-
-//     // Nếu là Date object thì giữ nguyên
-//     if (value instanceof Date) return value;
-
-//     // Nếu là ISO format (yyyy-mm-dd)
-//     if (value.includes('-')) return new Date(value);
-
-//     // Nếu là dạng VN dd/mm/yyyy
-//     const [day, month, year] = value.split('/');
-//     return new Date(`${year}-${month}-${day}`);
-// };
 const parseVNDate = (value) => {
     if (!value) return null;
 
@@ -452,9 +444,9 @@ const initRoomTypeList = () => {
 
             return policies.map(policy => {
                 const item = {
-                    ...roomType,       
-                    ...option,       
-                    rate_policy: policy, 
+                    ...roomType,
+                    ...option,
+                    rate_policy: policy,
                     selectedRooms: 0,
                     options: []
                 };
@@ -789,7 +781,7 @@ function getBestRateOption(roomTypeList, filterOptions) {
 }
 
 // set best rate options
-const setSelectedOptions = () => {
+const setSelectedRoomOptions = () => {
     if (bestRateOptions.value) {
         emptyRoomOptions.value.forEach(roomType => {
             const matched = bestRateOptions.value.find(
@@ -800,6 +792,8 @@ const setSelectedOptions = () => {
             if (matched) {
                 roomType.selectedRooms = matched.count;
             }
+
+            selectedRooms.value = bestRateOptions.value;
         });
     }
 }
@@ -808,11 +802,9 @@ const setSelectedOptions = () => {
 const selectedRooms = ref([]);
 
 // Sync lại selectedRooms mỗi khi bestRateOptions thay đổi
-watchEffect(() => {
-    selectedRooms.value = bestRateOptions.value.map(({ room_rate_options, ...rest }) => ({
-        ...rest,
-    }));
-});
+// watchEffect(() => {
+//     selectedRooms.value = bestRateOptions.value;
+// });
 
 const updateTotalPriceSelectedRooms = () => {
     let totalBasePrice = 0;
@@ -860,17 +852,19 @@ const onSelectedRooms = (roomId, ratePolicyId, selectedCount) => {
 }
 
 // get to booking detail page
-const onBookingDetail = () => {
-    const details = {
-        date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
-        num_adults: filterRoomBookingForm.numOfAdults,
-        num_children: filterRoomBookingForm.numOfChildren,
-        num_rooms: filterRoomBookingForm.numOfRooms,
-        num_nights: filterRoomBookingForm.numOfNights,
-        selected_rooms: JSON.parse(JSON.stringify(selectedRooms.value || [])),
+const sendRoomBookingDetail = () => {
+    if (selectedRooms.value) {
+        const roomBookingDetail = {
+            date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
+            num_adults: filterRoomBookingForm.numOfAdults,
+            num_children: filterRoomBookingForm.numOfChildren,
+            num_rooms: filterRoomBookingForm.numOfRooms,
+            num_nights: filterRoomBookingForm.numOfNights,
+            selected_rooms: JSON.parse(JSON.stringify(selectedRooms.value || [])),
+        }
+        console.log(roomBookingDetail);
+        router.post(route('booking.detail'), roomBookingDetail);
     }
-    console.log(details);
-    router.post(route('booking.detail'), details);
 }
 
 function formatDate(dateStr) {
@@ -882,5 +876,19 @@ function formatDate(dateStr) {
 
     return `${dd}/${mm}/${yyyy}`;
 }
+
+// flash message
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) {
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
+        }
+        else if (flash?.error)
+        {
+            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.error, life: 3000 });
+        }
+    },
+)
 
 </script>
