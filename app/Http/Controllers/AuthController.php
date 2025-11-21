@@ -28,9 +28,9 @@ class AuthController extends Controller
 
         $customer = $user->customer()->create([
             'full_name' => $validated['full_name'],
-            'user_id' => $user->id,
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
+            'has_account' => true
         ]);
 
         Auth::login($user);
@@ -79,6 +79,28 @@ class AuthController extends Controller
 
         return redirect()->route('home')
             ->with('error', 'You failed to login!');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed', // new_password_confirmation
+        ]);
+
+        $user = Auth::user(); // hoặc $user = User::find($id);
+
+        // 1. Kiểm tra mật khẩu hiện tại
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
+        }
+
+        // 2. Cập nhật mật khẩu mới và password_changed_at
+        $user->password = Hash::make($request->new_password);
+        $user->password_changed_at = now();
+        $user->save();
+
+        return back()->with('success', 'Đổi mật khẩu thành công.');
     }
 
     public function logout(Request $request)

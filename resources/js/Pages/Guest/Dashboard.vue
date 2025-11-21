@@ -1,11 +1,32 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 
 import { usePage } from '@inertiajs/vue3';
+import { useDialog } from 'primevue/usedialog';
 import { router } from '@inertiajs/vue3';
 
-
 import Avatar from 'primevue/avatar';
+import Button from 'primevue/button';
+
+const dialog = useDialog();
+const changePassword = defineAsyncComponent(() => import('../../Components/Dialog/UserChangePassword.vue'));
+
+const showChangePassword = () => {
+    const dialogRef = dialog.open(changePassword, {
+        props: {
+            header: 'Đổi mật khẩu',
+            style: {
+                width: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'right',
+        },
+    });
+}
 
 const isSidebarClosed = ref(false);
 const openIndex = ref(null);
@@ -24,6 +45,18 @@ const user = computed(() => page.props.auth.user);
 const customer = computed(() => page.props.auth.user.customer);
 
 const customerInfor = ref(JSON.parse(JSON.stringify(page.props.auth.user.customer)));
+// Danh sách các trường cần xóa
+const removeCustomerFields = ["id",
+    "user_id",
+    "customer_type_id",
+    "customer_group_id",
+    "created_at",
+    "updated_at",
+    "note",
+    "has_account"
+];
+removeCustomerFields.forEach(field => delete customerInfor.value[field]);
+console.log(customerInfor.value);
 
 const dropdownMenu = [
     {
@@ -97,7 +130,7 @@ function formatLabel(str) {
 
 <template>
     <div class="dashboard-page py-2 gap-x-1">
-        <nav class="sidebar | border-r-1 border-gray-200" :class="{ close: isSidebarClosed }">
+        <nav class="sidebar | border-r border-gray-200" :class="{ close: isSidebarClosed }">
             <div class="sidebar-header | flex items-center mb-2">
                 <span class="sidebar-title text-lg">Hello <b>{{ user.user_name }}</b></span>
                 <button class="toggle-sidebar-btn" :class="{ rotate: isSidebarClosed }" @click="toggleSidebar">
@@ -134,20 +167,37 @@ function formatLabel(str) {
                 </li>
             </ul>
         </nav>
-        <main class="dashboard-content | border-1 border-gray-200 mx-2">
-            <div class="user-header | flex flex-col px-12 py-8 gap-y-1">
+        <main class="dashboard-content | flow mx-2">
+            <div class="user-header | box flex flex-col p-20">
                 <Avatar class="user-avatar" icon="pi pi-user" size="xlarge" shape="circle" />
                 <h2 class="fs-normal-heading">{{ customer.full_name }}</h2>
                 <span class="text-gray-600">{{ customer.email }}</span>
             </div>
-            <div
-                class="user-personal-details | px-12 py-4">
-                <ul class="divide-y divide-dashed divide-gray-300">
-                    <li class="grid grid-cols-[100px_1fr] md:grid-cols-[200px_1fr] gap-x-6 py-2" v-for="(value, key) in customerInfor" :key="key">
-                        <span class="font-semibold text-gray-600">{{ formatLabel(key) }}:</span>
-                        <span class="text-left">{{ value }}</span>
+            <div class="user-infor-section | box flow px-20 py-4" style="--flow-spacer:1rem">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-lg">Thông tin cá nhân</h3>
+                    <Button label="Cập nhật" icon="pi pi-user-edit" severity="danger" variant="text" raised />
+                </div>
+                <ul class="columns-2 gap-12">
+                    <li class="grid grid-cols-[100px_1fr] md:grid-cols-[140px_1fr] gap-x-6 py-2 border-b border-dashed border-gray-300"
+                        v-for="(value, key) in customerInfor" :key="key">
+                        <span class="text-gray-500">{{ formatLabel(key) }}:</span>
+                        <span class="text-right">{{ value || '-' }}</span>
                     </li>
                 </ul>
+            </div>
+            <div class="password-section | box flow px-20 py-4" style="--flow-spacer:1rem">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-lg">Mật khẩu</h3>
+                    <Button @click="showChangePassword" label="Thay đổi mật khẩu" icon="pi pi-user-edit"
+                        severity="danger" variant="text" raised />
+                </div>
+                <div class="flex justify-betwen gap-x-6 py-2">
+                    <span class="text-gray-500">Cập nhật lần cuối lúc:</span>
+                    <!-- updated at -->
+                    <span
+                        class="text-right">{{ user.password_changed_at ? new Date(user.password_changed_at).toLocaleString() : '-' }}</span>
+                </div>
             </div>
         </main>
     </div>
@@ -159,11 +209,8 @@ function formatLabel(str) {
     grid-template-columns: auto 1fr;
 }
 
-.dashboard-page>* {
-    background: var(--neutral-color-100);
-}
-
 .sidebar {
+    background: var(--neutral-color-100);
     position: sticky;
     top: 0;
     align-self: start;

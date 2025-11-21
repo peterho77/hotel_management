@@ -24,7 +24,7 @@ class VNPayService
             'vnp_Amount'     => (int) ($booking->total_price * 100),
             'vnp_CurrCode'   => 'VND',
             'vnp_TxnRef'     => $txnRef,
-            'vnp_OrderInfo'  => 'Đơn đặt phòng #' . $booking->id,
+            'vnp_OrderInfo'  => 'Booking order #' . $booking->id,
             'vnp_OrderType'  => 'other',
             'vnp_Locale'     => 'vn',
             'vnp_ReturnUrl'  => $returnUrl,
@@ -34,23 +34,22 @@ class VNPayService
         ];
 
         // lọc rỗng và sort
-        $filtered = [];
-        foreach ($params as $k => $v) {
-            if ($v !== null && $v !== '') {
-                $filtered[$k] = $v;
-            }
-        }
+        $filtered = array_filter($params, fn($v) => $v !== null && $v !== '');
         ksort($filtered);
 
-        // chuỗi ký
-        $pairs = [];
-        foreach ($filtered as $k => $v) {
-            $pairs[] = urlencode($k) . '=' . urlencode((string) $v);
+        $query = '';
+        $rawToSign = '';
+
+        foreach ($filtered as $key => $value) {
+            $encoded = urlencode($value);
+            $query .= $key . "=" . $encoded . "&";
+            $rawToSign .= $key . "=" . $encoded . "&";
         }
-        $rawToSign = implode('&', $pairs);
+
+        $rawToSign = rtrim($rawToSign, '&');
         $secureHash = hash_hmac('sha512', $rawToSign, $hashSecret);
 
-        $redirectUrl = $vnpUrl . '?' . http_build_query($filtered) . '&vnp_SecureHash=' . $secureHash;
+        $redirectUrl = $vnpUrl . '?' . $query . "vnp_SecureHash=" . $secureHash;
 
         Log::info('VNPAY: build payment url', [
             'booking_id' => $booking->id,
@@ -61,6 +60,7 @@ class VNPayService
 
         // lưu txn ref
         $payment->transaction_id = $txnRef;
+        $booking->status="confirmed";
         $payment->save();
         $booking->save();
 
@@ -83,7 +83,7 @@ class VNPayService
 
         $pairs = [];
         foreach ($filtered as $k => $v) {
-            $pairs[] = urlencode($k) . '=' . urlencode((string) $v);
+            $pairs[] = $k . '=' . urlencode($v);
         }
         $rawToSign = implode('&', $pairs);
         $calc = hash_hmac('sha512', $rawToSign, $hashSecret);

@@ -147,7 +147,7 @@ const onSubmit = (e) => {
         }
         localStorage.removeItem('bookingFromDetailPage');
         localStorage.setItem('bookingFromHomePage', '1');
-        router.get(route('booking'), values);
+        router.get(route('booking.index'), values);
     }
 }
 

@@ -140,13 +140,13 @@
                                                 <label for="">Giá gốc</label>
                                                 <!-- base price -->
                                                 <span>VND
-                                                    {{ roomBookingDetail.selected_rooms[0].total_base_price }}</span>
+                                                    {{ roomBookingDetail.total_base_price }}</span>
                                             </div>
                                             <div class="discount | flex justify-between items-center gap-1">
                                                 <label for="">Ưu đãi</label>
                                                 <!-- discount -->
                                                 <span>- VND
-                                                    {{ roomBookingDetail.selected_rooms[0].total_base_price - roomBookingDetail.selected_rooms[0].total_price }}</span>
+                                                    {{ roomBookingDetail.total_base_price - roomBookingDetail.total_price }}</span>
                                             </div>
                                         </div>
                                         <div
@@ -154,9 +154,9 @@
                                             <h3 class="text-2xl font-semibold">Giá</h3>
                                             <div class="flex flex-col items-end">
                                                 <span class="text-red-500 line-through">VND
-                                                    {{ roomBookingDetail.selected_rooms[0].total_base_price }}</span>
+                                                    {{ roomBookingDetail.total_base_price }}</span>
                                                 <h3 class="text-xl font-semibold">VND
-                                                    {{ roomBookingDetail.selected_rooms[0].total_price }}</h3>
+                                                    {{ roomBookingDetail.total_price }}</h3>
                                                 <span>Bao gồm thuế và phí</span>
                                             </div>
                                         </div>
@@ -201,10 +201,8 @@
                                                 <div class="flex flex-col gap-1">
                                                     <label for="country">Vùng/Quốc gia</label>
                                                     <Select v-model="bookerInforForm.country" :options="countries"
-                                                        optionLabel="name" placeholder="Select a country" />
-                                                    <Message v-if="$form.city?.name?.invalid" severity="error"
-                                                        size="small" variant="simple">
-                                                        {{ $form.city.name.error?.message }}</Message>
+                                                        optionLabel="name" optionValue="name"
+                                                        placeholder="Select a country" />
                                                 </div>
                                                 <div class="flex flex-col gap-1">
                                                     <label for="">Số điện thoại</label>
@@ -231,7 +229,7 @@
 
                                         <!-- room list -->
                                         <template
-                                            v-for="room in roomBookingDetail.selected_rooms.sort((a, b) => a.name.localeCompare(b.name))">
+                                            v-for="(room, index) in roomBookingDetail.selected_rooms.sort((a, b) => a.name.localeCompare(b.name))">
                                             <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
                                                 <!-- room type name -->
                                                 <h3 class="text-xl font-semibold">{{ room.name }}</h3>
@@ -255,10 +253,14 @@
                                                 </div>
                                                 <Divider />
                                                 <div class="flex flex-col gap-1">
-                                                    <label for="floor-option" class="font-semibold">Tùy chọn
+                                                    <label :for="`floor-${room.name}-${index}`"
+                                                        class="font-semibold">Tùy chọn
                                                         tầng</label>
-                                                    <Select name="floor-option" :options="countries" optionLabel="name"
-                                                        placeholder="Không có" class="max-w-60" />
+                                                    <Select v-model="room.selected_floor"
+                                                        :id="`floor-${room.id}-${index}`"
+                                                        :name="`rooms[${index}].selected_floor`" :options="floors"
+                                                        optionLabel="name" optionValue="value" placeholder="Không có"
+                                                        class="max-w-60" />
                                                 </div>
                                             </div>
                                         </template>
@@ -266,7 +268,8 @@
                                         <div class="add-service | box flow" style="--flow-spacer:1rem">
                                             <h3 class="text-xl font-semibold">Thêm vào kỳ nghỉ</h3>
                                             <div>
-                                                <CheckboxGroup name="service" class="flex flex-col flex-wrap gap-4">
+                                                <CheckboxGroup v-model="bookerInforForm.travel_services"
+                                                    class="flex flex-col flex-wrap gap-4">
                                                     <div class="flex items-center gap-2">
                                                         <Checkbox value="book-airport-transfer" />
                                                         <label for="book-airport-transfer">Đặt xe đưa đón/taxi</label>
@@ -308,7 +311,7 @@
                             </div>
                             <div class="flex p-2 justify-end">
                                 <Button label="Next" icon="pi pi-arrow-right" iconPos="right"
-                                    @click="activateCallback(3)" />
+                                    @click="getBookerInfo(() => activateCallback(3))" />
                             </div>
                         </StepPanel>
                         <StepPanel v-slot="{ activateCallback }" :value="3">
@@ -330,7 +333,7 @@
                                             </div>
                                             <div v-else class="flex items-center gap-x-2 w-full">
                                                 <i class="pi pi-credit-card" style="font-size:1.5rem"></i>
-                                                <span class="text-md">Chọn phương thức thanh toán</span>
+                                                <span class="text-md text-gray-700">Chọn phương thức thanh toán</span>
                                             </div>
                                         </template>
                                     </Button>
@@ -340,23 +343,23 @@
                                     <div class="grid gap-3">
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Khách hàng</label>
-                                            <span>Phạm Chí Trọng</span>
+                                            <span>{{ bookingData.full_name }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Số điện thoại</label>
-                                            <span>0376193244</span>
+                                            <span>{{ bookingData.phone }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Email</label>
-                                            <span>pct2002@gmail.com</span>
+                                            <span>{{ bookingData.email }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Dịch vụ</label>
-                                            <span>Đưa đón bằng xe taxi</span>
+                                            <span>{{ getTravelServices(bookingData.travel_services) || '-' }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Yêu cầu đặc biệt</label>
-                                            <span>LGBT</span>
+                                            <span>{{ bookingData.special_request || '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -364,8 +367,7 @@
                             <div class="flex px-2 mt-4 justify-between">
                                 <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
                                     @click="activateCallback(2)" raised />
-                                <Button label="Thanh toán" severity="info" raised
-                                    @click="confirmPayment(() => activateCallback(2))" />
+                                <Button label="Thanh toán" severity="info" raised @click="confirmPayment()" />
                             </div>
                         </StepPanel>
                     </StepPanels>
@@ -498,8 +500,25 @@ const getPaymentRequired = (type) => {
     }
 };
 
+const getTravelServices = (services) => {
+    if (!services || services.length === 0) {
+        return '';
+    }
+
+    const map = {
+        "book-airport-transfer": "Đặt xe đưa đón/taxi",
+        "air-ticket": "Đặt vé máy bay cho chuyến đi",
+        "car-rental": "Thuê xe"
+    };
+
+    return services
+        .map(s => map[s] ?? s)
+        .join(', ');
+};
+
 const activeStep = ref(2);
 
+// country
 const countries = ref([
     {
         name: 'Việt Nam',
@@ -522,6 +541,19 @@ const countries = ref([
         code: 'Russian'
     }
 ])
+
+// floors
+const numOfFloors = ref(5);
+const floors = ref(Array.from({ length: numOfFloors.value }).map((_, index) => ({
+    name: `Tầng ${index + 1}`,
+    value: index + 1
+})))
+
+// add floor options to selected room
+roomBookingDetail.selected_rooms = roomBookingDetail.selected_rooms.map(room => ({
+    ...room,
+    selected_floor: null
+}));
 
 // check in time slots
 const checkInTimeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -587,6 +619,7 @@ const bookerInforForm = reactive({
     confirm_email: '',
     country: '',
     special_request: '',
+    travel_services: [],
     arrival_time: '',
     payment_instrument: '',
 });
@@ -652,33 +685,37 @@ watch(() => selectedPayment.value, (newValue) => {
     bookerInforForm.payment_instrument = newValue.value;
 });
 
-const confirmPayment = async (backToBookingForm) => {
-    if (!validateForm()) {
-        backToBookingForm();
+const getBookerInfo = (getToNextStep) => {
+    if (validateForm()) {
+
+        getToNextStep();
     }
-    else {
-        let bookingData = {
-            check_in: roomBookingDetail.date_range[0],
-            check_out: roomBookingDetail.date_range[1],
-            num_nights: roomBookingDetail.num_nights,
-            num_rooms: roomBookingDetail.num_rooms,
-            num_adults: roomBookingDetail.num_adults,
-            num_children: roomBookingDetail.num_children,
-            total_base_price: roomBookingDetail.total_base_price,
-            total_price: roomBookingDetail.total_price,
-            selected_rooms: roomBookingDetail.selected_rooms,
-            full_name: bookerInforForm.surname + ' ' + bookerInforForm.firstname,
-            ...bookerInforForm,
-        };
-        delete bookingData.surname;
-        delete bookingData.firstname;
-        console.log(bookingData);
+}
 
-        const res = await axios.post(route('booking.confirm'), bookingData);
+const bookingData = computed(() => {
+    const { surname, firstname, ...rest } = bookerInforForm;
 
-        if (res.data.redirect_url) {
-            window.location.href = res.data.redirect_url;
-        }
+    return {
+        check_in: roomBookingDetail.date_range[0],
+        check_out: roomBookingDetail.date_range[1],
+        num_nights: roomBookingDetail.num_nights,
+        num_rooms: roomBookingDetail.num_rooms,
+        num_adults: roomBookingDetail.num_adults,
+        num_children: roomBookingDetail.num_children,
+        total_base_price: roomBookingDetail.total_base_price,
+        total_price: roomBookingDetail.total_price,
+        selected_rooms: roomBookingDetail.selected_rooms,
+        full_name: `${surname} ${firstname}`,
+        ...rest
+    };
+});
+console.log(bookingData);
+
+const confirmPayment = async () => {
+    const res = await axios.post(route('booking.confirm'), bookingData);
+
+    if (res.data.redirect_url) {
+        window.location.href = res.data.redirect_url;
     }
 }
 

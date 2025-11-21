@@ -662,6 +662,7 @@ ul[role="list"] > li {
     border-radius: var(--size-200);
     background-color: var(--neutral-color-100);
     padding: .75rem;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 
 .form-box {

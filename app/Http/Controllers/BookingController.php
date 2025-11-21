@@ -92,6 +92,5 @@ class BookingController extends Controller
             'redirect_url' => route('payment.vnpay', $newBooking->id)
         ]);
     }
-
     
 }
