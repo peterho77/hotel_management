@@ -1,5 +1,5 @@
 <template>
-    <Form ref="newRoomForm" v-slot="$form" :resolver :initialValues validateOnUpdate="false" :validateOnBlur="true"
+    <Form ref="newRoomForm" v-slot="$form" :resolver :initialValues :validateOnUpdate="false" :validateOnBlur="true"
         class="grid gap-y-6" @submit="submit">
         <div class="flex flex-col gap-2">
             <label for="name">Name</label>
@@ -65,8 +65,6 @@ import { z } from 'zod';
 // select status
 const statusList = ref([{ name: 'Đang kinh doanh', value: 'active' }, { name: 'Ngừng kinh doanh', value: 'inactive' }]);
 
-const dialogRef = inject('dialogRef');
-
 const branchList = ref([])
 const roomTypeList = ref([])
 
@@ -104,6 +102,7 @@ const submit = (e) => {
 }
 
 // pass data from dynamic dialog primevue
+const dialogRef = inject('dialogRef');
 onMounted(() => {
     const params = dialogRef.value.data;
 

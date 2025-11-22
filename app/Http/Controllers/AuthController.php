@@ -81,10 +81,10 @@ class AuthController extends Controller
             ->with('error', 'You failed to login!');
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(Request $request, $user_name)
     {
         $request->validate([
-            'current_password' => 'required|string',
+            'current_password' => 'required|string|min:8',
             'new_password' => 'required|string|min:8|confirmed', // new_password_confirmation
         ]);
 
@@ -92,7 +92,7 @@ class AuthController extends Controller
 
         // 1. Kiểm tra mật khẩu hiện tại
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
+            return back()->with('error', 'Mật khẩu hiện tại không đúng.');
         }
 
         // 2. Cập nhật mật khẩu mới và password_changed_at

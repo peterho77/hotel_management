@@ -211,20 +211,7 @@ const showSignupForm = () => {
 
 // check authentication to show user name
 const page = usePage();
-const toast = useToast();
 const user = computed(() => page.props.auth.user);
-watch(
-    () => page.props.flash,
-    (flash) => {
-        if (flash?.success) {
-            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
-        }
-        else if (flash?.error) {
-            toast.add({ severity: 'error', summary: 'Confirmed', detail: flash.success, life: 3000 });
-
-        }
-    },
-)
 
 // toggle user menu
 const userMenu = ref();

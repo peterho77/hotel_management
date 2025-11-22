@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use Carbon\Carbon;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                         'email' => $request->user()->email,
                         'role' => $request->user()->role ?? null,
                         'customer' => $request->user()?->customer,
+                        'password_changed_at' => $request->user()?->password_changed_at
                     ]
                     : null,
             ],

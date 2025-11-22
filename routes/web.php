@@ -20,7 +20,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('auth.regist
 
 // booking page
 Route::prefix('booking')->group(function () {
-    Route::name('booking.')->group(function(){
+    Route::name('booking.')->group(function () {
         Route::get('/', [BookingController::class, 'index'])->name('index');
         Route::post('/detail', [BookingController::class, 'detail'])->name('detail');
         Route::post('/confirm', [BookingController::class, 'confirm'])->name('confirm');
@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
             abort_unless(Auth::user()->user_name === $user_name, 403);
             return Inertia::render('Guest/Dashboard');
         })->name('user.dashboard');
+        Route::post('/{user_name}/change-password', [AuthController::class, 'changePassword'])->name('user.change_password');
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
