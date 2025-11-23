@@ -4,8 +4,7 @@
             <i class="close-icon | pi pi-times |  hover:text-neutral-500" @click="closeDialog()"></i>
         </div>
         <h2 class="signup-form__title | text-center fs-normal-heading mt-4">Create your account</h2>
-        <Form v-slot="$form" :initialValues :resolver="userRegisterSchema" :validateOnValueUpdate="false"
-            :validateOnBlur="true" @submit="submit" class="px-10 py-8 flex flex-col gap-y-6">
+        <Form v-slot="$form" :initialValues :resolver="userRegisterSchema" :validateOnValueUpdate="true" @submit="submit" class="px-10 py-8 flex flex-col gap-y-6">
             <div class="flex flex-col gap-y-2">
                 <FloatLabel variant="on">
                     <InputText id="user_name" name="user_name" fluid />

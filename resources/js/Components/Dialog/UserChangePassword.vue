@@ -101,7 +101,6 @@ const onChangePassword = (e) => {
             payload[key] = field.value;
         }
     }
-    console.log(payload);
     router.post(route('user.change_password', { user_name: username.value }), payload);
     dialogRef.value.close();
 }

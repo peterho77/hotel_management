@@ -9,10 +9,11 @@ import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 
 const dialog = useDialog();
-const changePassword = defineAsyncComponent(() => import('../../Components/Dialog/UserChangePassword.vue'));
+const changeUserPassword = defineAsyncComponent(() => import('../../Components/Dialog/UserChangePassword.vue'));
+const updateUserProfile = defineAsyncComponent(() => import('../../Components/Dialog/UserUpdateProfile.vue'));
 
-const showChangePassword = () => {
-    const dialogRef = dialog.open(changePassword, {
+const showChangeUserPassword = () => {
+    dialog.open(changeUserPassword, {
         props: {
             header: 'Đổi mật khẩu',
             style: {
@@ -27,6 +28,26 @@ const showChangePassword = () => {
         },
         data: {
             username: user.value.user_name
+        }
+    });
+}
+
+const showUpdateUserProfile = () => {
+    dialog.open(updateUserProfile, {
+        props: {
+            header: 'Cập nhật thông tin cá nhân',
+            style: {
+                width: '40vw',
+            },
+            breakpoints: {
+                '960px': '60vw',
+                '640px': '50vw'
+            },
+            modal: true,
+            position: 'right',
+        },
+        data: {
+            userInfo: JSON.parse(JSON.stringify(customer.value))
         }
     });
 }
@@ -46,6 +67,7 @@ const toggleSidebar = () => {
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const customer = computed(() => page.props.auth.user.customer);
+console.log(customer.value);
 
 const customerInfor = ref(JSON.parse(JSON.stringify(page.props.auth.user.customer)));
 // Danh sách các trường cần xóa
@@ -179,7 +201,7 @@ function formatLabel(str) {
             <div class="user-infor-section | box flow px-20 py-4" style="--flow-spacer:1rem">
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg">Thông tin cá nhân</h3>
-                    <Button label="Cập nhật" icon="pi pi-user-edit" severity="danger" variant="text" raised />
+                    <Button @click="showUpdateUserProfile" label="Cập nhật" icon="pi pi-user-edit" severity="danger" variant="text" raised />
                 </div>
                 <ul class="columns-2 gap-12">
                     <li class="grid grid-cols-[100px_1fr] md:grid-cols-[140px_1fr] gap-x-6 py-2 border-b border-dashed border-gray-300"
@@ -192,7 +214,7 @@ function formatLabel(str) {
             <div class="password-section | box flow px-20 py-4" style="--flow-spacer:1rem">
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg">Mật khẩu</h3>
-                    <Button @click="showChangePassword" label="Thay đổi mật khẩu" icon="pi pi-user-edit"
+                    <Button @click="showChangeUserPassword" label="Thay đổi mật khẩu" icon="pi pi-user-edit"
                         severity="danger" variant="text" raised />
                 </div>
                 <div class="flex justify-betwen gap-x-6 py-2">

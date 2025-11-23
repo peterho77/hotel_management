@@ -11,7 +11,7 @@
     </div>
     <DynamicDialog/>
     <ConfirmDialog/>
-    <Toast position="bottom-center"/>
+    <Toast position="top-center"/>
 </template>
 
 <script setup>
