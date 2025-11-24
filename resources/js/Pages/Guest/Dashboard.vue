@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, defineAsyncComponent } from 'vue';
 
 import { usePage } from '@inertiajs/vue3';
 import { useDialog } from 'primevue/usedialog';
@@ -47,7 +47,8 @@ const showUpdateUserProfile = () => {
             position: 'right',
         },
         data: {
-            userInfo: JSON.parse(JSON.stringify(customer.value))
+            userInfo: JSON.parse(JSON.stringify(customerInfor.value)),
+            username: user.value.user_name
         }
     });
 }
@@ -65,23 +66,34 @@ const toggleSidebar = () => {
 
 // show username 
 const page = usePage();
-const user = computed(() => page.props.auth.user);
-const customer = computed(() => page.props.auth.user.customer);
-console.log(customer.value);
 
-const customerInfor = ref(JSON.parse(JSON.stringify(page.props.auth.user.customer)));
+const user = computed(() => page.props.auth.user);
+const customerInfor = ref(removeCustomerFields({ ...user.value.customer }));
+
+watch(
+    () => page.props.auth.user.customer,
+    (newCustomer) => {
+        customerInfor.value = removeCustomerFields({ ...newCustomer });
+    },
+    { deep: true, immediate: true }
+);
+
 // Danh sách các trường cần xóa
-const removeCustomerFields = ["id",
-    "user_id",
-    "customer_type_id",
-    "customer_group_id",
-    "created_at",
-    "updated_at",
-    "note",
-    "has_account"
-];
-removeCustomerFields.forEach(field => delete customerInfor.value[field]);
-console.log(customerInfor.value);
+function removeCustomerFields(customer) {
+    const removeFields = [
+        "id",
+        "user_id",
+        "customer_type_id",
+        "customer_group_id",
+        "created_at",
+        "updated_at",
+        "note",
+        "has_account"
+    ];
+    return Object.fromEntries(
+        Object.entries(customer).filter(([key]) => !removeFields.includes(key))
+    );
+}
 
 const dropdownMenu = [
     {
@@ -151,6 +163,17 @@ function formatLabel(str) {
     ).join(" ");
 }
 
+function getGender(val) {
+    switch (val) {
+        case 'male':
+            return 'Nam';
+        case 'female':
+            return 'Nữ';
+        default:
+            return '-';
+    }
+}
+
 </script>
 
 <template>
@@ -195,19 +218,25 @@ function formatLabel(str) {
         <main class="dashboard-content | flow mx-2">
             <div class="user-header | box flex flex-col p-20">
                 <Avatar class="user-avatar" icon="pi pi-user" size="xlarge" shape="circle" />
-                <h2 class="fs-normal-heading">{{ customer.full_name }}</h2>
-                <span class="text-gray-600">{{ customer.email }}</span>
+                <h2 class="fs-normal-heading">{{ customerInfor.full_name }}</h2>
+                <span class="text-gray-600">{{ customerInfor.email }}</span>
             </div>
             <div class="user-infor-section | box flow px-20 py-4" style="--flow-spacer:1rem">
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg">Thông tin cá nhân</h3>
-                    <Button @click="showUpdateUserProfile" label="Cập nhật" icon="pi pi-user-edit" severity="danger" variant="text" raised />
+                    <Button @click="showUpdateUserProfile" label="Cập nhật" icon="pi pi-user-edit" severity="danger"
+                        variant="text" raised />
                 </div>
                 <ul class="columns-2 gap-12">
                     <li class="grid grid-cols-[100px_1fr] md:grid-cols-[140px_1fr] gap-x-6 py-2 border-b border-dashed border-gray-300"
                         v-for="(value, key) in customerInfor" :key="key">
                         <span class="text-gray-500">{{ formatLabel(key) }}:</span>
-                        <span class="text-right">{{ value || '-' }}</span>
+                        <template v-if="key === 'gender'">
+                            <span class="text-right">{{ getGender(value) }}</span>
+                        </template>
+                        <template v-else>
+                            <span class="text-right">{{ value || '-' }}</span>
+                        </template>
                     </li>
                 </ul>
             </div>

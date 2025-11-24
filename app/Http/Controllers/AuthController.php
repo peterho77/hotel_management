@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Models\Customer;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -101,6 +101,35 @@ class AuthController extends Controller
         $user->save();
 
         return back()->with('success', 'Đổi mật khẩu thành công.');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'full_name'  => 'required|string|max:30',
+            'gender'     => 'required|in:male,female',
+            'birth_date' => 'required|date'
+        ]);
+
+        $user = Auth::user();
+
+        if (!$user || !$user->customer) {
+            return back()->with('error', 'Khách hàng không tồn tại');
+        };
+
+        $customer = $user->customer;
+
+        $customer->fill([
+            'full_name'  => $request->full_name,
+            'gender'     => $request->gender,
+            'birth_date' => Carbon::parse($request->birth_date)->format('Y-m-d'),
+        ]);
+
+        $customer->save();
+
+        return redirect()->route('user.dashboard', $user->user_name )
+            ->with('success', 'Thông tin quý khách cập nhật thành công.')
+            ->with('reloadUserProfile', true);
     }
 
     public function logout(Request $request)

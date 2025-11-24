@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Guest/Dashboard');
         })->name('user.dashboard');
         Route::post('/{user_name}/change-password', [AuthController::class, 'changePassword'])->name('user.change_password');
+        Route::post('/{user_name}/update-profile', [AuthController::class, 'updateProfile'])->name('user.update_profile');
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
