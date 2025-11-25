@@ -22,6 +22,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('auth.regist
 Route::prefix('booking')->group(function () {
     Route::name('booking.')->group(function () {
         Route::get('/', [BookingController::class, 'index'])->name('index');
+        Route::get('/history', [BookingController::class, 'history'])->name('history');
         Route::post('/detail', [BookingController::class, 'detail'])->name('detail');
         Route::post('/confirm', [BookingController::class, 'confirm'])->name('confirm');
     });
@@ -59,12 +60,14 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:customer')->group(function () {
-        Route::get('/{user_name}/dashboard', function ($user_name) {
-            abort_unless(Auth::user()->user_name === $user_name, 403);
-            return Inertia::render('Guest/Dashboard');
-        })->name('user.dashboard');
-        Route::post('/{user_name}/change-password', [AuthController::class, 'changePassword'])->name('user.change_password');
-        Route::post('/{user_name}/update-profile', [AuthController::class, 'updateProfile'])->name('user.update_profile');
+        Route::prefix('dashboard')->group(function(){
+            Route::get('/{user_name}/profile', function ($user_name) {
+                abort_unless(Auth::user()->user_name === $user_name, 403);
+                return Inertia::render('User/Profile');
+            })->name('user.profile');
+            Route::post('/{user_name}/change-password', [AuthController::class, 'changePassword'])->name('user.change_password');
+            Route::post('/{user_name}/update-profile', [AuthController::class, 'updateProfile'])->name('user.update_profile');
+        });
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');

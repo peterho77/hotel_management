@@ -24,6 +24,11 @@ class BookingController extends Controller
         ]);
     }
 
+    public function history()
+    {
+        return Inertia::render('User/Booking-history');
+    }
+
     public function detail(Request $request)
     {
         $roomBookingDetail = $request->validate([
@@ -92,5 +97,4 @@ class BookingController extends Controller
             'redirect_url' => route('payment.vnpay', $newBooking->id)
         ]);
     }
-    
 }

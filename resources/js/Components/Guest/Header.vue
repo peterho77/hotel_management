@@ -125,7 +125,7 @@
                                 <Link :href="route('home')"><span>Home</span></Link>
                             </li>
                             <li v-if="user?.role === 'customer'">
-                                <Link :href="route('user.dashboard', user.user_name)"><span>Dashboard</span></Link>
+                                <Link :href="route('user.profile', user.user_name)"><span>Dashboard</span></Link>
                             </li>
                             <li>
                                 <Link :href="route('room')"><span>Rooms</span></Link>
