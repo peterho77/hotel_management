@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use App\Models\RoomType;
 use App\Models\Customer;
-use App\Models\Payment;
 use App\Models\Booking;
 
 class BookingController extends Controller
@@ -22,11 +22,6 @@ class BookingController extends Controller
             'num_of_rooms' => (int) $request->query('num_of_rooms'),
             'roomTypeList' => $roomTypeList,
         ]);
-    }
-
-    public function history()
-    {
-        return Inertia::render('User/Booking-history');
     }
 
     public function detail(Request $request)
@@ -66,22 +61,30 @@ class BookingController extends Controller
         $bookingInfor['payment_option'] = 'online';
 
         // customer
-        $customerInfor = $request->validate([
-            'full_name' => 'required',
-            'email' => 'required',
-            'phone' => 'required',
-        ]);
+            if (Auth::check() && Auth::user()->customer) {
+                $customer = Auth::user()->customer;
+        } else {
+            // Chưa đăng nhập → validate và tạo customer mới
+            $customerInfor = $request->validate([
+                'full_name' => 'required',
+                'email' => 'required',
+                'phone' => 'required',
+            ]);
 
-        Customer::firstOrCreate(
-            [
-                'email' => $customerInfor['email'],
-                'phone' => $customerInfor['phone']
-            ],
-            [
-                'full_name' => $customerInfor['full_name'],
-                'country' => $customerInfor['country'] ?? 'Việt Nam'
-            ]
-        );
+            $customer = Customer::firstOrCreate(
+                [
+                    'email' => $customerInfor['email'],
+                    'phone' => $customerInfor['phone']
+                ],
+                [
+                    'full_name' => $customerInfor['full_name'],
+                    'country' => $customerInfor['country'] ?? 'Việt Nam'
+                ]
+            );
+        }
+
+        // Gán customer_id vào booking
+        $bookingInfor['customer_id'] = $customer->id;
 
         $newBooking = Booking::create($bookingInfor);
 

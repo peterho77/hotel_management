@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\CustomerController;
@@ -22,7 +23,6 @@ Route::post('/register', [AuthController::class, 'register'])->name('auth.regist
 Route::prefix('booking')->group(function () {
     Route::name('booking.')->group(function () {
         Route::get('/', [BookingController::class, 'index'])->name('index');
-        Route::get('/history', [BookingController::class, 'history'])->name('history');
         Route::post('/detail', [BookingController::class, 'detail'])->name('detail');
         Route::post('/confirm', [BookingController::class, 'confirm'])->name('confirm');
     });
@@ -65,8 +65,9 @@ Route::middleware('auth')->group(function () {
                 abort_unless(Auth::user()->user_name === $user_name, 403);
                 return Inertia::render('User/Profile');
             })->name('user.profile');
-            Route::post('/{user_name}/change-password', [AuthController::class, 'changePassword'])->name('user.change_password');
-            Route::post('/{user_name}/update-profile', [AuthController::class, 'updateProfile'])->name('user.update_profile');
+            Route::get('/{user_name}/booking-history', [UserController::class, 'bookingHistory'])->name('user.booking-history');
+            Route::post('/{user_name}/change-password', [UserController::class, 'changePassword'])->name('user.change_password');
+            Route::post('/{user_name}/update-profile', [UserController::class, 'updateProfile'])->name('user.update_profile');
         });
     });
 

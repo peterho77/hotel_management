@@ -712,7 +712,7 @@ const bookingData = computed(() => {
 console.log(bookingData);
 
 const confirmPayment = async () => {
-    const res = await axios.post(route('booking.confirm'), bookingData);
+    const res = await axios.post(route('booking.confirm'), bookingData.value);
 
     if (res.data.redirect_url) {
         window.location.href = res.data.redirect_url;

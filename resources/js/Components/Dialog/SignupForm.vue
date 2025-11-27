@@ -31,7 +31,7 @@
             </div>
             <div class="flex flex-col gap-y-2">
                 <FloatLabel variant="on">
-                    <InputMask id="phone" name="phone" mask="9999 999 999" fluid />
+                    <InputText id="phone" name="phone" fluid />
                     <label for="phone">Phone (Optional)</label>
                 </FloatLabel>
                 <Message v-if="$form.phone?.invalid" severity="error" size="small" variant="simple">
@@ -82,7 +82,6 @@
 <script setup>
 import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
-import InputMask from 'primevue/inputmask';
 import FloatLabel from 'primevue/floatlabel';
 import Password from 'primevue/password';
 import Button from 'primevue/button';

@@ -2,7 +2,7 @@
     <div class="booking-section pb-10">
         <div class="booking-section-header | padding-block-200">
 
-            <Form @submit="submit"
+            <Form @submit="onSearchRoomOptions"
                 class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
                 <div class="flex gap-x-4 items-center">
                     <!-- Check-in / Check-out -->
@@ -10,7 +10,7 @@
                         <label class="block mb-1">Check-in/Check-out</label>
                         <FormField name="dateRange" v-slot="{ field, error }">
                             <DatePicker v-model="filterRoomBookingForm.dateRange" dateFormat="dd/mm/yy"
-                                selectionMode="range" :manualInput="false" showIcon fluid />
+                                selectionMode="range" :manualInput="false" :min-date="new Date()" showIcon fluid />
                             <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                         </FormField>
                     </div>
@@ -321,7 +321,7 @@
 </style>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch, watchEffect } from 'vue';
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
 
 import { Form } from '@primevue/forms';
 import { FormField } from "@primevue/forms";
@@ -611,27 +611,37 @@ const getPaymentRequired = (type) => {
     }
 };
 
-
 // pop over guest option menu
 const guestOptionMenu = ref();
 const toggle = (event) => {
     guestOptionMenu.value.toggle(event);
 }
 
-// filter best option results
-const submit = (e) => {
+// search best option results
+const onSearchRoomOptions = async (e) => {
     if (!e.valid) return;
+
+    // caculate num of nights
+    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
+    const numNights = calculateNumOfNights(checkIn, checkOut);
+    filterRoomBookingForm.numOfNights = numNights;
+
+    await nextTick();
 
     // summary text
     summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
     summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
+    console.log(filterRoomBookingForm);
 
-    // caculate num of nights
-    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
-    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
+    const searchRequest = {
+        numOfAdults: filterRoomBookingForm.numOfAdults,
+        numOfChildren: filterRoomBookingForm.numOfChildren,
+        numOfRooms: filterRoomBookingForm.numOfRooms,
+        numOfNights: numNights,
+    };
 
     // find best rate option
-    bestRateOptions.value = getBestRateOption(roomTypeList, filterRoomBookingForm);
+    bestRateOptions.value = getBestRateOption(roomTypeList, searchRequest);
     console.log(bestRateOptions.value);
 }
 
@@ -763,7 +773,8 @@ function findEmptyRoomOptions(roomTypeList, request) {
 
 function getBestRateOption(roomTypeList, filterOptions) {
     const result = findCheapestCombination(roomTypeList.value, filterOptions);
-    const bestOptions = result.selection.map(room => ({
+    console.log(result);
+    const bestOptions = (result.selection || []).map(room => ({
         ...room,
         total_price: result.total_price,
         total_base_price_per_room_type: room.base_price * result.num_of_nights,
@@ -884,8 +895,7 @@ watch(
         if (flash?.success) {
             toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
         }
-        else if (flash?.error)
-        {
+        else if (flash?.error) {
             toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.error, life: 3000 });
         }
     },

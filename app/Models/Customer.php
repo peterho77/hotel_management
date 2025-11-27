@@ -36,6 +36,11 @@ class Customer extends Model
         return $this->belongsTo(CustomerGroup::class, 'customer_group_id');
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
     protected static function booted()
     {
         static::saving(function ($customer) {

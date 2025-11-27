@@ -30,6 +30,7 @@
     --fs-button: var(--fs-600);
 
     /* color */
+    --accent-color-100: hsl(29, 74%, 91%);
     --accent-color-200: hsl(30, 50%, 80%);
     --accent-color-300: hsl(30, 63%, 74%);
     --accent-color-400: hsl(30, 63%, 66%);

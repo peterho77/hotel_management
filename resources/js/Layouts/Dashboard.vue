@@ -106,14 +106,17 @@
     gap: 1rem;
 }
 
+.sidebar-menu *{
+    cursor: pointer;
+}
+
 .sidebar-menu li.active,
 .sidebar-menu .menu-item-btns.active {
-    background-color: var(--accent-color-200);
+    background-color: var(--accent-color-300);
 }
 
 .sidebar .dropdown-btn {
     border: none;
-    cursor: pointer;
     width: 100%;
     text-align: left;
     transition: 300ms ease-in-out;
@@ -126,19 +129,16 @@
 /* hover */
 .sidebar-menu .menu-item-btns:hover,
 .sidebar-menu .nodropdown-btn:hover {
-    background: var(--accent-color-300);
+    background: var(--accent-color-100);
 }
 
-.sidebar-menu .dropdown-icon:hover {
-    background: var(--accent-color-200);
+.sidebar-menu .dropdown-icon:hover,
+.sub-menu li:hover {
+    background: var(--accent-color-100);
 }
 
 .sidebar-menu .sub-menu:hover {
     background: transparent;
-}
-
-.sub-menu li:hover {
-    background: var(--accent-color-200);
 }
 
 .sub-menu {
@@ -201,7 +201,7 @@ const dropdownMenu = reactive([
             },
             {
                 label: 'History',
-                link: route('booking.history')
+                link: route('user.booking-history', { user_name: user.value.user_name })
             }]
     },
     {

@@ -191,13 +191,8 @@ import Multiselect from "../../Components/Multiselect.vue";
 import Radioselect from "../../Components/Radioselect.vue";
 import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
 
-function formatLabel(str) {
-    str = str.replace(/[-_]/g, " ");
-
-    return str.split(" ").map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(" ");
-}
+// format
+import { formatLabel } from "@/Composables/formatData";
 
 const props = defineProps({
     roomList: {

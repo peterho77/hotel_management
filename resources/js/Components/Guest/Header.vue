@@ -52,7 +52,7 @@
                                         @click="showSignupForm" />
                                 </template>
                                 <template v-else>
-                                    <Button class="button" label="Book now" raised></Button>
+                                    <Button class="button" label="Book now" raised @click="router.get(route('booking.index'))"></Button>
                                 </template>
                             </div>
                             <div class="menu-user | relative flex justify-center items-center gap-x-4">
@@ -75,8 +75,7 @@
 
                                     <!-- Custom item template -->
                                     <template #item="{ item, props }">
-                                        <a v-ripple
-                                            class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
+                                        <a class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
                                             v-bind="props.action">
                                             <span :class="item.icon" class="mr-2" />
                                             <img v-if="item.img" :src="item.img" alt="">
@@ -92,8 +91,7 @@
                                 <TieredMenu v-else ref="userMenu" :popup="true" :model="guestMenuItems" appendTo="self">
                                     <!-- Custom item template -->
                                     <template #item="{ item, props }">
-                                        <a v-ripple
-                                            class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
+                                        <a class="flex items-center w-full px-3 py-2 hover:bg-surface-100 dark:hover:bg-surface-800 rounded transition-colors duration-200"
                                             v-bind="props.action">
                                             <span :class="item.icon" class="mr-2" />
                                             <img v-if="item.img" :src="item.img" alt="">
@@ -305,5 +303,3 @@ const logout = () => {
 }
 
 </script>
-
-

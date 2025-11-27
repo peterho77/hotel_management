@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Inertia\Inertia;
+use App\Models\Booking;
 
 class UserController extends Controller
 {
@@ -57,5 +59,21 @@ class UserController extends Controller
 
         return redirect()->route('user.profile', $user->user_name)
             ->with('success', 'Thông tin quý khách cập nhật thành công.');
+    }
+
+    public function bookingHistory()
+    {
+        $userId = Auth::id();
+
+        $bookings = Booking::with('latestPayment')->whereHas('customer', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+            ->with(['customer'])
+            ->get();
+
+        return Inertia::render(
+            'User/Booking-history',
+            ['bookings' => $bookings]
+        );
     }
 }

@@ -21,7 +21,7 @@ class VNPayService
             'vnp_Version'    => '2.1.0',
             'vnp_TmnCode'    => $tmnCode,
             'vnp_Command'    => 'pay',
-            'vnp_Amount'     => (int) ($booking->total_price * 100),
+            'vnp_Amount'     => (int) ($booking->total_price),
             'vnp_CurrCode'   => 'VND',
             'vnp_TxnRef'     => $txnRef,
             'vnp_OrderInfo'  => 'Booking order #' . $booking->id,
