@@ -9,9 +9,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\RoomType;
 use App\Models\Customer;
 use App\Models\Booking;
+use App\Services\EmailSMTP\EmailService;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
+    protected EmailService $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
     public function index(Request $request)
     {
         $roomTypeList = RoomType::with(['images', 'room_rate_options.rate_policies', 'room_rate_options.discounts', 'amenities'])->get();
@@ -61,8 +69,8 @@ class BookingController extends Controller
         $bookingInfor['payment_option'] = 'online';
 
         // customer
-            if (Auth::check() && Auth::user()->customer) {
-                $customer = Auth::user()->customer;
+        if (Auth::check() && Auth::user()->customer) {
+            $customer = Auth::user()->customer;
         } else {
             // Chưa đăng nhập → validate và tạo customer mới
             $customerInfor = $request->validate([
@@ -95,6 +103,15 @@ class BookingController extends Controller
             'transaction_type' => 'full',
             'amount' => $newBooking->total_price,
         ]);
+
+        try {
+            $this->emailService->sendBookingConfirmation($newBooking);
+        } catch (\Exception $e) {
+            Log::error('Failed to send order confirmation email after VNPay payment', [
+                'booking_id' => $newBooking->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return response()->json([
             'redirect_url' => route('payment.vnpay', $newBooking->id)
