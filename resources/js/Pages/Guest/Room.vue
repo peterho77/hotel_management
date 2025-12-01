@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import DataView from 'primevue/dataview';
@@ -7,6 +7,10 @@ import Button from 'primevue/button';
 import InputNumber from 'primevue/inputnumber';
 import Slider from 'primevue/slider';
 import Tag from 'primevue/tag';
+import { formatLabel } from "@/Composables/formatData";
+
+// router
+import { router } from '@inertiajs/vue3';
 
 // component
 import Breadcrumb from '../../Components/Breadcrumb.vue';
@@ -15,6 +19,7 @@ import Checkboxselect from "../../Components/Checkboxselect.vue";
 
 const page = usePage();
 const breadcrumb = page.props.breadcrumb;
+console.log(breadcrumb);
 const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 
 const props = defineProps({
@@ -23,15 +28,15 @@ const props = defineProps({
 console.log(props.roomTypeList);
 const formattedRooms = computed(() =>
     props.roomTypeList.map(room => {
-        const amenities = room.amenities ? JSON.parse(room.amenities) : {};
-        console.log(amenities.features);
+        const amenities = room.amenities || [];
+        let features = amenities.map(item => formatLabel(item.name));
         return {
             id: room.id,
             name: room.name,
-            features: amenities.features || [],
+            features: features || [],
             view: amenities.view || 'No View',
             rating: 4.5,
-            price: room.base_price_per_night || 0,
+            price: room.base_price || 0,
             images: room.images?.length
                 ? room.images[0].path
                 : null,
@@ -39,6 +44,7 @@ const formattedRooms = computed(() =>
         }
     })
 )
+console.log(formattedRooms.value);
 
 // slider price range
 const minRoomPrice = ref(0);
@@ -194,7 +200,7 @@ const getSeverity = (roomType) => {
 
     <Breadcrumb :breadcrumbList="breadcrumb" />
 
-    <div class="room-page-section | padding-block-200">
+    <div class="rooms-list-section | padding-block-200">
         <div class="container">
             <div class="room-section-content | grid grid-cols-[auto_1fr] gap-3">
                 <section class="room-section-content__left">
@@ -280,7 +286,8 @@ const getSeverity = (roomType) => {
                                                 <div class="flex flex-col md:items-end gap-8">
                                                     <span class="text-xl font-semibold">${{ item.price }}</span>
                                                     <div class="flex flex-row-reverse md:flex-row gap-2">
-                                                        <Button variant="outlined" label="View details"></Button>
+                                                        <Button variant="outlined" label="View details"
+                                                            @click="router.visit(route('rooms.detail', { id: item.id }))"></Button>
                                                         <Button icon="pi pi-shopping-cart" label="Book Now"
                                                             :disabled="item.inventoryStatus === 'OUTOFSTOCK'"
                                                             class="flex-auto md:flex-initial whitespace-nowrap"></Button>

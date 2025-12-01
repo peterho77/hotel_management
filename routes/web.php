@@ -33,7 +33,10 @@ Route::prefix('booking')->group(function () {
 // Role Authentication
 Route::middleware('guest')->group(function () {
     Route::inertia('/about', 'Guest/About')->name('about');
-    Route::get('/room', [GuestController::class, 'rooms'])->name('room');
+    Route::prefix('rooms')->name('rooms.')->group(function () {
+        Route::get('/', [GuestController::class, 'rooms'])->name('index');
+        Route::get('/{id}/detail', [GuestController::class, 'roomDetail'])->name('detail');
+    });
 });
 
 Route::middleware('auth')->group(function () {
@@ -60,7 +63,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:customer')->group(function () {
-        Route::prefix('dashboard')->group(function(){
+        Route::prefix('dashboard')->group(function () {
             Route::get('/{user_name}/profile', function ($user_name) {
                 abort_unless(Auth::user()->user_name === $user_name, 403);
                 return Inertia::render('User/Profile');

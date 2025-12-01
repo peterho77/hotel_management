@@ -16,7 +16,7 @@
                         </ul>
                     </nav>
                     <nav class="top-nav__right">
-                        <div class="nav-wrapper !gap-x-18">
+                        <div class="nav-wrapper gap-x-18">
                             <ul class="social-list" role="list">
                                 <li>
                                     <a href="">
@@ -126,7 +126,7 @@
                                 <Link :href="route('user.profile', user.user_name)"><span>Dashboard</span></Link>
                             </li>
                             <li>
-                                <Link :href="route('room')"><span>Rooms</span></Link>
+                                <Link :href="route('rooms.index')"><span>Rooms</span></Link>
                             </li>
                             <li>
                                 <a href=""><span>Blogs</span></a>

@@ -26,8 +26,24 @@ class Breadcrumbs
             $breadcrumbs[] = ['label' => 'About us', 'url' => route('about')];
         }
 
-        if (str_starts_with($routeName, 'room')) {
-            $breadcrumbs[] = ['label' => 'Rooms', 'url' => route('room')];
+        if (str_starts_with($routeName, 'rooms')) {
+            $breadcrumbs[] = ['label' => 'Rooms', 'url' => route('rooms.index')];
+
+            if ($routeName === 'rooms.detail') {
+                // Lấy room_id từ route
+                $roomId = $request->route('id');
+    
+                // Lấy room_name từ DB
+                $room = \App\Models\RoomType::find($roomId);  // tùy model bạn đặt tên
+    
+                $roomName = $room?->name ?? 'Room Detail';
+    
+                // Thêm vào breadcrumb
+                $breadcrumbs[] = [
+                    'label' => $roomName,
+                    'url' => route('rooms.detail',  ['id' => $roomId]),
+                ];
+            }
         }
 
         // Có thể mở rộng tuỳ route khác (contact, blog, booking...)
