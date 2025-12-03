@@ -52,7 +52,8 @@
                                         @click="showSignupForm" />
                                 </template>
                                 <template v-else>
-                                    <Button class="button" label="Book now" raised @click="router.get(route('booking.index'))"></Button>
+                                    <Button class="button" label="Book now" raised
+                                        @click="router.get(route('booking.index'))"></Button>
                                 </template>
                             </div>
                             <div class="menu-user | relative flex justify-center items-center gap-x-4">
@@ -135,7 +136,7 @@
                                 <Link :href="route('about')"><span>About us</span></Link>
                             </li>
                             <li>
-                                <a href=""><span>Contact</span></a>
+                                <a :href="route('review')"><span>Review</span></a>
                             </li>
                         </ul>
                     </nav>

@@ -26,6 +26,10 @@ class Breadcrumbs
             $breadcrumbs[] = ['label' => 'About us', 'url' => route('about')];
         }
 
+        if ($routeName === 'review') {
+            $breadcrumbs[] = ['label' => 'Reviews', 'url' => route('review')];
+        }
+
         if (str_starts_with($routeName, 'rooms')) {
             $breadcrumbs[] = ['label' => 'Rooms', 'url' => route('rooms.index')];
 

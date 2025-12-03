@@ -56,7 +56,7 @@ class RoomTypeSeeder extends Seeder
                 'max_adults' => 5,
                 'max_children' => 2,
                 'total_quantity' => 2,
-                'status' => 'active',
+                'status' => 'inactive',
                 'base_price' => 1500000,
             ],
             [

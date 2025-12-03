@@ -840,3 +840,11 @@ table.dataTable > thead {
     display: none !important;
 }
 
+/* text giới hạn 1 dòng */
+.text-1-line {
+    display: -webkit-box;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

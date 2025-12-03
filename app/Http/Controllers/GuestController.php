@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\RoomType;
+use App\Models\CustomerType;
 
 class GuestController extends Controller
 {
@@ -18,10 +19,18 @@ class GuestController extends Controller
 
     public function roomDetail(int $id)
     {
-        $roomType = RoomType::with('images')->findOrFail($id);
+        $roomType = RoomType::with(['images', 'amenities'])->findOrFail($id);
 
         return Inertia::render('Guest/Room-detail', [
             'roomType' => $roomType
+        ]);
+    }
+
+    public function review(){
+        $customerTypeList = CustomerType::get();
+
+        return Inertia::render('Guest/Review', [
+            'customerTypeList' => $customerTypeList
         ]);
     }
 }

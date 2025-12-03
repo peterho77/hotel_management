@@ -30,13 +30,18 @@ Route::prefix('booking')->group(function () {
     Route::get('/{bookingId}/payment/vnpay/return', [PaymentController::class, 'vnpayReturn'])->name('payment.vnpay.return');
 });
 
+// rooms page
+Route::prefix('rooms')->name('rooms.')->group(function () {
+    Route::get('/', [GuestController::class, 'rooms'])->name('index');
+    Route::get('/{id}/detail', [GuestController::class, 'roomDetail'])->name('detail');
+});
+
+// review page
+Route::get('/review',[GuestController::class, 'review'])->name('review');
+
 // Role Authentication
 Route::middleware('guest')->group(function () {
     Route::inertia('/about', 'Guest/About')->name('about');
-    Route::prefix('rooms')->name('rooms.')->group(function () {
-        Route::get('/', [GuestController::class, 'rooms'])->name('index');
-        Route::get('/{id}/detail', [GuestController::class, 'roomDetail'])->name('detail');
-    });
 });
 
 Route::middleware('auth')->group(function () {
