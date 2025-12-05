@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('room_type_images', function (Blueprint $table) {
+        Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('room_type_id')->nullable()->constrained('room_type')->nullOnDelete();
+            $table->foreignId('review_id')->nullable()->constrained('review')->nullOnDelete();
             $table->string('path');
             $table->boolean('is_featured');
             $table->unsignedInteger('sort_order')->nullable();
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('room_type_images');
+        Schema::dropIfExists('images');
     }
 };

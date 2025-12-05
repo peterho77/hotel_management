@@ -168,7 +168,7 @@
                                     <template #empty>
                                         <div class="flex items-center justify-center flex-col">
                                             <i
-                                                class="pi pi-cloud-upload !border-2 !rounded-full !p-8 !text-4xl !text-muted-color" />
+                                                class="pi pi-cloud-upload border-2! rounded-full! !p-8 !text-4xl !text-muted-color" />
                                             <p class="mt-6 mb-0">Drag and drop files to here to upload.</p>
                                         </div>
                                     </template>
@@ -222,7 +222,6 @@ import Button from 'primevue/button';
 import Message from 'primevue/message';
 import Fieldset from 'primevue/fieldset';
 
-
 // tabs
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -239,9 +238,6 @@ import Badge from 'primevue/badge';
 // data table
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
-
 
 import { router } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
@@ -372,9 +368,6 @@ const $primevue = usePrimeVue();
 
 const totalSize = ref(0);
 const totalSizePercent = ref(0);
-const files = ref([]);
-const previews = ref([])
-
 
 const form = reactive({
     name: '',
@@ -468,9 +461,7 @@ const submit = (e) => {
 
         // duyệt qua toàn bộ field trong form
         for (const key in e.values) {
-            const value = e.values[key]
-
-            // Nếu là mảng các file room type img
+            const value = e.values[key];
 
             // Nếu là date object (ví dụ birth_date)
             if (value instanceof Date) {
@@ -491,7 +482,7 @@ const submit = (e) => {
         router.post('/admin/room-type/add-new', data, {
             forceFormData: true,
             onSuccess: () => {
-                console.log('Tạo loại phòng thành công!')
+                console.log('Thêm loại phòng thành công!')
             },
         })
         toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });

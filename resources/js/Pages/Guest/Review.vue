@@ -1,5 +1,4 @@
 <template>
-
     <Head :title="pageTitle" />
 
     <Breadcrumb :breadcrumbList="breadcrumb" />

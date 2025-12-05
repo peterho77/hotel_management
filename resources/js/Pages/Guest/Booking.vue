@@ -168,7 +168,7 @@
                     <div class="p-2">
                         <span class="text-md">Other empty options</span>
                     </div>
-                    <div class="grid grid-cols-[auto_1fr] gap-x-2">
+                    <div class="grid grid-cols-[auto_1fr] gap-x-2 items-start">
                         <DataTable :value="emptyRoomOptions" rowGroupMode="rowspan" groupRowsBy="name" sortField="id"
                             showGridlines class="text-lg w-full items-start" tableStyle="max-width: 74rem">
                             <!-- Cột thông tin phòng -->
@@ -275,7 +275,7 @@
                                 </template>
                             </Column>
                         </DataTable>
-                        <div class="box | max-h-50 flow" style="--flow-spacer:1rem">
+                        <div class="box | flow" style="--flow-spacer:1rem">
                             <h3>Vui lòng chọn loại phòng bạn muốn đặt</h3>
                             <div class="summary-infor flow mt-2 text-left" style="--flow-spacer:.5rem">
                                 <!-- num of booking rooms -->
@@ -874,7 +874,7 @@ const sendRoomBookingDetail = () => {
             selected_rooms: JSON.parse(JSON.stringify(selectedRooms.value || [])),
         }
         console.log(roomBookingDetail);
-        router.post(route('booking.detail'), roomBookingDetail);
+        // router.post(route('booking.detail'), roomBookingDetail);
     }
 }
 

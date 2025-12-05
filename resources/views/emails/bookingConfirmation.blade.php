@@ -34,29 +34,55 @@
 
                                 <div>
                                     <h3>Thông tin khách hàng</h3>
-                                    <div style="display:flex; justify-content: space-between; align-items:center">
-                                        <h4>Tên:</h4>
-                                        <span>{{  $booking->customer->full_name }}</span>
-                                    </div>
+
+                                    {{-- name --}}
+                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+                                        <tr>
+                                            <td style="font-weight: bold; font-size: 14px; color: #1f2937; width: 30%;">
+                                                Tên:</td>
+                                            <td style="font-size: 14px; color: #4b5563;">
+                                                {{ $booking->customer->full_name }}
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    {{-- phone --}}
                                     @if ($booking->customer->phone)
-                                        <div style="display:flex; justify-content: space-between; align-items:center">
-                                            <h4>Số điện thoại:</h4>
-                                            <span>{{  $booking->customer->phone }}</span>
-                                        </div>
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+                                            <tr>
+                                                <td style="font-weight: bold; font-size: 14px; color: #1f2937; width: 30%;">
+                                                    Số điện thoại:</td>
+                                                <td style="font-size: 14px; color: #4b5563;">
+                                                    {{ $booking->customer->phone }}
+                                                </td>
+                                            </tr>
+                                        </table>
                                     @endif
-                                    <div style="display:flex; justify-content: space-between; align-items:center">
-                                        <h4>Số lượng khách:</h4>
-                                        <span>
-                                            {{  $booking->num_adults }} người lớn
-                                            @if($booking->num_children > 0)
-                                                và {{ $booking->num_children }} trẻ em
-                                            @endif
-                                        </span>
-                                    </div>
-                                    <div style="display:flex; justify-content: space-between; align-items:center">
-                                        <h4>Yêu cầu đặc biệt:</h4>
-                                        <span>{{  $booking->special_request }}</span>
-                                    </div>
+
+                                    {{-- num_guests --}}
+                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+                                        <tr>
+                                            <td style="font-weight: bold; font-size: 14px; color: #1f2937; width: 30%;">
+                                                Số lượng khách:</td>
+                                            <td style="font-size: 14px; color: #4b5563;">
+                                                {{ $booking->num_adults }} người lớn
+                                                @if($booking->num_children > 0)
+                                                    và {{ $booking->num_children }} trẻ em
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    {{-- special request --}}
+                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+                                        <tr>
+                                            <td style="font-weight: bold; font-size: 14px; color: #1f2937; width: 30%;">
+                                                Yêu cầu đặc biệt:</td>
+                                            <td style="font-size: 14px; color: #4b5563;">
+                                                {{ $booking->special_request ?: 'Không có' }}
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
 
                                 <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 15px 0;">Chi tiết đặt phòng:

@@ -41,7 +41,7 @@ class RoomTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required',
             'total_quantity' => 'integer|min:1|max:10',
             'max_adults' => 'integer|required',

@@ -23,7 +23,7 @@ class RoomType extends Model
     }
     public function images() :HasMany   
     {
-        return $this->hasMany(RoomTypeImage::class, 'room_type_id');
+        return $this->hasMany(Images::class, 'room_type_id');
     }
     public function amenities(): BelongsToMany
     {

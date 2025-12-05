@@ -178,7 +178,6 @@ const toast = useToast();
 const submit = (e) => {
     if (e.valid) {
         router.post('/register', JSON.parse(JSON.stringify(e.values)))
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
         dialogRef.value.close();
     }
 }

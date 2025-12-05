@@ -42,7 +42,7 @@ class PaymentController extends Controller
                     'error' => $e->getMessage()
                 ]);
             }
-            return redirect()->route('booking.index', ['success' => $result['message']]);
+            return redirect()->route('booking.index')->with('success', $result['message']);
         }
         return redirect()->route('booking.index')->with('error', $result['message']);
     }
