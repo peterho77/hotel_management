@@ -11,7 +11,7 @@ use App\Models\Booking;
 
 class UserController extends Controller
 {
-    public function changePassword(Request $request, $user_name)
+    public function changePassword(Request $request)
     {
         $request->validate([
             'current_password' => 'required|string|min:8',
@@ -70,10 +70,12 @@ class UserController extends Controller
         })
             ->with(['customer'])
             ->get();
-
         return Inertia::render(
             'User/Booking-history',
-            ['bookings' => $bookings]
+            [
+                'bookings' => $bookings,
+                'user_name' => Auth::user()->user_name
+            ]
         );
     }
 }

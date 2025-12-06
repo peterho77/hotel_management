@@ -14,10 +14,14 @@ class Review extends Model
         'rating',
         'general_review',
         'positive',
-        'negatvie'
+        'negative'
     ];
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
 
-    public function images()   
+    public function images()
     {
         return $this->hasMany(Images::class, 'review_id');
     }
@@ -35,5 +39,4 @@ class Review extends Model
             ->timezone('Asia/Ho_Chi_Minh')
             ->format('H:i  d/m/Y');
     }
-
 }

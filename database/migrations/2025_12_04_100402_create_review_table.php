@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('review', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            $table->foreignId('booking_id')->constrained('booking')->onDelete('cascade');
             $table->tinyInteger('rating')->default(0);
-            $table->string('general_review')->nullable(); // ⭐ dòng đánh giá chung
+            $table->string('general_review');
             $table->text('positive')->nullable();
             $table->text('negative')->nullable();
             $table->timestamps();

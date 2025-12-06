@@ -7,7 +7,6 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\RoomType;
-use App\Models\Room;
 use App\Models\Branch;
 
 class RoomTypeController extends Controller

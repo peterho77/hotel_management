@@ -9,6 +9,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -76,6 +77,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{user_name}/booking-history', [UserController::class, 'bookingHistory'])->name('user.booking-history');
             Route::post('/{user_name}/change-password', [UserController::class, 'changePassword'])->name('user.change_password');
             Route::post('/{user_name}/update-profile', [UserController::class, 'updateProfile'])->name('user.update_profile');
+            Route::post('/{user_name}/review/store', [ReviewController::class, 'store'])->name('review.store');
         });
     });
 

@@ -85,7 +85,7 @@
                     </div>
                     <div class="mr-10 mt-6 flex gap-4">
                         <Button severity="info" label="Đổi thời gian check in" raised />
-                        <Button severity="secondary" label="Viết bài đánh giá" raised @click="showAddNewReview(slotProps.data.id)"/>
+                        <Button severity="secondary" label="Viết bài đánh giá" raised @click="showAddNewReview(slotProps.data.id, slotProps.data.customer_id)"/>
                     </div>
                 </Panel>
             </template>
@@ -111,7 +111,8 @@ const bookingHistory = computed(() => {
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
 const props = defineProps({
-    bookings: Array
+    bookings: Array,
+    user_name: String
 })
 
 // row expansion
@@ -133,7 +134,6 @@ const hiddenPaymentDetailRows = ref([
     'created_at',
     'updated_at'
 ])
-console.log(bookingHistory);
 
 // keyword search
 const filters = ref({
@@ -215,7 +215,7 @@ const toggleColumn = (val) => {
 const dialog = useDialog();
 const addNewReview = defineAsyncComponent(() => import('../../Components/Dialog/AddNewReview.vue'));
 
-const showAddNewReview = (bookingId) => {
+const showAddNewReview = (bookingId, userId) => {
     dialog.open(addNewReview, {
         props: {
             header: 'Đánh giá của bạn',
@@ -232,7 +232,9 @@ const showAddNewReview = (bookingId) => {
             position: 'right',
         },
         data: {
-            bookingId
+            bookingId,
+            userId,
+            userName: props.user_name
         }
     });
 }

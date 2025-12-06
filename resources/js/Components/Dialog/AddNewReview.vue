@@ -27,8 +27,8 @@
                     </FormField>
                     <div class="flex flex-col gap-1">
                         <label>Thêm ảnh</label>
-                        <FileUpload v-model="reviewImages" @upload="onTemplatedUpload($event)" :multiple="true" accept="image/*"
-                            :maxFileSize="1000000" @select="onSelectedFiles">
+                        <FileUpload v-model="reviewImages" @upload="onTemplatedUpload($event)" :multiple="true"
+                            accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles">
                             <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
                                 <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
                                     <div class="flex gap-2">
@@ -106,6 +106,7 @@ import { ref, reactive, inject, onMounted, watch } from 'vue';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import { usePrimeVue } from 'primevue/config';
+import { router } from '@inertiajs/vue3';   
 
 // flash message
 import { useFlashToast } from "@/Composables/useFlashToast";
@@ -123,16 +124,20 @@ import Badge from 'primevue/badge';
 
 const dialogRef = inject('dialogRef');
 
-// booking id
+// booking id and user id
 const bookingId = ref();
+const userId = ref();
+const userName = ref();
 
 onMounted(() => {
     const params = dialogRef.value.data;
 
     if (params) {
-        bookingId.value = params.bookingId || [];
+        bookingId.value = params.bookingId || null;
+        userId.value = params.userId || null;
+        userName.value = params.userId || null;
     }
-    console.log(bookingId);
+    console.log(bookingId.value, userId.value);
 })
 
 // rating options
@@ -189,17 +194,17 @@ watch(
 )
 
 const $primevue = usePrimeVue();
-const reviewImages= ref([]);
+const reviewImages = ref([]);
 
 const onSelectedFiles = (event) => {
-    reviewImages.value = event.files.map((file, index) => renameImageFile(file, `booking_review${bookingId.value}`, index))
+    reviewImages.value = event.files.map((file, index) => renameImageFile(file, `bookingReview${bookingId.value}`, index))
     console.log(reviewImages);
 };
 
 const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
     removeFileCallback(index);
 
-    reviewImages.splice(index, 1);
+    reviewImages.value.splice(index, 1);
     if (reviewImages.value.length) {
         reviewImages.value = reviewImages.value.map((image, index) => renameImageFile(image, newName, index))
     }
@@ -237,6 +242,39 @@ const onBookingReview = (e) => {
     if (e.valid) {
         console.log(e.values);
         console.log(reviewImages.value);
+        if (e.valid) {
+            const data = new FormData();
+
+            // duyệt qua toàn bộ field trong form
+            for (const key in e.values) {
+                const value = e.values[key];
+
+                // Nếu là date object (ví dụ birth_date)
+                if (value instanceof Date) {
+                    data.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
+                }
+                // Còn lại là text / number
+                else {
+                    data.append(key, value ?? '')
+                }
+            }
+            if (Array.isArray(reviewImages.value) && reviewImages.value.length && reviewImages.value[0] instanceof File) {
+                reviewImages.value.forEach((file, idx) => {
+                    data.append(`images[${idx}]`, file, file.name);
+                });
+            }
+            data.append(`booking_id`, bookingId.value);
+            console.log(data);
+            //Gửi form qua Inertia
+            router.post(route('review.store', { user_name: userName.value }), data, {
+                forceFormData: true,
+                onSuccess: () => {
+                    console.log('Gửi đánh giá thành công!')
+                },
+            })
+            // toast.add({ severity: 'success', summary: 'Gửi bài đánh giá thành công.', life: 3000 });
+            // dialogRef.value.close();
+        }
     }
 }
 
