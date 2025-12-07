@@ -14,7 +14,7 @@ export function useFlashToast() {
             if (!flash) return;
 
             // chỉ show success nếu chưa show
-            if (flash.success && flash.success !== shownFlash.value.success) {
+            if (flash.success) {
                 toast.add({
                     severity: "success",
                     summary: "Thành công",
@@ -25,7 +25,7 @@ export function useFlashToast() {
             }
 
             // chỉ show error nếu chưa show
-            if (flash.error && flash.error !== shownFlash.value.error) {
+            if (flash.error) {
                 toast.add({
                     severity: "error",
                     summary: "Lỗi",

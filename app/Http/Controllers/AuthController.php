@@ -46,39 +46,52 @@ class AuthController extends Controller
             'account_name' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
-        $accountName = $credentials['account_name'];
 
-        // Xác định người dùng nhập email, username hay phone
-        if (filter_var($accountName, FILTER_VALIDATE_EMAIL)) {
-            $field = 'email';
-        } elseif (preg_match('/^[0-9]+$/', $accountName)) {
-            $field = 'phone';
-        } else {
-            $field = 'user_name';
-        }
-        if (Auth::attempt([$field => $accountName, 'password' => $credentials['password']], $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            $user = Auth::user();
+        $input = $credentials['account_name'];
 
-            if ($user->role === 'admin') {
-                return redirect()
-                    ->route('admin.room-type-management')
-                    ->with('user', $user)
-                    ->with('success', 'Welcome back, Admin!');
-            } else if ($user->role === 'manager') {
-                return redirect()
-                    ->route('manager.customer')
-                    ->with('user', $user)
-                    ->with('success', 'Welcome back, Manager!');
-            }
+        // Check nhập username hay email
+        $user = User::where('email', $input)
+            ->orWhere('user_name', $input)
+            ->first();
 
-            return redirect()->intended(route('home'))
-                ->with('user', $user)
-                ->with('success', 'You signed in successfully');
+        // Check nhập số điện thoại
+        if (!$user && preg_match('/^[0-9]+$/', $input)) {
+            $user = User::whereHas('customer', function ($q) use ($input) {
+                $q->where('phone', $input);
+            })->first();
         }
 
-        return redirect()->route('home')
-            ->with('error', 'You failed to login!');
+        // Không tồn tại
+        if (!$user) {
+            return back()->with('error', 'Account does not exist!');
+        }
+
+        // Kiểm tra mật khẩu có đúng không
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return redirect()
+                ->route('home')
+                ->with('error', 'Incorrect password!');
+        }
+
+        // Login thành công
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        // Chuyển role
+        if ($user->role === 'admin') {
+            return redirect()
+                ->route('admin.room-type-management')
+                ->with('success', 'Welcome back, Admin!');
+        } elseif ($user->role === 'manager') {
+            return redirect()
+                ->route('manager.customer')
+                ->with('success', 'Welcome back, Manager!');
+        }
+
+        return redirect()
+            ->intended(route('home'))
+            ->with('success', 'You signed in successfully');
     }
 
     public function logout(Request $request)
