@@ -32,8 +32,9 @@
                                         style="color: #2563eb; font-size: 16px;">#{{ $booking->id }}</strong>
                                 </p>
 
-                                <div>
-                                    <h3>Thông tin khách hàng</h3>
+                                <div style="margin-bottom:2rem">
+                                    <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 0.5rem 0;">Thông tin khách
+                                        hàng</h3>
 
                                     {{-- name --}}
                                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
@@ -85,7 +86,7 @@
                                     </table>
                                 </div>
 
-                                <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 15px 0;">Chi tiết đặt phòng:
+                                <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 0.5rem 0;">Chi tiết đặt phòng:
                                 </h3>
                                 <table width="100%" cellpadding="0" cellspacing="0"
                                     style="border-collapse: collapse; margin-bottom: 20px; border: 1px solid #ddd;">

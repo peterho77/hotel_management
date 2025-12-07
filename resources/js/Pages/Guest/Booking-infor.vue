@@ -229,42 +229,44 @@
 
                                         <!-- room list -->
                                         <template
-                                            v-for="(room, index) in roomBookingDetail.selected_rooms.sort((a, b) => a.name.localeCompare(b.name))">
-                                            <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
-                                                <!-- room type name -->
-                                                <h3 class="text-xl font-semibold">{{ room.name }}</h3>
-                                                <!-- rate policy -->
-                                                <div class="flex items-center gap-x-2 text-green-600">
-                                                    <i class="pi pi-check"></i>
-                                                    <p>{{ getPaymentRequired(room.rate_policy.payment_requirement) }}
-                                                    </p>
+                                            v-for="(roomType, index) in roomBookingDetail.selected_rooms.sort((a, b) => a.name.localeCompare(b.name))">
+                                            <template v-for="idx in roomType.selected_quantity"
+                                                :key="`room-${roomType.id}-${index}-${idx}`">
+                                                <div class="room-booking-item | box flow" style="--flow-spacer:1rem">
+                                                    <!-- room type name -->
+                                                    <h3 class="text-xl font-semibold">{{ roomType.name }}</h3>
+                                                    <!-- rate policy -->
+                                                    <div class="flex items-center gap-x-2 text-green-600">
+                                                        <i class="pi pi-check"></i>
+                                                        <p>{{ getPaymentRequired(roomType.rate_policy.payment_requirement) }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="flex items-center gap-x-2 text-green-600">
+                                                        <i class="pi pi-check"></i>
+                                                        <p><b>{{ getCancellationType(roomType.rate_policy.cancellation_type) }}</b>
+                                                            trước 3-7 ngày</p>
+                                                    </div>
+                                                    <!-- capacity -->
+                                                    <div class="flex items-center gap-x-2">
+                                                        <i class="pi pi-user"></i>
+                                                        <p><b>Khách: </b>
+                                                            {{ roomType.num_adults + ' người lớn ' + (roomType.num_children > 0 ? `và ${roomType.num_children} trẻ em` : '') }}
+                                                        </p>
+                                                    </div>
+                                                    <Divider />
+                                                    <div class="flex flex-col gap-1">
+                                                        <label :for="`floor-${roomType.name}-${index}`"
+                                                            class="font-semibold">Tùy chọn
+                                                            tầng</label>
+                                                        <Select v-model="roomType.selected_floor[idx-1]"
+                                                            :id="`floor-${roomType.id}-${index}`"
+                                                            :name="`roomType[${index}]${idx}`" :options="floors"
+                                                            optionLabel="name" optionValue="value"
+                                                            placeholder="Không có" class="max-w-60" />
+                                                    </div>
                                                 </div>
-                                                <div class="flex items-center gap-x-2 text-green-600">
-                                                    <i class="pi pi-check"></i>
-                                                    <p><b>{{ getCancellationType(room.rate_policy.cancellation_type) }}</b>
-                                                        trước 3-7 ngày</p>
-                                                </div>
-                                                <!-- capacity -->
-                                                <div class="flex items-center gap-x-2">
-                                                    <i class="pi pi-user"></i>
-                                                    <p><b>Khách: </b>
-                                                        {{ room.num_adults + ' người lớn ' + (room.num_children > 0 ? `và ${room.num_children} trẻ em` : '') }}
-                                                    </p>
-                                                </div>
-                                                <Divider />
-                                                <div class="flex flex-col gap-1">
-                                                    <label :for="`floor-${room.name}-${index}`"
-                                                        class="font-semibold">Tùy chọn
-                                                        tầng</label>
-                                                    <Select v-model="room.selected_floor"
-                                                        :id="`floor-${room.id}-${index}`"
-                                                        :name="`rooms[${index}].selected_floor`" :options="floors"
-                                                        optionLabel="name" optionValue="value" placeholder="Không có"
-                                                        class="max-w-60" />
-                                                </div>
-                                            </div>
+                                            </template>
                                         </template>
-
                                         <div class="add-service | box flow" style="--flow-spacer:1rem">
                                             <h3 class="text-xl font-semibold">Thêm vào kỳ nghỉ</h3>
                                             <div>
@@ -272,7 +274,8 @@
                                                     class="flex flex-col flex-wrap gap-4">
                                                     <div class="flex items-center gap-2">
                                                         <Checkbox value="book-airport-transfer" />
-                                                        <label for="book-airport-transfer">Đặt xe đưa đón/taxi</label>
+                                                        <label for="book-airport-transfer">Đặt xe đưa
+                                                            đón/taxi</label>
                                                     </div>
                                                     <div class="flex items-center gap-2">
                                                         <Checkbox value="air-ticket" />
@@ -435,6 +438,7 @@ import axios from 'axios';
 
 const page = usePage();
 const roomBookingDetail = reactive(page.props.roomBookingDetail);
+console.log(roomBookingDetail.selected_rooms);
 
 function formatRoomBookingData(booking) {
     if (!booking.selected_rooms || booking.selected_rooms.length === 0) return booking;
@@ -468,7 +472,7 @@ const summaryNumOfRoomsList = computed(() => {
         if (!map[room.name]) {
             map[room.name] = { name: room.name, count: 0 };
         }
-        map[room.name].count += room.count;
+        map[room.name].count += room.selected_quantity;
     });
 
     return Object.values(map);
@@ -552,7 +556,7 @@ const floors = ref(Array.from({ length: numOfFloors.value }).map((_, index) => (
 // add floor options to selected room
 roomBookingDetail.selected_rooms = roomBookingDetail.selected_rooms.map(room => ({
     ...room,
-    selected_floor: null
+    selected_floor: Array(room.selected_quantity).fill(null)
 }));
 
 // check in time slots

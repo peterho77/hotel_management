@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Review;
 
 
@@ -54,6 +56,10 @@ class ReviewController extends Controller
             ]);
         };
 
-        return redirect()->route('user.booking-history');
+        $username = Auth::user()->user_name;
+
+        return redirect()->route('user.booking-history', [
+            'user_name' => $username
+        ]);
     }
 }

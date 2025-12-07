@@ -104,15 +104,6 @@ class BookingController extends Controller
             'amount' => $newBooking->total_price,
         ]);
 
-        try {
-            $this->emailService->sendBookingConfirmation($newBooking);
-        } catch (\Exception $e) {
-            Log::error('Failed to send order confirmation email after VNPay payment', [
-                'booking_id' => $newBooking->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-
         return response()->json([
             'redirect_url' => route('payment.vnpay', $newBooking->id)
         ]);

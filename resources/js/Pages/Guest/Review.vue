@@ -170,8 +170,9 @@ const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 
 const props = defineProps({
     customerTypeList: Array,
+    reviewList: Array
 });
-console.log(props.customerTypeList);
+console.log(props.reviewList);
 
 // room review score
 const roomReviewScore = ref(70);
@@ -197,7 +198,8 @@ const showFilterReview = () => {
             position: 'right',
         },
         data: {
-            customerTypeList: props.customerTypeList
+            customerTypeList: props.customerTypeList,
+            reviewList: props.reviewList,
         }
     });
 }

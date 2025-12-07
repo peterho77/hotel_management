@@ -36,59 +36,61 @@
             <span>Sắp xếp đánh giá theo</span>
             <Select :options="filterReviewList" optionLabel="label" :placeholder="filterReviewList[0].label" />
         </div>
-        <div class="detail-review-section">
-            <div class="example-booking-user-review | flex gap-12">
-                <div class="flow" style="--flow-spacer:1rem">
-                    <div class="review-user | flex items-center">
-                        <Avatar label="V" size="large" class="mr-2" style="background-color: #ece9fc; color: #2a1261"
-                            shape="circle" />
-                        <!-- user name and user nationality -->
-                        <div class="grid">
-                            <span class="font-semibold">User</span>
-                            <span class="text-xs">Việt Nam</span>
-                        </div>
-                    </div>
-                    <div class="booking-info | grid gap-2">
-                        <div class="customer-type | flex items-center gap-x-2">
-                            <pi class="pi pi-users"></pi>
-                            <!-- customer-type-name -->
-                            <span class="fs-300">Khách lẻ</span>
-                        </div>
-                        <div class="num-nights | flex items-center gap-x-2">
-                            <pi class="pi pi-moon"></pi>
-                            <!-- num-nights / checkin time -->
-                            <span class="fs-300">2 đêm - tháng 12/2025</span>
-                        </div>
-                        <div class="room | flex items-center gap-x-2">
-                            <pi class="pi pi-home"></pi>
-                            <!-- room-name -->
-                            <span class="fs-300">Phòng standard</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-content | flex-1 flow" style="--flow-spacer:.5rem">
-                    <div class="flex items-start">
-                        <div>
-                            <div class="created-review-date | flex gap-1">
-                                <span class="fs-300 text-gray-500">Ngày đánh giá:</span>
-                                <!-- created_at -->
-                                <span class="fs-300 text-gray-500">4/12/2025</span>
+        <div class="detail-review-section | grid gap-y-16">
+            <template v-for="review in reviewList">
+                <div class="detail-review-item | flex gap-12">
+                    <div class="flow" style="--flow-spacer:1rem">
+                        <div class="review-user | flex items-center">
+                            <Avatar label="V" size="large" class="mr-2"
+                                style="background-color: #ece9fc; color: #2a1261" shape="circle" />
+                            <!-- user name and user nationality -->
+                            <div class="grid">
+                                <span class="font-semibold">{{ review.booking.customer.full_name }}</span>
+                                <span class="text-xs">Việt Nam</span>
                             </div>
-                            <span class="general-review-text | fs-700 font-semibold">Tốt</span>
                         </div>
-                        <Badge class="ml-auto" value="8" size="xlarge" severity="success"></Badge>
+                        <div class="booking-info | grid gap-2">
+                            <div class="customer-type | flex items-center gap-x-2">
+                                <i class="pi pi-users"></i>
+                                <!-- customer-type-name -->
+                                <span class="fs-300">Khách lẻ</span>
+                            </div>
+                            <div class="num-nights | flex items-center gap-x-2">
+                                <i class="pi pi-moon"></i>
+                                <!-- num-nights / checkin time -->
+                                <span class="fs-300">2 đêm - tháng 12/2025</span>
+                            </div>
+                            <div class="room | flex items-center gap-x-2">
+                                <i class="pi pi-home"></i>
+                                <!-- room-name -->
+                                <span class="fs-300">Phòng standard</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="pros | flex items-center gap-2">
-                        <pi class="pi pi-plus-circle"></pi>
-                        <p>Có điểm mạnh</p>
-                    </div>
-                     <div class="cons | flex items-center gap-2">
-                        <pi class="pi pi-minus-circle"></pi>
-                        <p>Có điểm yếu</p>
+                    <div class="review-content | flex-1 flow" style="--flow-spacer:.5rem">
+                        <div class="flex items-start">
+                            <div>
+                                <div class="created-review-date | flex gap-1">
+                                    <span class="fs-300 text-gray-500">Ngày đánh giá:</span>
+                                    <!-- created_at -->
+                                    <span class="fs-300 text-gray-500">{{ review.created_at }}</span>
+                                </div>
+                                <span class="general-review-text | fs-700 font-semibold">{{ review.general_review }}</span>
+                            </div>
+                            <Badge class="ml-auto" :value="review.rating" size="xlarge" severity="success"></Badge>
+                        </div>
+                        <div class="pros | flex items-center gap-2">
+                            <i class="pi pi-plus-circle"></i>
+                            <p>{{ review.positive }}</p>
+                        </div>
+                        <div class="cons | flex items-center gap-2">
+                            <i class="pi pi-minus-circle"></i>
+                            <p>{{ review.negative }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <Divider />
+                <Divider />
+            </template>
         </div>
         <ScrollTop />
     </div>
@@ -121,14 +123,16 @@ import Badge from 'primevue/badge';
 
 const dialogRef = inject('dialogRef');
 
-// customer group
+// take list data from page
 const customerTypeList = ref();
+const reviewList = ref();
 
 onMounted(() => {
     const params = dialogRef.value.data;
 
     if (params) {
         customerTypeList.value = params.customerTypeList || [];
+        reviewList.value = params.reviewList || [];
     }
 })
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\RoomType;
+use App\Models\Review;
 use App\Models\CustomerType;
 
 class GuestController extends Controller
@@ -28,9 +29,11 @@ class GuestController extends Controller
 
     public function review(){
         $customerTypeList = CustomerType::get();
+        $reviewList = Review::with('booking.customer')->get();
 
         return Inertia::render('Guest/Review', [
-            'customerTypeList' => $customerTypeList
+            'customerTypeList' => $customerTypeList,
+            'reviewList' => $reviewList
         ]);
     }
 }

@@ -892,7 +892,7 @@ const sendRoomBookingDetail = () => {
             selected_rooms: JSON.parse(JSON.stringify(selectedBookingRooms.value || [])),
         }
         console.log(roomBookingDetail);
-        // router.post(route('booking.detail'), roomBookingDetail);
+        router.post(route('booking.detail'), roomBookingDetail);
     }
 }
 
@@ -905,18 +905,5 @@ function formatDate(dateStr) {
 
     return `${dd}/${mm}/${yyyy}`;
 }
-
-// flash message
-watch(
-    () => page.props.flash,
-    (flash) => {
-        if (flash?.success) {
-            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
-        }
-        else if (flash?.error) {
-            toast.add({ severity: 'error', summary: 'Error', detail: flash.error, life: 3000 });
-        }
-    },
-)
 
 </script>
