@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RoomDiscountDetail extends Model
+class RoomOptionDiscount extends Model
 {
     //
-    protected $table = 'room_discount_detail';
+    protected $table = 'room_option_discount';
 
     protected $fillable = [
-        'room_rate_option_id',
+        'room_option_id',
         'discount_id',
         'applied_amount',
         'applied_order',

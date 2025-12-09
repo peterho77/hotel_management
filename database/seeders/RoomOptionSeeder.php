@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class RoomRateOptionSeeder extends Seeder
+class RoomOptionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -19,7 +19,7 @@ class RoomRateOptionSeeder extends Seeder
             $maxGuests = $roomType->max_adults + $roomType->max_children;
 
             for ($guest = 1; $guest <= $maxGuests; $guest++) {
-                DB::table('room_rate_option')->insert([
+                DB::table('room_option')->insert([
                     'room_type_id'   => $roomType->id,
                     'available_quantity' => $roomType->total_quantity,
                     'num_adults' => min($guest, $roomType->max_adults),

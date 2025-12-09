@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class RoomBookingItem extends Model
 {
     protected $table = "room_booking_item";
-    public function room_rate_otion()
+    public function room_option()
     {
-        return $this->belongsTo(RoomRateOption::class, 'room_rate_option_id');
+        return $this->belongsTo(RoomOption::class, 'room_option_id');
     }
 
     public function booking()

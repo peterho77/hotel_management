@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\RoomRateOption;
+use App\Models\RoomOption;
 
-class RoomDiscountDetailSeeder extends Seeder
+class RoomOptionDiscountSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -24,10 +24,9 @@ class RoomDiscountDetailSeeder extends Seeder
         if ($discounts->isEmpty()) {
             return;
         }
+        $roomOptions = RoomOption::with('room_type')->get();
 
-        $roomRateOptions = RoomRateOption::with('room_type')->get();
-
-        foreach ($roomRateOptions as $option) {
+        foreach ($roomOptions as $option) {
             $currentPrice = $option->price;
 
             foreach ($discounts as $discount) {
@@ -43,8 +42,8 @@ class RoomDiscountDetailSeeder extends Seeder
                 }
 
                 // Ghi vào bảng room_rate_discount
-                DB::table('room_discount_detail')->insert([
-                    'room_rate_option_id' => $option->id,
+                DB::table('room_option_discount')->insert([
+                    'room_option_id' => $option->id,
                     'discount_id' => $discount->id,
                     'applied_amount' => $discount->discount_value,
                     'applied_order' => $discount->priority_level,

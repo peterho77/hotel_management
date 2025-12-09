@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class RoomRateOption extends Model
+class RoomOption extends Model
 {
-    protected $table = "room_rate_option";
+    protected $table = "room_option";
     protected $appends = ['price', 'final_price'];
     public function room_type()
     {
@@ -18,8 +18,8 @@ class RoomRateOption extends Model
     {
         return $this->belongsToMany(
             Discount::class,
-            'room_discount_detail',
-            'room_rate_option_id',
+            'room_option_discount',
+            'room_option_id',
             'discount_id'
         )->withPivot(['applied_amount', 'applied_order', 'discount_applied', 'is_active']);
     }
@@ -27,15 +27,15 @@ class RoomRateOption extends Model
     {
         return $this->belongsToMany(
             RatePolicy::class,
-            'room_rate_policy',
-            'room_rate_option_id',
+            'room_option_rate_policy',
+            'room_option_id',
             'rate_policy_id'
         );
     }
 
     public function room_booking_items()
     {
-        return $this->hasMany(RoomBookingItem::class, 'room_rate_option_id');
+        return $this->hasMany(RoomBookingItem::class, 'room_option_id');
     }
 
     public function getPriceAttribute()

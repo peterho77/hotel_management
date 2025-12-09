@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('room_rate_option', function (Blueprint $table) {
+        Schema::create('room_option_rate_policy', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('room_type_id')->constrained('room_type')->nullOnDelete();
-            $table->unsignedTinyInteger('num_adults');
-            $table->unsignedTinyInteger('num_children')->default(0);
-            $table->unsignedInteger('available_quantity');
+            $table->foreignId('room_option_id')->constrained('room_option')->nullOnDelete();
+            $table->foreignId('rate_policy_id')->constrained('rate_policy')->nullOnDelete();
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('room_rate_option');
+        Schema::dropIfExists('room_option_rate_policy');
     }
 };

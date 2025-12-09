@@ -12,10 +12,10 @@ class RatePolicy extends Model
     public function room_rate_options(): BelongsToMany
     {
         return $this->belongsToMany(
-            RoomRateOption::class,
-            'room_rate_policy',
+            RoomOption::class,
+            'room_option_rate_policy',
             'rate_policy_id',
-            'room_rate_option_id'
+            'room_option_id'
         );
     }
 }

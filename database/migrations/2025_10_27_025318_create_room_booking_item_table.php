@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('room_booking_item', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->nullable()->constrained('room_booking')->nullOnDelete();
-            $table->foreignId('room_rate_option_id')->nullable()->constrained('room_rate_option ')->nullOnDelete();
+            $table->foreignId('room_option_id')->nullable()->constrained('room_option ')->nullOnDelete();
             $table->foreignId('assigned_room_id')->nullable()->constrained('room')->nullOnDelete();
             $table->foreignId('applied_discount_id')->nullable()->constrained('discount')->nullOnDelete();
             $table->decimal('total_base_price',9,2);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('booking_line_item');
+        Schema::dropIfExists('room_booking_item');
     }
 };

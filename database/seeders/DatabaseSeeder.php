@@ -41,10 +41,10 @@ class DatabaseSeeder extends Seeder
             CustomerGroupSeeder::class,
             CustomerSeeder::class,
             RatePolicySeeder::class,
-            RoomRateOptionSeeder::class,
+            RoomOptionSeeder::class,
             DiscountSeeder::class,
-            RoomRatePolicySeeder::class,
-            RoomDiscountDetailSeeder::class,
+            RoomOptionRatePolicySeeder::class,
+            RoomOptionDiscountSeeder::class,
         ]);
     }
 }
