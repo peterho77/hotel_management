@@ -88,7 +88,7 @@
                         <h3 class="fs-700">{{ summarySearchInfor }}</h3>
                     </div>
 
-                    <DataTable :value="bestRateOptions" rowGroupMode="rowspan" groupRowsBy="total_price"
+                    <DataTable :value="bestRoomOptions" rowGroupMode="rowspan" groupRowsBy="total_price"
                         :showHeaders="false" sortField="total_price" showGridlines class="text-lg w-full">
                         <!-- Cột thông tin phòng + chính sách -->
                         <Column header="Danh sách phòng">
@@ -118,7 +118,7 @@
                                         </template>
                                     </div>
                                     <span class="text-gray-600 text-sm">
-                                        {{ data.bedType }} bed
+                                        {{ data.bed_type }} bed
                                     </span>
                                     <span class="text-red-600 font-medium text-sm">
                                         {{ data.rate_policy.name }}
@@ -270,7 +270,7 @@
                                 <template #body="{ data }">
                                     <Select v-model="data.selected_quantity" :options="data.options" optionLabel="label"
                                         optionValue="value" optionDisabled="disabled"
-                                        @change="onSelectedBookingRooms(data.id, data.rate_policy.id, data.selected_quantity)">
+                                        @change="onSelectedBookingRooms(data.room_type_id, data.rate_policy.id, data.selected_quantity)">
                                     </Select>
                                 </template>
                             </Column>
@@ -355,13 +355,13 @@ const toast = useToast();
 const page = usePage();
 
 const props = defineProps({
-    roomTypeList: Array,
+    roomRateOptionList: Array,
     checkIn: String,
     checkOut: String,
     num_of_guests: Number,
     num_of_rooms: Number,
-    newData: String,
 });
+console.log(props.roomRateOptionList);
 
 // label rooms, adults, child->children
 const getLabel = (key, num) => {
@@ -424,45 +424,29 @@ const parseVNDate = (value) => {
 };
 
 // other room booking options
-const roomTypeList = ref([]);
+const roomOptionList = ref([]);
 
 const initRoomTypeList = () => {
-    roomTypeList.value = props.roomTypeList.flatMap(roomType => {
-        const roomRateOptions = roomType.room_rate_options ?? [];
+    roomOptionList.value = props.roomRateOptionList.flatMap(option => {
+        return option.rate_policies.map(policy => ({
+            room_type_id: option.room_type_id,
+            ...option.room_type,
 
-        // Nếu không có room_rate_options thì tạo một entry "trống"
-        if (roomRateOptions.length === 0) {
-            return [{
-                ...roomType,
-                rate_option_id: null,
-                rate_policy: null,
-                selected_quantity: 0,
-                options: []
-            }];
-        }
+            num_adults: option.num_adults,
+            num_children: option.num_children,
+            available_quantity: option.available_quantity,
+            price: option.price,
+            final_price: option.final_price,
 
-        return roomRateOptions.flatMap(option => {
-            const policies = option.rate_policies ?? [null];
+            rate_policy_id: policy.id,
+            rate_policy: policy,
 
-            return policies.map(policy => {
-                const item = {
-                    ...roomType,
-                    ...option,
-                    rate_policy: policy,
-                    selected_quantity: 0,
-                    options: []
-                };
-
-                // Xoá các trường lồng nhau không cần thiết để tránh duplication
-                delete item.room_rate_options;
-                delete item.rate_policies;
-                delete item.room_type;
-                delete item.room_type_id;
-                return item;
-            });
-        })
+            selected_quantity: 0,
+            // field cho các empty select
+            options: []
+        }));
     });
-    console.log(roomTypeList.value);
+    console.log(roomOptionList.value);
 };
 
 // Hàm tạo options cho mỗi select room quantity
@@ -470,7 +454,7 @@ const getOptions = (row) => {
     const sameGroup = emptyRoomOptions.value.filter(r => r.name === row.name);
     // Tổng số phòng đã chọn của các select khác
     const totalOthers = sameGroup
-        .filter(r => (r.rate_policy.id !== row.rate_policy.id) || (r.num_adults !== row.num_adults || r.num_children !== row.num_children))
+        .filter(r => r !== row)
         .reduce((sum, r) => sum + (r.selected_quantity || 0), 0);
 
     // Tạo options từ 0 -> available_quantity, disable nếu vượt quá
@@ -520,7 +504,7 @@ const filterRoomBookingForm = reactive({
 })
 
 // find other room options
-const emptyRoomOptions = ref(getEmptyRoomOptions(roomTypeList.value, filterRoomBookingForm));
+const emptyRoomOptions = ref(getEmptyRoomOptions(roomOptionList.value, filterRoomBookingForm));
 console.log(emptyRoomOptions.value);
 
 updateAllRoomQuantityOptions();
@@ -584,8 +568,8 @@ onMounted(() => {
     summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
 
     // find best room option
-    bestRateOptions.value = getBestRoomOption(roomTypeList, filterRoomBookingForm);
-    console.log(bestRateOptions.value);
+    bestRoomOptions.value = getBestRoomOption(roomOptionList, filterRoomBookingForm);
+    console.log(bestRoomOptions.value);
 })
 
 const getCancellationType = (type) => {
@@ -644,15 +628,15 @@ const searchBestRoomOptions = async (e) => {
     };
 
     // find best room option
-    bestRateOptions.value = getBestRoomOption(roomTypeList, searchRequest);
-    console.log(bestRateOptions.value);
+    bestRoomOptions.value = getBestRoomOption(roomOptionList, searchRequest);
+    console.log(bestRoomOptions.value);
 }
 
 
 // best option results
-const bestRateOptions = ref([]);
+const bestRoomOptions = ref([]);
 
-function findCheapestCombination(roomTypeList, request) {
+function findCheapestCombination(roomOptionList, request) {
     const {
         numOfAdults: totalAdults,
         numOfChildren: totalChildren,
@@ -660,7 +644,7 @@ function findCheapestCombination(roomTypeList, request) {
         numOfNights: numNights,
     } = request;
 
-    const roomTypes = roomTypeList.map(rt => ({
+    const roomTypes = roomOptionList.map(rt => ({
         ...rt,
         max_total: rt.max_adults + rt.max_children,
     }));
@@ -754,11 +738,11 @@ function findCheapestCombination(roomTypeList, request) {
     };
 }
 
-function getEmptyRoomOptions(roomTypeList, request) {
+function getEmptyRoomOptions(roomOptionList, request) {
     const { numOfAdults, numOfChildren, numOfRooms } = request;
     const results = [];
 
-    roomTypeList.forEach(room => {
+    roomOptionList.forEach(room => {
         const { num_adults, num_children, available_quantity } = room;
 
         // tính tổng sức chứa nếu dùng tất cả số phòng yêu cầu nhưng không vượt quá số phòng trống
@@ -777,8 +761,8 @@ function getEmptyRoomOptions(roomTypeList, request) {
     return results;
 }
 
-function getBestRoomOption(roomTypeList, filterOptions) {
-    const result = findCheapestCombination(roomTypeList.value, filterOptions);
+function getBestRoomOption(roomOptionList, filterOptions) {
+    const result = findCheapestCombination(roomOptionList.value, filterOptions);
     console.log(result);
     const bestOptions = (result.selection || []).map(room => ({
         ...room,
@@ -799,18 +783,22 @@ function getBestRoomOption(roomTypeList, filterOptions) {
 
 // set best room options to selected booking rooms
 const setSelectedBookingRoomOptions = () => {
-    if (bestRateOptions.value) {
-        emptyRoomOptions.value.forEach(roomType => {
-            const matched = bestRateOptions.value.find(
-                room =>
-                    room.id === roomType.id && room.rate_policy.id === roomType.rate_policy.id
+    if (bestRoomOptions.value) {
+        emptyRoomOptions.value.forEach(eOption => {
+            const matched = bestRoomOptions.value.find(
+                bOption =>
+                    bOption.room_type_id === eOption.room_type_id
+                    && bOption.rate_policy_id === eOption.rate_policy_id
+                    && bOption.num_adults == eOption.num_adults
+                    && bOption.num_children == eOption.num_children
             );
 
             if (matched) {
-                roomType.selected_quantity = matched.selected_quantity;
+                eOption.selected_quantity = matched.selected_quantity;
             }
 
-            selectedBookingRooms.value = bestRateOptions.value.map(item => ({ ...item }));;
+            selectedBookingRooms.value = bestRoomOptions.value.map(item => ({ ...item }));
+            console.log(selectedBookingRooms.value);
         });
     }
 }
@@ -841,8 +829,8 @@ const updateTotalPriceSelectedBookingRooms = () => {
     });
 };
 
-const onSelectedBookingRooms = (roomId, ratePolicyId, selectedQuantity) => {
-    const roomOption = selectedBookingRooms.value.find(r => r.id === roomId && r.rate_policy.id === ratePolicyId)
+const onSelectedBookingRooms = (roomTypeId, ratePolicyId, selectedQuantity) => {
+    const roomOption = selectedBookingRooms.value.find(r => r.room_type_id === roomTypeId && r.rate_policy.id === ratePolicyId)
 
     // Kiểm tra nếu phòng đã tồn tại trong selectedBookingRooms
     if (roomOption) {
@@ -855,7 +843,11 @@ const onSelectedBookingRooms = (roomId, ratePolicyId, selectedQuantity) => {
             roomOption.selected_quantity = selectedQuantity;
         }
     } else if (selectedQuantity > 0) {
-        let newRoomOptions = emptyRoomOptions.value.find(r => r.id === roomId && r.rate_policy.id === ratePolicyId);
+        let newRoomOptions = emptyRoomOptions.value
+            .find(r =>
+                r.room_type_id === roomTypeId
+                && r.rate_policy.id === ratePolicyId
+            );
         selectedBookingRooms.value.push(newRoomOptions);
         newRoomOptions.selected_quantity = selectedQuantity;
     }

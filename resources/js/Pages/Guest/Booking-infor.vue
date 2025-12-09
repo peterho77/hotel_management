@@ -713,7 +713,7 @@ const bookingData = computed(() => {
         ...rest
     };
 });
-console.log(bookingData);
+console.log(bookingData.value);
 
 const confirmPayment = async () => {
     const res = await axios.post(route('booking.confirm'), bookingData.value);

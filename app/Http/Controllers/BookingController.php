@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\RoomType;
+use App\Models\RoomRateOption;
 use App\Models\Customer;
 use App\Models\Booking;
 use App\Services\EmailSMTP\EmailService;
@@ -22,13 +23,13 @@ class BookingController extends Controller
     }
     public function index(Request $request)
     {
-        $roomTypeList = RoomType::with(['images', 'room_rate_options.rate_policies', 'room_rate_options.discounts', 'amenities'])->get();
+        $roomRateOptionList = RoomRateOption::with(['room_type', 'rate_policies'])->get();
         return Inertia::render('Guest/Booking', [
             'checkIn' => $request->query('checkIn'),
             'checkOut' => $request->query('checkOut'),
             'num_of_guests' => (int) $request->query('num_of_guests'),
             'num_of_rooms' => (int) $request->query('num_of_rooms'),
-            'roomTypeList' => $roomTypeList,
+            'roomRateOptionList' => $roomRateOptionList
         ]);
     }
 

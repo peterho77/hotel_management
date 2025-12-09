@@ -5,16 +5,18 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
                 <div class="grid gap-1">
                     <span>Nhóm khách</span>
-                    <Select :options="customerTypeList" optionLabel="name" placeholder="Nhóm khách" />
+                    <Select :options="customerTypeList" optionLabel="name" optionValue="id" placeholder="Nhóm khách"
+                        v-model="selectedCustomerType" />
                 </div>
                 <div class="grid gap-1">
                     <span>Điểm đánh giá</span>
-                    <Select :options="reviewScore" :optionLabel="(opt) => `${opt.name} (${opt.score})`"
-                        placeholder="Tất cả" />
+                    <Select :options="ratingRangeList" :optionLabel="opt => opt.range ? `${opt.name} (${opt.range})` : opt.name"
+                        optionValue="range" placeholder="Tất cả" v-model="selectedRatingRange" />
                 </div>
                 <div class="grid gap-1">
                     <span>Thời gian</span>
-                    <Select :options="reviewTime" optionLabel="label" placeholder="Tất cả" />
+                    <Select :options="reviewTimeRangeList" optionLabel="label" optionValue="label"
+                        v-model="selectedTimeRange" placeholder="Tất cả" />
                 </div>
             </div>
         </div>
@@ -22,7 +24,8 @@
             <label class="fs-600 font-medium">Chọn chủ đề đọc để đánh giá</label>
             <div class="title-list | flex flex-wrap gap-2">
                 <template v-for="item in (showAllTitles ? titleReviewList : titleReviewList.slice(0, 5))">
-                    <Button size="small" :label="item.label" variant="outlined" icon="pi pi-plus" rounded />
+                    <Button size="small" @click="toggleTitleKeyword(item)" :label="item.label" variant="outlined"
+                        icon="pi pi-plus" rounded :class="['keyword-btn', { active: isActive(item) }]" />
                 </template>
                 <Button severity="secondary" size="small" @click="showMoreReviewTitle">
                     {{ showAllTitles ? 'Thu gọn' : 'Hiển thị thêm' }}
@@ -34,10 +37,11 @@
     <div>
         <div class="filter-review-section | flex justify-end items-center gap-2 mb-4">
             <span>Sắp xếp đánh giá theo</span>
-            <Select :options="filterReviewList" optionLabel="label" :placeholder="filterReviewList[0].label" />
+            <Select :options="reviewType" v-model="filterReviewType" optionLabel="label" optionValue="value"
+                :placeholder="reviewType[0].label" />
         </div>
         <div class="detail-review-section | grid gap-y-16">
-            <template v-for="review in reviewList">
+            <template v-for="review in finalReviewList">
                 <div class="detail-review-item | flex gap-12">
                     <div class="flow" style="--flow-spacer:1rem">
                         <div class="review-user | flex items-center">
@@ -46,19 +50,20 @@
                             <!-- user name and user nationality -->
                             <div class="grid">
                                 <span class="font-semibold">{{ review.booking.customer.full_name }}</span>
-                                <span class="text-xs">Việt Nam</span>
+                                <span class="text-xs">{{ review.booking.customer.country }}</span>
                             </div>
                         </div>
                         <div class="booking-info | grid gap-2">
                             <div class="customer-type | flex items-center gap-x-2">
                                 <i class="pi pi-users"></i>
                                 <!-- customer-type-name -->
-                                <span class="fs-300">Khách lẻ</span>
+                                <span
+                                    class="fs-300">{{ getCustomerTypeName(review.booking.customer.customer_type_id) }}</span>
                             </div>
                             <div class="num-nights | flex items-center gap-x-2">
                                 <i class="pi pi-moon"></i>
                                 <!-- num-nights / checkin time -->
-                                <span class="fs-300">2 đêm - tháng 12/2025</span>
+                                <span class="fs-300">{{ review.booking.num_nights }} đêm - tháng 12/2025</span>
                             </div>
                             <div class="room | flex items-center gap-x-2">
                                 <i class="pi pi-home"></i>
@@ -75,7 +80,8 @@
                                     <!-- created_at -->
                                     <span class="fs-300 text-gray-500">{{ review.created_at }}</span>
                                 </div>
-                                <span class="general-review-text | fs-700 font-semibold">{{ review.general_review }}</span>
+                                <span
+                                    class="general-review-text | fs-700 font-semibold">{{ review.general_review }}</span>
                             </div>
                             <Badge class="ml-auto" :value="review.rating" size="xlarge" severity="success"></Badge>
                         </div>
@@ -109,10 +115,20 @@
     border-color: var(--neutral-color-500);
     color: var(--neutral-color-700);
 }
+
+:deep(.p-button-outlined:hover) {
+    border-color: var(--primary-color-500);
+    color: var(--primary-color-500);
+}
+
+.keyword-btn.active {
+    border-color: var(--primary-color-500);
+    color: var(--primary-color-500);
+}
 </style>
 
 <script setup>
-import { ref, reactive, onMounted, inject } from 'vue';
+import { ref, reactive, onMounted, inject, computed } from 'vue';
 
 import ScrollTop from 'primevue/scrolltop';
 import Select from 'primevue/select';
@@ -124,19 +140,26 @@ import Badge from 'primevue/badge';
 const dialogRef = inject('dialogRef');
 
 // take list data from page
-const customerTypeList = ref();
-const reviewList = ref();
+const customerTypeList = ref([
+    { id: null, name: "Tất cả" },
+])
+const reviewList = ref([]);
 
 onMounted(() => {
     const params = dialogRef.value.data;
 
     if (params) {
-        customerTypeList.value = params.customerTypeList || [];
+        let moreCustomerTypeList = params.customerTypeList || []
+
+        customerTypeList.value = [
+            { id: null, name: "Tất cả" },
+            ...moreCustomerTypeList
+        ]
         reviewList.value = params.reviewList || [];
     }
 })
 
-// title review list
+// filter review title
 const titleReviewList = reactive([
     {
         label: 'Phòng',
@@ -182,36 +205,81 @@ const showMoreReviewTitle = () => {
     showAllTitles.value = !showAllTitles.value;
 }
 
-// review score
-const reviewScore = reactive([
+const activeTitleKeywords = ref([]);
+
+const toggleTitleKeyword = (kw) => {
+    const index = activeTitleKeywords.value.findIndex(x => x.name === kw.name)
+
+    if (index >= 0) {
+        // Nếu đang active → bỏ chọn
+        activeTitleKeywords.value.splice(index, 1)
+    } else {
+        // Nếu chưa active → thêm
+        activeTitleKeywords.value.push(kw)
+    }
+}
+
+const isActive = (item) => {
+    return activeTitleKeywords.value.some(k => k.name === item.name)
+}
+
+// filter customer type list
+const getCustomerTypeName = (id) => {
+    return customerTypeList.value.find(item => item.id === id).name;
+}
+
+const selectedCustomerType = ref(null);
+
+// filter review by rating range
+const ratingRangeList = reactive([
+    { name: "Tất cả", range: '' },
     {
         name: 'Tuyệt vời',
-        score: '>9'
+        range: '>9'
     },
     {
         name: 'Tốt',
-        score: '8-9'
+        range: '8-9'
     },
     {
         name: 'Khá',
-        score: '7-8'
+        range: '7-8'
     },
     {
         name: 'Trung bình',
-        score: '5-7'
+        range: '5-7'
     },
     {
         name: 'Tệ',
-        score: '3-5'
+        range: '3-5'
     },
     {
         name: 'Rất tệ',
-        score: '1-3'
+        range: '1-3'
     },
 ])
 
-// review time
-const reviewTime = reactive([
+const selectedRatingRange = ref(null);
+
+const parseRatingRange = (range) => {
+    if (range.includes('-')) {
+        const [min, max] = range.split('-').map(Number)
+        return { min, max }
+    }
+
+    if (range.startsWith('>')) {
+        return {
+            min: Number(range.replace('>', '')),
+            max: 10
+        }
+    }
+
+    return { min: 1, max: 10 }
+}
+
+// review review time
+const reviewTimeRangeList = reactive([
+    { label: "Tất cả", monthStart: 1, monthEnd: 12 },
     {
         label: 'Tháng 1-3',
         monthStart: 1,
@@ -234,11 +302,22 @@ const reviewTime = reactive([
     },
 ])
 
-// filter review list
-const filterReviewList = reactive([
+const selectedTimeRange = ref(null);
+
+const parseDateFromString = (str) => {
+    // ví dụ: "00:39  08/12/2025"
+    const [time, date] = str.trim().split(/\s+/)  // ["00:39", "08/12/2025"]
+
+    const [day, month, year] = date.split('/').map(Number)
+
+    return new Date(year, month - 1, day)
+}
+
+// filter review type
+const reviewType = reactive([
     {
         label: 'Phù hợp nhất',
-        value: 'suitable'
+        value: 'relevant'
     },
     {
         label: 'Mới nhất',
@@ -250,12 +329,112 @@ const filterReviewList = reactive([
     },
     {
         label: 'Điểm cao nhất',
-        value: 'highest-score'
+        value: 'highest'
     },
     {
         label: 'Điểm thấp nhất',
-        value: 'lowest-score'
+        value: 'lowest'
     },
 ])
+
+const filterReviewType = ref(reviewType[0].value);
+
+const sortedReviewList = computed(() => {
+    let arr = [...(reviewList.value || [])]
+
+    switch (filterReviewType.value) {
+        case 'relevant':
+            return arr.sort((a, b) => {
+                const lenA =
+                    (a.positive?.length || 0) + (a.negative?.length || 0)
+                const lenB =
+                    (b.positive?.length || 0) + (b.negative?.length || 0)
+
+                // ưu tiên rating cao → nội dung dài
+                if (b.rating !== a.rating) return b.rating - a.rating
+                return lenB - lenA
+            })
+
+        // mới nhất
+        case 'newest':
+            return arr.sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            )
+
+        // cũ nhất
+        case 'oldest':
+            return arr.sort(
+                (a, b) => new Date(a.created_at) - new Date(b.created_at)
+            )
+
+        // điểm cao nhất
+        case 'highest':
+            return arr.sort((a, b) => b.rating - a.rating)
+
+        // điểm thấp nhất
+        case 'lowest':
+            return arr.sort((a, b) => a.rating - b.rating)
+
+        default:
+            return arr
+    }
+})
+
+// final review list
+const finalReviewList = computed(() => {
+    let arr = [...sortedReviewList.value]
+
+    // 1. Filter theo nhóm khách hàng
+    if (selectedCustomerType.value) {
+        arr = arr.filter(r =>
+            r.booking?.customer?.customer_type_id === selectedCustomerType.value
+        )
+    }
+
+    // 2. Filter theo keyword
+    if (activeTitleKeywords.value.length > 0) {
+        arr = arr.filter((r) => {
+            return activeTitleKeywords.value.some((kw) => {
+                const k1 = kw.name.toLowerCase()
+                const k2 = kw.label.toLowerCase()
+
+                return (
+                    r.positive?.toLowerCase().includes(k1) ||
+                    r.positive?.toLowerCase().includes(k2) ||
+                    r.negative?.toLowerCase().includes(k1) ||
+                    r.negative?.toLowerCase().includes(k2) ||
+                    r.general_review?.toLowerCase().includes(k1) ||
+                    r.general_review?.toLowerCase().includes(k2)
+                )
+            })
+        })
+    }
+
+    // 3. Filter theo điểm rating
+    if (selectedRatingRange.value) {
+        const { min, max } = parseRatingRange(selectedRatingRange.value)
+        arr = arr.filter(r => r.rating >= min && r.rating < max)
+    }
+
+    // 4. filter theo hời gian (quý/tháng)
+    if (selectedTimeRange.value) {
+        const selected = reviewTimeRangeList.find(
+            r => r.label === selectedTimeRange.value
+        )
+
+        if (selected) {
+            const { monthStart, monthEnd } = selected
+
+            arr = arr.filter(r => {
+                const createdDate = parseDateFromString(r.created_at)
+                const month = createdDate.getMonth() + 1
+
+                return month >= monthStart && month <= monthEnd
+            })
+        }
+    }
+
+    return arr
+})
 
 </script>
