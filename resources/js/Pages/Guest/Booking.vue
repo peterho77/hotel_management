@@ -351,8 +351,6 @@ import { router } from '@inertiajs/vue3';
 // page
 import { usePage } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
-const toast = useToast();
-const page = usePage();
 
 const props = defineProps({
     roomOptionList: Array,
@@ -467,7 +465,7 @@ const updateAllRoomQuantityOptions = () => {
     totalBasePrice.value = emptyRoomOptions.value.filter(r => r.selected_quantity > 0).reduce((sum, r) => sum + r.room_option.price * r.selected_quantity * filterRoomBookingForm.numOfNights, 0);
 };
 
-// summary booking
+// total price booking
 const totalSelectedBookingRooms = ref(0);
 const totalFinalPrice = ref(0);
 const totalBasePrice = ref(0);
@@ -776,6 +774,7 @@ function getBestRoomOption(roomOptionList, filterOptions) {
 // set best room options to selected booking rooms
 const setSelectedBookingRoomOptions = () => {
     if (bestRoomOptions.value) {
+        clearSelectedBookingRooms();
         emptyRoomOptions.value.forEach(eOption => {
             const matched = bestRoomOptions.value.find(
                 bOption => bOption.id === eOption.id
@@ -785,38 +784,13 @@ const setSelectedBookingRoomOptions = () => {
                 eOption.selected_quantity = matched.selected_quantity;
             }
 
-            selectedBookingRooms.value = bestRoomOptions.value.map(item => ({ ...item }));
         });
-        updateTotalPriceSelectedBookingRooms();
+        selectedBookingRooms.value = bestRoomOptions.value.map(item => ({ ...item }));
     }
 }
 
 // add other options to booking detail
 const selectedBookingRooms = ref([]);
-
-const updateTotalPriceSelectedBookingRooms = () => {
-    let totalBasePrice = 0;
-    let totalFinalPrice = 0;
-
-    selectedBookingRooms.value.forEach(item => {
-        const { selected_quantity } = item;
-        const { price, final_price } = item.room_option
-
-        // Tính tổng tiền cho từng loại phòng được chọn
-        item.total_base_price_per_room_type = price * selected_quantity * filterRoomBookingForm.numOfNights;
-        item.total_price_per_room_type = final_price * selected_quantity * filterRoomBookingForm.numOfNights;
-
-        // Cộng vào tổng toàn bộ phòng được chọn 
-        totalBasePrice += item.total_base_price_per_room_type;
-        totalFinalPrice += item.total_price_per_room_type;
-    });
-
-    selectedBookingRooms.value.forEach(room => {
-        // Cập nhật tổng toàn bộ phòng được chọn
-        room.total_base_price = totalBasePrice;
-        room.total_price = totalFinalPrice;
-    });
-};
 
 const onSelectedBookingRooms = (roomOptionId, selectedQuantity) => {
     const roomOption = selectedBookingRooms.value.find(r => r.id === roomOptionId)
@@ -839,10 +813,6 @@ const onSelectedBookingRooms = (roomOptionId, selectedQuantity) => {
         selectedBookingRooms.value.push(newRoomOptions);
         newRoomOptions.selected_quantity = selectedQuantity;
     }
-    updateTotalPriceSelectedBookingRooms();
-
-    // update num of rooms if added
-    filterRoomBookingForm.numOfRooms = selectedBookingRooms.value.reduce((sum, room) => sum + room.selected_quantity, 0);
 };
 
 // clear selected booking rooms
@@ -868,9 +838,12 @@ const sendRoomBookingDetail = () => {
             date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
             num_adults: filterRoomBookingForm.numOfAdults,
             num_children: filterRoomBookingForm.numOfChildren,
-            num_rooms: filterRoomBookingForm.numOfRooms,
+            initial_num_rooms: filterRoomBookingForm.numOfRooms,
+            num_rooms: selectedBookingRooms.value.reduce((sum, room) => sum + room.selected_quantity, 0),
             num_nights: filterRoomBookingForm.numOfNights,
             selected_rooms: JSON.parse(JSON.stringify(selectedBookingRooms.value || [])),
+            total_final_price: totalFinalPrice.value,
+            total_base_price: totalBasePrice.value
         }
         console.log(roomBookingDetail);
         router.post(route('booking.detail'), roomBookingDetail);

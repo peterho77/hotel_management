@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\RoomOptionRatePolicy;
+use App\Models\RoomOption;
 use App\Models\Customer;
 use App\Models\Booking;
 use App\Services\EmailSMTP\EmailService;
@@ -38,9 +39,12 @@ class BookingController extends Controller
             'date_range' => 'required',
             'num_adults' => 'required|integer',
             'num_children' => 'required|integer',
+            'initial_num_rooms' => 'required|integer',
             'num_rooms' => 'required|integer',
             'num_nights' => 'required|integer',
             'selected_rooms' => 'required|array',
+            'total_base_price' => 'required',
+            'total_final_price' => 'required',
         ]);
 
         return Inertia::render('Guest/Booking-infor', [
@@ -50,6 +54,15 @@ class BookingController extends Controller
 
     public function confirm(Request $request)
     {
+        $rawSelectedRooms = $request->input('selected_rooms', []);
+
+        $normalizedRooms = collect($rawSelectedRooms)->map(function ($room) {
+            return [
+                'room_option_id'   => $room['room_option_id'],
+                'selected_quantity' => $room['selected_quantity'],
+            ];
+        })->toArray();
+
         $bookingInfor = $request->validate([
             'check_in' => 'required',
             'check_out' => 'required',
@@ -58,6 +71,9 @@ class BookingController extends Controller
             'num_adults' => 'required|integer',
             'num_children' => 'required|integer',
             'total_price' => 'required',
+            'selected_rooms' => 'required|array|min:1',
+            'selected_rooms.*.room_option_id' => 'required|integer|exists:room_option,id',
+            'selected_rooms.*.selected_quantity' => 'required|integer|min:1',
         ]);
 
         // change format check in and check out: Y-m-d
@@ -95,6 +111,27 @@ class BookingController extends Controller
         $bookingInfor['customer_id'] = $customer->id;
 
         $newBooking = Booking::create($bookingInfor);
+
+        foreach ($normalizedRooms as $room) {
+
+            $option = RoomOption::find($room['room_option_id']);
+
+            $base = $option->price;
+            $final = $option->final_price;
+
+            // Tổng giá cho loại phòng = giá * số lượng * số đêm
+            $totalBase = $base * $room['selected_quantity'] * $newBooking->num_nights;
+            $totalFinal = $final * $room['selected_quantity'] * $newBooking->num_nights;
+
+            $newBooking->room_booking_items()->create([
+                'room_option_id'   => $room['room_option_id'],
+                'assigned_room_id' => null,
+                'applied_discount_id' => null,
+                'total_base_price' => $totalBase,
+                'discount_amount' => ($totalBase - $totalFinal),
+                'final_price' => $totalFinal,
+            ]);
+        }
 
         $newBooking->payments()->create([
             'type' => 'e_wallet',

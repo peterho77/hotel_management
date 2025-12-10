@@ -21,7 +21,7 @@
                                 <div>
                                     <label class="block mb-1">Check-in</label>
                                     <FormField name="checkIn" v-slot="{ field, error }">
-                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid :min-date="new Date()"/>
                                         <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>
@@ -30,7 +30,7 @@
                                 <div>
                                     <label class="block mb-1">Check-out</label>
                                     <FormField name="checkOut" v-slot="{ field, error }">
-                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid />
+                                        <DatePicker v-bind="field" dateFormat="dd/mm/yy" showIcon fluid :min-date="new Date()"/>
                                         <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                                     </FormField>
                                 </div>

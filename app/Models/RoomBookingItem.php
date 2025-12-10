@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class RoomBookingItem extends Model
 {
     protected $table = "room_booking_item";
+    protected $fillable = [
+        'booking_id',
+        'room_option_id',
+        'assigned_room_id',
+        'applied_discount_id',
+        'total_base_price',
+        'discount_amount',
+        'final_price',
+    ];
     public function room_option()
     {
         return $this->belongsTo(RoomOption::class, 'room_option_id');

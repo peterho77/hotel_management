@@ -146,7 +146,7 @@
                                                 <label for="">Ưu đãi</label>
                                                 <!-- discount -->
                                                 <span>- VND
-                                                    {{ roomBookingDetail.total_base_price - roomBookingDetail.total_price }}</span>
+                                                    {{ roomBookingDetail.total_base_price - roomBookingDetail.total_final_price }}</span>
                                             </div>
                                         </div>
                                         <div
@@ -156,7 +156,7 @@
                                                 <span class="text-red-500 line-through">VND
                                                     {{ roomBookingDetail.total_base_price }}</span>
                                                 <h3 class="text-xl font-semibold">VND
-                                                    {{ roomBookingDetail.total_price }}</h3>
+                                                    {{ roomBookingDetail.total_final_price }}</h3>
                                                 <span>Bao gồm thuế và phí</span>
                                             </div>
                                         </div>
@@ -258,7 +258,7 @@
                                                         <label :for="`floor-${room.name}-${index}`"
                                                             class="font-semibold">Tùy chọn
                                                             tầng</label>
-                                                        <Select v-model="room.selected_floor[idx-1]"
+                                                        <Select v-model="room.selected_floor[idx - 1]"
                                                             :id="`floor-${room.id}-${index}`"
                                                             :name="`room[${index}]${idx}`" :options="floors"
                                                             optionLabel="name" optionValue="value"
@@ -370,7 +370,7 @@
                             <div class="flex px-2 mt-4 justify-between">
                                 <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
                                     @click="activateCallback(2)" raised />
-                                <Button label="Thanh toán" severity="info" raised @click="confirmPayment()" />
+                                <Button label="Thanh toán" severity="info" raised @click="confirmPayment" />
                             </div>
                         </StepPanel>
                     </StepPanels>
@@ -438,23 +438,6 @@ import axios from 'axios';
 
 const page = usePage();
 const roomBookingDetail = reactive(page.props.roomBookingDetail);
-console.log(roomBookingDetail.selected_rooms);
-
-function formatRoomBookingData(booking) {
-    if (!booking.selected_rooms || booking.selected_rooms.length === 0) return booking;
-
-    // Lấy total_base_price và total_price từ phòng đầu tiên
-    const firstRoom = booking.selected_rooms[0];
-    booking.total_base_price = firstRoom.total_base_price;
-    booking.total_price = firstRoom.total_price;
-
-    // Xóa total_base_price và total_price khỏi từng room
-    booking.selected_rooms.forEach(room => {
-        delete room.total_base_price;
-        delete room.total_price;
-    });
-}
-formatRoomBookingData(roomBookingDetail);
 console.log(roomBookingDetail);
 
 const getSummaryText = (numOfRooms, numOfAdults, numOfChildren) => {
@@ -577,7 +560,7 @@ const onChangeBookingOptions = () => {
     localStorage.setItem('bookingFilterOptions', JSON.stringify({
         adults: roomBookingDetail.num_adults,
         children: roomBookingDetail.num_children,
-        rooms: roomBookingDetail.num_rooms,
+        rooms: roomBookingDetail.initial_num_rooms,
         dateRange: roomBookingDetail.date_range
     }));
     router.get(route('booking.index'));
@@ -691,7 +674,6 @@ watch(() => selectedPayment.value, (newValue) => {
 
 const getBookerInfo = (getToNextStep) => {
     if (validateForm()) {
-
         getToNextStep();
     }
 }
@@ -703,24 +685,37 @@ const bookingData = computed(() => {
         check_in: roomBookingDetail.date_range[0],
         check_out: roomBookingDetail.date_range[1],
         num_nights: roomBookingDetail.num_nights,
+
         num_rooms: roomBookingDetail.num_rooms,
         num_adults: roomBookingDetail.num_adults,
         num_children: roomBookingDetail.num_children,
+
         total_base_price: roomBookingDetail.total_base_price,
-        total_price: roomBookingDetail.total_price,
-        selected_rooms: roomBookingDetail.selected_rooms,
-        full_name: `${surname} ${firstname}`,
+        total_price: roomBookingDetail.total_final_price,
+
+        // chỉ gửi ID + quantity + floor
+        selected_rooms: roomBookingDetail.selected_rooms.map(r => ({
+            room_option_id: r.room_option?.id,
+            rate_policy_id: r.rate_policy?.id,
+            selected_quantity: r.selected_quantity,
+            selected_floor: r.selected_floor ?? []
+        })),
+
+        // thông tin khách
+        full_name: `${surname} ${firstname}`.trim(),
         ...rest
     };
 });
 
+
 const confirmPayment = async () => {
     console.log(bookingData.value);
-    // const res = await axios.post(route('booking.confirm'), bookingData.value);
 
-    // if (res.data.redirect_url) {
-    //     window.location.href = res.data.redirect_url;
-    // }
+    const res = await axios.post(route('booking.confirm'), bookingData.value);
+
+    if (res.data.redirect_url) {
+        window.location.href = res.data.redirect_url;
+    }
 }
 
 </script>
