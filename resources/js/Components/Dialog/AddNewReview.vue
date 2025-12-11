@@ -264,7 +264,6 @@ const onBookingReview = (e) => {
                 });
             }
             data.append(`booking_id`, bookingId.value);
-            console.log(data);
             //Gửi form qua Inertia
             router.post(route('review.store', { user_name: userName.value }), data, {
                 forceFormData: true,
@@ -272,8 +271,7 @@ const onBookingReview = (e) => {
                     console.log('Gửi đánh giá thành công!')
                 },
             })
-            // toast.add({ severity: 'success', summary: 'Gửi bài đánh giá thành công.', life: 3000 });
-            // dialogRef.value.close();
+            dialogRef.value.close();
         }
     }
 }

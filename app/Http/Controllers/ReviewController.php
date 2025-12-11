@@ -60,6 +60,6 @@ class ReviewController extends Controller
 
         return redirect()->route('user.booking-history', [
             'user_name' => $username
-        ]);
+        ])->with('success', 'Gửi bài đánh giá thành công!');
     }
 }

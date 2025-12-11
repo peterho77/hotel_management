@@ -848,3 +848,9 @@ table.dataTable > thead {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* filter review by keyword button */
+.keyword-btn.active {
+    border-color: var(--primary-color-500);
+    color: var(--primary-color-500);
+}

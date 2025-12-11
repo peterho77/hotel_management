@@ -10,8 +10,9 @@
                 </div>
                 <div class="grid gap-1">
                     <span>Điểm đánh giá</span>
-                    <Select :options="ratingRangeList" :optionLabel="opt => opt.range ? `${opt.name} (${opt.range})` : opt.name"
-                        optionValue="range" placeholder="Tất cả" v-model="selectedRatingRange" />
+                    <Select :options="ratingRangeList"
+                        :optionLabel="opt => opt.range ? `${opt.name} (${opt.range})` : opt.name" optionValue="range"
+                        placeholder="Tất cả" v-model="selectedRatingRange" />
                 </div>
                 <div class="grid gap-1">
                     <span>Thời gian</span>
@@ -34,7 +35,7 @@
         </div>
     </div>
     <Divider />
-    <div>
+    <ScrollPanel style="width: 100%; height: 600px">
         <div class="filter-review-section | flex justify-end items-center gap-2 mb-4">
             <span>Sắp xếp đánh giá theo</span>
             <Select :options="reviewType" v-model="filterReviewType" optionLabel="label" optionValue="value"
@@ -63,12 +64,13 @@
                             <div class="num-nights | flex items-center gap-x-2">
                                 <i class="pi pi-moon"></i>
                                 <!-- num-nights / checkin time -->
-                                <span class="fs-300">{{ review.booking.num_nights }} đêm - tháng 12/2025</span>
+                                <span class="fs-300">{{ review.booking.num_nights }} đêm - tháng
+                                    {{ getBookingTime(review.created_at) }}</span>
                             </div>
                             <div class="room | flex items-center gap-x-2">
                                 <i class="pi pi-home"></i>
                                 <!-- room-name -->
-                                <span class="fs-300">Phòng standard</span>
+                                <span class="fs-300">{{ getBookingRooms(review) }}</span>
                             </div>
                         </div>
                     </div>
@@ -98,8 +100,9 @@
                 <Divider />
             </template>
         </div>
-        <ScrollTop />
-    </div>
+        <ScrollTop target="parent" :threshold="100" icon="pi pi-arrow-up"
+            :buttonProps="{ severity: 'contrast', raised: true, rounded: true }" />
+    </ScrollPanel>
 </template>
 
 <style scoped>
@@ -128,8 +131,9 @@
 </style>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed } from 'vue';
+import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
 
+import ScrollPanel from 'primevue/scrollpanel';
 import ScrollTop from 'primevue/scrolltop';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
@@ -144,6 +148,7 @@ const customerTypeList = ref([
     { id: null, name: "Tất cả" },
 ])
 const reviewList = ref([]);
+const activeTitleKeywords = ref([]);
 
 onMounted(() => {
     const params = dialogRef.value.data;
@@ -156,8 +161,32 @@ onMounted(() => {
             ...moreCustomerTypeList
         ]
         reviewList.value = params.reviewList || [];
+
+        // add keywords to filter
+        if (Array.isArray(params.keywords)) {
+            activeTitleKeywords.value = [...params.keywords]; // clone để thao tác nội bộ
+        }
     }
 })
+
+watch(activeTitleKeywords, (newVal) => {
+    if (Array.isArray(dialogRef.value?.data?.keywords)) {
+        dialogRef.value.data.keywords.splice(0, dialogRef.value.data.keywords.length, ...newVal);
+    }
+}, { deep: true });
+
+// get review booking detail
+const getBookingTime = (createdAt) => {
+    const [time, date] = createdAt.split(/\s+/).filter(Boolean);
+    const [day, month, year] = date.split('/');
+
+    return `${month}/${year}`;
+}
+
+const getBookingRooms = (review) => {
+    let roomList = review.booking.room_booking_items.map(item => item.room_option.room_type.name);
+    return roomList.join(', ');
+}
 
 // filter review title
 const titleReviewList = reactive([
@@ -200,12 +229,9 @@ const titleReviewList = reactive([
 ])
 
 const showAllTitles = ref(false);
-
 const showMoreReviewTitle = () => {
     showAllTitles.value = !showAllTitles.value;
 }
-
-const activeTitleKeywords = ref([]);
 
 const toggleTitleKeyword = (kw) => {
     const index = activeTitleKeywords.value.findIndex(x => x.name === kw.name)
@@ -433,7 +459,6 @@ const finalReviewList = computed(() => {
             })
         }
     }
-
     return arr
 })
 

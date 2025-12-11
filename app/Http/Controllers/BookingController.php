@@ -116,21 +116,24 @@ class BookingController extends Controller
 
             $option = RoomOption::find($room['room_option_id']);
 
-            $base = $option->price;
-            $final = $option->final_price;
+            $basePrice  = $option->price;        // giá 1 phòng 1 đêm
+            $finalPrice = $option->final_price;  // giá sau giảm 1 phòng 1 đêm
 
-            // Tổng giá cho loại phòng = giá * số lượng * số đêm
-            $totalBase = $base * $room['selected_quantity'] * $newBooking->num_nights;
-            $totalFinal = $final * $room['selected_quantity'] * $newBooking->num_nights;
+            // giá 1 phòng cho toàn bộ số đêm
+            $totalBaseForOne = $basePrice  * $newBooking->num_nights;
+            $totalFinalForOne = $finalPrice * $newBooking->num_nights;
 
-            $newBooking->room_booking_items()->create([
-                'room_option_id'   => $room['room_option_id'],
-                'assigned_room_id' => null,
-                'applied_discount_id' => null,
-                'total_base_price' => $totalBase,
-                'discount_amount' => ($totalBase - $totalFinal),
-                'final_price' => $totalFinal,
-            ]);
+            // tạo số lượng room_booking_item theo selected_quantity
+            for ($i = 0; $i < $room['selected_quantity']; $i++) {
+                $newBooking->room_booking_items()->create([
+                    'room_option_id'      => $room['room_option_id'],
+                    'assigned_room_id'    => null,
+                    'applied_discount_id' => null,
+                    'total_base_price'    => $totalBaseForOne,                     // giá cho 1 phòng
+                    'discount_amount'     => $totalBaseForOne - $totalFinalForOne, // giảm giá cho 1 phòng
+                    'final_price'         => $totalFinalForOne,                    // giá cuối 1 phòng
+                ]);
+            }
         }
 
         $newBooking->payments()->create([

@@ -30,7 +30,7 @@ class GuestController extends Controller
     public function review()
     {
         $customerTypeList = CustomerType::get();
-        $reviewList = Review::with(['booking.customer', 'booking.room_booking_items'])->get();
+        $reviewList = Review::with(['booking.customer', 'booking.room_booking_items.room_option'])->get();
 
         return Inertia::render('Guest/Review', [
             'customerTypeList' => $customerTypeList,
