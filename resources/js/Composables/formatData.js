@@ -32,3 +32,15 @@ export function formatDateVN(input) {
         timeZone: "Asia/Ho_Chi_Minh",
     }).format(date);
 }
+
+export function isDateString(value) {
+    if (typeof value !== "string") return false;
+
+    // Ngày dạng YYYY-MM-DD
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
+
+    // ISO: YYYY-MM-DDTHH:mm:ss.sssZ
+    const isoDate = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+
+    return dateOnly.test(value) || isoDate.test(value);
+}

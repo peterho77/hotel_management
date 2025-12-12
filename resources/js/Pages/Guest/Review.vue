@@ -96,7 +96,7 @@
                                         </div>
                                     </div>
                                     <Button variant="link" label="Tìm hiểu thêm" class="text-xs"
-                                        @click="showMoreReviewDetail" />
+                                        @click="showMoreReviewDetail(review)" />
                                 </div>
                             </template>
                         </div>
@@ -174,6 +174,7 @@ const roomReviewScore = ref(70);
 // open review dialog
 const dialog = useDialog();
 const filterReview = defineAsyncComponent(() => import('../../Components/Dialog/FilterReview.vue'));
+const detailReview = defineAsyncComponent(() => import('../../Components/Dialog/DetailReview.vue'));
 
 const showFilterReview = () => {
     dialog.open(filterReview, {
@@ -201,8 +202,28 @@ const showFilterReview = () => {
     });
 }
 
-const showMoreReviewDetail = () => {
-
+const showMoreReviewDetail = (review) => {
+    console.log(review);
+    dialog.open(detailReview, {
+        props: {
+            blockScroll: true,
+            style: {
+                width: '50vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+            closable: false,
+            dismissableMask: true
+        },
+        data: {
+            customerTypeList: props.customerTypeList,
+            review: review,
+        }
+    });
 }
 
 // filter review title

@@ -13,7 +13,7 @@
                             <div class="flex gap-x-2">
                                 <Select v-model="filterCustomerGroup" :options="customerGroupList" optionLabel="name"
                                     optionValue="name" placeholder="Tất cả các nhóm" class="w-full md:w-52" />
-                                <Button icon="pi pi-pencil" class="!border-1 !border-gray-300" severity="info"
+                                <Button icon="pi pi-pencil" class="border! border-gray" severity="info"
                                     variant="text" />
                             </div>
                         </div>
@@ -67,15 +67,15 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" size="small" ref="dt"
-                        :value="filteredCustomerList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
-                        :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem;">
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" showGridlines size="small"
+                        ref="dt" :value="filteredCustomerList" sortMode="multiple" dataKey="id" removableSort paginator
+                        :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 50rem;">
                         <template #empty>
                             <div class="text-center">
                                 <span class="py-8">Không tìm thấy khách hàng nào. </span>
                             </div>
                         </template>
-                        <Column expander style="width: 5rem" />
+                        <Column expander style="width: 3.5rem" />
                         <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
                             :field="col.field" :header="formatLabel(col.header)" sortable />
                         <template #expansion="slotProps">
@@ -136,14 +136,9 @@ import AddNewItemsButton from '../../Components/AddNewItemsButton.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
-// format label
-function formatLabel(str) {
-    str = str.replace(/[-_]/g, " ");
-
-    return str.split(" ").map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(" ");
-}
+// format data
+import { formatLabel, formatDateVN } from "@/Composables/formatData";
+import { formatDataTable, getColumns, getDetailRows } from "@/Composables/formatDataTable";
 
 // data table
 const props = defineProps({
@@ -181,7 +176,7 @@ const customerTypeList = ref(props.customerTypeList);
 const filterCustomerType = ref('Tất cả');
 
 const filteredCustomerList = computed(() => {
-    return (props.customersList || []).filter(user => {
+    return (formatDataTable(props.customersList) || []).filter(user => {
         const customerGroupMatch = filterCustomerGroup.value === 'Tất cả' || filterCustomerGroup.value === user.customer_group.name;
         const customerTypeMatch = filterCustomerType.value === 'Tất cả' || filterCustomerType.value === user.customer_type.name;
 
@@ -209,7 +204,9 @@ const filterStatus = ref('Tất cả');
 // toggle column
 const selectedColumns = ref([]);
 
-const currentColumns = computed(() => Object.values(props.columns || {}).map(field => ({ field, header: formatLabel(field) })));
+console.log(props.columns);
+const currentColumns = ref(getColumns(props.customersList[0],
+    ['user_id', 'customer_type', 'customer_group', 'avatar', 'has_account', 'created_at', 'updated_at']));
 
 watch(() => currentColumns, () => {
     selectedColumns.value = currentColumns.value;

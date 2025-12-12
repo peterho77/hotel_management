@@ -6,7 +6,7 @@
             <template #empty>
                 <h3 class="text-center text-lg font-medium">No bookings found.</h3>
             </template>
-            <Column expander style="width: 5rem" />
+            <Column expander style="width: 3.5rem" />
             <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index" :field="col.field"
                 :header="formatLabel(col.header)" sortable />
             <template #expansion="slotProps">
@@ -15,27 +15,20 @@
                         <div class="booking-section | flow">
                             <h3 class="text-lg font-medium">Thông tin đặt phòng</h3>
                             <div class="grid grid-cols-2">
-                                <template v-for="(value, key) in slotProps.data" :key="key">
+                                <template v-for="(value, key) in getDetailRows(slotProps.data, hiddenBookingDetailRows)"
+                                    :key="key">
                                     <!-- Các field bình thường -->
-                                    <template v-if="!hiddenBookingDetailRows.includes(key)">
-                                        <div class="grid gap-x-4">
-                                            <div class="flex gap-x-1">
-                                                <span class="font-semibold text-gray-700 min-w-42">
-                                                    {{ formatLabel(key) }}:
-                                                </span>
-                                                <span class="text-gray-900 grow">
-                                                    <template
-                                                        v-if="['created_at', 'updated_at', 'check_in', 'check_out'].includes(key)">
-                                                        {{ formatDateVN(value) }}
-                                                    </template>
-                                                    <template v-else>
-                                                        {{ value }}
-                                                    </template>
-                                                </span>
-                                            </div>
-                                            <Divider type="dashed" />
+                                    <div class="grid gap-x-4">
+                                        <div class="flex gap-x-1">
+                                            <span class="font-semibold text-gray-700 min-w-42">
+                                                {{ formatLabel(key) }}:
+                                            </span>
+                                            <span class="text-gray-900 grow">
+                                                {{ value }}
+                                            </span>
                                         </div>
-                                    </template>
+                                        <Divider type="dashed" />
+                                    </div>
                                 </template>
                             </div>
                         </div>
@@ -43,26 +36,27 @@
                         <div class="payment-section | flow">
                             <h3 class="text-lg font-medium">Thông tin thanh toán</h3>
                             <div class=" | grid grid-cols-2" v-if="slotProps.data.latest_payment">
-                                <template v-for="(value, key) in slotProps.data.latest_payment" :key="key">
-                                    <template v-if="!hiddenPaymentDetailRows.includes(key)">
-                                        <div class="grid gap-x-4" v-if="value">
-                                            <div class="flex gap-x-1">
-                                                <span class="font-semibold text-gray-700 min-w-42">
-                                                    {{ formatLabel(key) }}:
-                                                </span>
-                                                <span class="text-gray-900 grow">
-                                                    <template
-                                                        v-if="['created_at', 'updated_at', 'check_in', 'check_out'].includes(key)">
-                                                        {{ formatDateVN(value) }}
-                                                    </template>
-                                                    <template v-else>
-                                                        {{ value }}
-                                                    </template>
-                                                </span>
-                                            </div>
-                                            <Divider type="dashed" />
+                                <template
+                                    v-for="(value, key) in getDetailRows(slotProps.data.latest_payment, hiddenPaymentDetailRows)"
+                                    :key="key">
+                                    <div class="grid gap-x-4" v-if="value">
+                                        <div class="flex gap-x-1">
+                                            <span class="font-semibold text-gray-700 min-w-42">
+                                                {{ formatLabel(key) }}:
+                                            </span>
+                                            <span class="text-gray-900 grow">
+                                                <template
+                                                    v-if="['created_at', 'updated_at', 'check_in', 'check_out'].includes(key)">
+                                                    {{ formatDateVN(value) }}
+                                                </template>
+                                                <template v-else>
+                                                    {{ value }}
+                                                </template>
+                                            </span>
                                         </div>
-                                    </template>
+                                        <Divider type="dashed" />
+                                    </div>
+
                                 </template>
                             </div>
                         </div>
@@ -85,7 +79,8 @@
                     </div>
                     <div class="mr-10 mt-6 flex gap-4">
                         <Button severity="info" label="Đổi thời gian check in" raised />
-                        <Button severity="secondary" label="Viết bài đánh giá" raised @click="showAddNewReview(slotProps.data.id, slotProps.data.customer_id)"/>
+                        <Button severity="secondary" label="Viết bài đánh giá" raised
+                            @click="showAddNewReview(slotProps.data.id, slotProps.data.customer_id)" />
                     </div>
                 </Panel>
             </template>
@@ -96,6 +91,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
 import { formatLabel, formatDateVN } from "@/Composables/formatData";
+import { formatDataTable, getColumns, getDetailRows } from "@/Composables/formatDataTable";
 import { useDialog } from 'primevue/usedialog';
 
 import DataTable from 'primevue/datatable';
@@ -104,16 +100,17 @@ import Divider from 'primevue/divider';
 import Panel from 'primevue/panel';
 import Button from 'primevue/button';
 
-const bookingHistory = computed(() => {
-    return props.bookings;
-});
-
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
 const props = defineProps({
     bookings: Array,
     user_name: String
 })
+
+const bookingHistory = computed(() => {
+    return formatDataTable(props.bookings);
+});
+console.log(bookingHistory.value);
 
 // row expansion
 const expandedRows = ref({});
@@ -141,9 +138,8 @@ const filters = ref({
 });
 
 // toggle column detail
+const columns = ref([]);
 const selectedColumns = ref([]);
-const currentColumns = ref([]);
-
 const hiddenColumns = ref(
     [
         'customer',
@@ -153,32 +149,24 @@ const hiddenColumns = ref(
         'updated_at',
         'num_adults',
         'num_children',
+        'amount_paid',
+        'deposit_amount',
         'latest_payment'
     ]);
 watch(hiddenColumns, (val) => {
     localStorage.setItem('hiddenColumns', JSON.stringify(val));
 }, { deep: true });
-
 onMounted(() => {
-    const savedHidden = localStorage.getItem('hiddenColumns');
-    if (savedHidden) {
+    const savedHiddenCols = localStorage.getItem('hiddenColumns');
+    if (savedHiddenCols) {
         hiddenColumns.value = JSON.parse(savedHidden);
     }
-
+    console.log(props.bookings);
     if (props.bookings.length > 0) {
-        const bookingKeys = Object.keys(props.bookings[0]);
-
-        currentColumns.value = bookingKeys.map(key => ({
-            field: key,
-            header: formatLabel(key),
-        }));
+        columns.value = getColumns(props.bookings[0], hiddenColumns.value);
     }
 
-    currentColumns.value = currentColumns.value.filter(
-        item => !hiddenColumns.value.includes(item.field)
-    );
-
-    selectedColumns.value = currentColumns.value;
+    selectedColumns.value = columns.value;
 })
 
 watch(() => [props.bookings],
@@ -189,24 +177,19 @@ watch(() => [props.bookings],
         }
 
         if (props.bookings.length > 0) {
-            const bookingKeys = Object.keys(props.bookings[0]);
-
-            currentColumns.value = bookingKeys.map(key => ({
-                field: key,
-                header: formatLabel(key),
-            }));
+            columns.value = getColumns(props.bookings[0]);
         }
 
-        currentColumns.value = currentColumns.value.filter(
+        columns.value = columns.value.filter(
             item => !hiddenColumns.value.includes(item.field)
         );
 
-        selectedColumns.value = currentColumns.value;
+        selectedColumns.value = columns.value;
     });
 // { immediate: true });
 
 const toggleColumn = (val) => {
-    selectedColumns.value = currentColumns.value.filter(col => {
+    selectedColumns.value = columns.value.filter(col => {
         return val.includes(col);
     })
 };

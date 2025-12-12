@@ -13,4 +13,8 @@
 <script setup>
 import "../../css/admin.scss";
 import Header from "../Components/Admin/Header.vue";
+
+// flash message
+import { useFlashToast } from "@/Composables/useFlashToast";
+useFlashToast();
 </script>
