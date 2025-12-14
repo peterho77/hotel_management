@@ -75,10 +75,12 @@
                                             <Link :href="route('admin.room-management')">{{ item.label }}</Link>
                                         </div>
                                     </template>
-                                </Menu> 
+                                </Menu>
                             </li>
                             <li>Hàng hóa - Dịch vụ</li>
-                            <li>Tài khoản</li>
+                            <li>
+                                <Link :href="route('admin.account')">Tài khoản</Link>
+                            </li>
                         </template>
                         <template v-if="user.role === 'manager'">
                             <li>
@@ -95,7 +97,7 @@
                             <SvgSprite symbol="bell-concierge" size="0 0 24 24" role="presentation" class="icon" />
                             Lễ tân
                         </button>
-                        <Button severity="warn" label="Đăng xuất" @click="logout()" raised/>
+                        <Button severity="warn" label="Đăng xuất" @click="logout()" raised />
                     </div>
                 </nav>
             </div>

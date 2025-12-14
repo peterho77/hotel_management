@@ -10,11 +10,13 @@
                         <!-- filter branches -->
                         <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="filterBranches" />
 
-                        <!-- filter status -->
-                        <Radioselect :list="roomTypeList" v-model="filterRoomType" label="Hạng phòng" />
+                        <template v-if="currentTab === 'room'">
+                            <!-- filter room type -->
+                            <Radioselect :list="roomTypeList" v-model="filterRoomType" label="Hạng phòng" />
 
-                        <!-- filter floor -->
-                        <Radioselect :list="floorList" v-model="filterFloor" label="Tầng" />
+                            <!-- filter floor -->
+                            <Radioselect :list="floorList" v-model="filterFloor" label="Tầng" />
+                        </template>
 
                         <!-- filter status -->
                         <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
@@ -176,13 +178,12 @@ import Galleria from 'primevue/galleria';
 import { useDialog } from 'primevue/usedialog';
 
 // router
-import { router } from '@inertiajs/vue3';
+import { router, useRemember } from '@inertiajs/vue3';
 import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 'vue';
 
 // confirm dialog
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
-import { usePage } from '@inertiajs/vue3';
 
 // component
 import Searchbar from "../../Components/Searchbar.vue";
@@ -192,7 +193,7 @@ import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
-import { getDetailRows } from "@/Composables/formatDataTable";
+import { getColumns, getDetailRows } from "@/Composables/formatDataTable";
 
 const props = defineProps({
     roomList: {
@@ -212,15 +213,32 @@ const props = defineProps({
     activeTab: String,
 
 })
-console.log(props.roomList);
 
 // hidden fields
-const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities', 'rooms', 'description']);
-const hiddenRows = reactive(['rooms', 'amenities', 'images', 'description', 'branches', 'id']);
+const hiddenColumns = reactive([
+    'hourly_rate',
+    'full_day_rate',
+    'overnight_rate',
+    'amenities',
+    'rooms',
+    'description',
+    'branch',
+    'branches',
+    'room_type',
+    'images'
+]);
+const hiddenRows = reactive([
+    'rooms', 
+    'amenities', 
+    'images', 
+    'description', 
+    'branches', 
+    'id'
+]);
 
 // tabs
 const tabs = ['room-type', 'room'];
-const currentTab = ref(props.activeTab);
+const currentTab = useRemember(props.activeTab, 'admin-current-tab')
 
 // row expansion
 const expandedRoomRows = ref({});
@@ -268,7 +286,6 @@ const roomTypeList = reactive([
     { label: 'Tất cả', value: 'all', name: 'all' },
     ...props.roomTypeList
 ]);
-console.log(roomTypeList);
 const filterRoomType = ref('all');
 
 // filter room by floors
@@ -314,52 +331,35 @@ const addNewItems = ref([
 const selectedColumns = ref([]);
 const currentColumns = ref([]);
 
-watch(
-    currentTab, (newValue) => {
-        router.visit(route(`admin.${newValue}-management`), {
-            preserveState: true, // giữ state nếu muốn
-            preserveScroll: true,
-        });
-    }
-);
+watch(currentTab, (newValue, oldValue) => {
+    if (newValue === oldValue) return
 
-watch(hiddenColumns, (val) => {
-    localStorage.setItem('hiddenColumns', JSON.stringify(val));
-}, { deep: true });
-
-onMounted(() => {
-    const savedHidden = localStorage.getItem('hiddenColumns');
-    if (savedHidden) {
-        hiddenColumns.value = JSON.parse(savedHidden);
-    }
-
-    currentColumns.value = currentTab.value === 'room'
-        ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
-        : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
-    currentColumns.value = currentColumns.value.filter(
-        item => !hiddenColumns.value.includes(item.field)
-    );
-
-    selectedColumns.value = currentColumns.value;
+    router.visit(route(`admin.${newValue}-management`), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    })
 })
 
-watch(() => [props.roomColumns, props.roomTypeColumns, currentTab.value],
+watch(
+    () => [
+        currentTab.value,
+        props.roomList,
+        props.roomTypeList
+    ],
     () => {
-        const savedHidden = localStorage.getItem('hiddenColumns');
-        if (savedHidden) {
-            hiddenColumns.value = JSON.parse(savedHidden);
-        }
+        const data =
+            currentTab.value === 'room'
+                ? props.roomList?.[0]
+                : props.roomTypeList?.[0]
 
-        currentColumns.value = currentTab.value === 'room'
-            ? Object.values(props.roomColumns || {}).map(field => ({ field, header: formatLabel(field) }))
-            : Object.values(props.roomTypeColumns || {}).map(field => ({ field, header: formatLabel(field) }));
-        currentColumns.value = currentColumns.value.filter(
-            item => !hiddenColumns.value.includes(item.field)
-        );
+        if (!data) return
 
-        selectedColumns.value = currentColumns.value;
-    });
-// { immediate: true });
+        currentColumns.value = getColumns(data, hiddenColumns)
+        selectedColumns.value = currentColumns.value
+    },
+    { immediate: true }
+)
 
 const toggleColumn = (val) => {
     selectedColumns.value = currentColumns.value.filter(col => {
@@ -458,7 +458,6 @@ const showUpdateRoomType = (oldData) => {
 // confirm dialog 
 const confirm = useConfirm();
 const toast = useToast();
-const page = usePage();
 
 const deleteConfirm = (id, tab) => {
     confirm.require({
@@ -500,16 +499,6 @@ const deleteConfirm = (id, tab) => {
         }
     })
 };
-
-// flash message
-watch(
-    () => page.props.flash,
-    (flash) => {
-        if (flash?.success) {
-            toast.add({ severity: 'info', summary: 'Confirmed', detail: flash.success, life: 3000 });
-        }
-    },
-)
 
 // export CSV
 const dt = ref();

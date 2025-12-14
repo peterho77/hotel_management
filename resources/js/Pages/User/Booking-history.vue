@@ -188,12 +188,6 @@ watch(() => [props.bookings],
     });
 // { immediate: true });
 
-const toggleColumn = (val) => {
-    selectedColumns.value = columns.value.filter(col => {
-        return val.includes(col);
-    })
-};
-
 // open add review dialog
 const dialog = useDialog();
 const addNewReview = defineAsyncComponent(() => import('../../Components/Dialog/AddNewReview.vue'));

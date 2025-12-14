@@ -8,9 +8,19 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Booking;
+use App\Models\User;
 
 class UserController extends Controller
 {
+    public function index(){
+        $usersList = User::get();
+        return Inertia::render(
+            'Admin/Account',
+            [
+                'usersList' => $usersList,
+            ]
+        );
+    }
     public function changePassword(Request $request)
     {
         $request->validate([

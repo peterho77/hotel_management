@@ -61,6 +61,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/room/add-new', [RoomController::class, 'store']);
         Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
         Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
+
+        // account section
+        Route::get('/account', [UserController::class, 'index'])
+            ->name('account');
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function () {
