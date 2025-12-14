@@ -6,7 +6,7 @@
                 <i class="pi pi-search" />
             </InputIcon>
             <InputText :modelValue="modelValue" @update:modelValue="value => emit('update:modelValue', value)"
-                size="small" :placeholder class="!pl-8" />
+                size="small" :placeholder class="pl-8" />
         </IconField>
     </div>
 </template>

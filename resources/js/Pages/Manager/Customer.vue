@@ -137,7 +137,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
 // format data
-import { formatLabel, formatDateVN } from "@/Composables/formatData";
+import { formatLabel } from "@/Composables/formatData";
 import { formatDataTable, getColumns, getDetailRows } from "@/Composables/formatDataTable";
 
 // data table

@@ -11,6 +11,12 @@
                         <Multiselect :list="branchList" placeholder="Chọn chi nhánh" v-model="filterBranches" />
 
                         <!-- filter status -->
+                        <Radioselect :list="roomTypeList" v-model="filterRoomType" label="Hạng phòng" />
+
+                        <!-- filter floor -->
+                        <Radioselect :list="floorList" v-model="filterFloor" label="Tầng" />
+
+                        <!-- filter status -->
                         <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
                     </div>
                 </section>
@@ -73,54 +79,47 @@
                                                         </Galleria>
                                                     </div>
                                                     <div class="detail-infor">
-                                                        <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-x-3">
-                                                            <template v-for="(value, key) in slotProps.data" :key="key">
+                                                        <div class="grid grid-cols-1 lg:grid-cols-2">
+                                                            <template
+                                                                v-for="(value, key) in getDetailRows(slotProps.data, hiddenRows)"
+                                                                :key="key">
                                                                 <!-- Các field bình thường -->
-                                                                <template
-                                                                    v-if="!['rooms', 'amenities', 'images', 'description', 'branches', 'id'].includes(key)">
-                                                                    <div class="grid gap-y-1 gap-x-2 columns-2">
-                                                                        <div>
-                                                                            <div class="flex gap-x-1">
-                                                                                <span
-                                                                                    class="font-semibold text-gray-700 min-w-42">
-                                                                                    {{ formatLabel(key) }}:
-                                                                                </span>
-                                                                                <span class="text-gray-900 flex-grow">
-                                                                                    <template
-                                                                                        v-if="key === 'branch' || key === 'room_type'">
-                                                                                        {{ value.name }}
-                                                                                    </template>
-                                                                                    <!-- <template v-else-if="key === 'branches'">
-                                                                                        {{slotProps.data.branches.map(branch => branch.name).join(', ')}}
-                                                                                    </template> -->
-                                                                                    <template v-else>
-                                                                                        {{ value }}
-                                                                                    </template>
-                                                                                </span>
-                                                                            </div>
-                                                                            <Divider type="dashed" />
-                                                                        </div>
+                                                                <div class="grid gap-x-4">
+                                                                    <div class="flex gap-x-1">
+                                                                        <span
+                                                                            class="font-semibold text-gray-700 min-w-42">
+                                                                            {{ formatLabel(key) }}:
+                                                                        </span>
+                                                                        <template
+                                                                            v-if="key === 'branch' || key === 'room_type'">
+                                                                            <span class="text-gray-900 grow">
+                                                                                {{ value.name }}
+                                                                            </span>
+                                                                        </template>
+                                                                        <template v-else>
+                                                                            <span class="text-gray-900 grow">
+                                                                                {{ value }}
+                                                                            </span>
+                                                                        </template>
                                                                     </div>
-                                                                </template>
+                                                                    <Divider type="dashed" />
+                                                                </div>
                                                             </template>
                                                         </div>
 
-                                                        <!-- Field amenities -->
-                                                        <template v-if="slotProps.data.amenities">
-                                                            <div v-for="(amenityValue, amenityKey) in JSON.parse(slotProps.data.amenities)"
-                                                                :key="amenityKey" class="flex flex-col gap-y-1">
-                                                                <div class="flex">
-                                                                    <span
-                                                                        class="min-w-44 font-semibold text-gray-700 shrink-0">
-                                                                        {{ formatLabel(amenityKey) }}:
-                                                                    </span>
-                                                                    <span class="text-gray-900 flex-1">
-                                                                        {{ Array.isArray(amenityValue) ? amenityValue.join(', ') : amenityValue }}
-                                                                    </span>
-                                                                </div>
-                                                                <Divider type="dashed" />
+                                                        <!-- Amenities -->
+                                                        <div v-if="slotProps.data.amenities?.length">
+                                                            <div class="flex mt-2">
+                                                                <span
+                                                                    class="min-w-44 font-semibold text-gray-700 shrink-0">
+                                                                    Amenity:
+                                                                </span>
+                                                                <span class="text-gray-900 flex-1">
+                                                                    {{slotProps.data.amenities.map(a => formatLabel(a.name)).join(', ')}}
+                                                                </span>
                                                             </div>
-                                                        </template>
+                                                            <Divider type="dashed" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="update-buttons | flex mr-10">
@@ -178,7 +177,7 @@ import { useDialog } from 'primevue/usedialog';
 
 // router
 import { router } from '@inertiajs/vue3';
-import { ref, watch, computed, defineAsyncComponent, onMounted } from 'vue';
+import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 'vue';
 
 // confirm dialog
 import { useConfirm } from "primevue/useconfirm";
@@ -193,6 +192,7 @@ import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
+import { getDetailRows } from "@/Composables/formatDataTable";
 
 const props = defineProps({
     roomList: {
@@ -212,6 +212,11 @@ const props = defineProps({
     activeTab: String,
 
 })
+console.log(props.roomList);
+
+// hidden fields
+const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities', 'rooms', 'description']);
+const hiddenRows = reactive(['rooms', 'amenities', 'images', 'description', 'branches', 'id']);
 
 // tabs
 const tabs = ['room-type', 'room'];
@@ -232,7 +237,6 @@ const filters = ref({
 
 // filter room type and room by branch and status
 const statusList = ref([
-
     {
         name: 'active',
         label: 'Đang kinh doanh'
@@ -259,14 +263,34 @@ const filteredRoomTypeList = computed(() => {
     })
 });
 
-// filter room by branch and status
+// filter room by room type
+const roomTypeList = reactive([
+    { label: 'Tất cả', value: 'all', name: 'all' },
+    ...props.roomTypeList
+]);
+console.log(roomTypeList);
+const filterRoomType = ref('all');
+
+// filter room by floors
+const floorList = reactive([
+    { label: 'Tất cả', value: 'all' },
+    ...Array.from({ length: 5 }, (_, index) => ({
+        label: `Tầng ${index + 1}`,
+        value: index + 1,
+    }))
+]);
+const filterFloor = ref('all');
+
+// filter room by branch, status, room type and floor
 const filteredRoomList = computed(() => {
     return (props.roomList || []).filter(room => {
         const branchMatch = filterBranches.value.length === 0 ||
             filterBranches.value.includes(room.branch.id)
         const statusMatch = filterStatus.value === 'all' || room.status === filterStatus.value;
+        const floorMatch = filterFloor.value === 'all' || room.floor === filterFloor.value;
+        const roomTypeMatch = filterRoomType.value === 'all' || room.room_type.name === filterRoomType.value;
 
-        return branchMatch && statusMatch;
+        return branchMatch && statusMatch && roomTypeMatch && floorMatch;
     });
 })
 
@@ -299,7 +323,6 @@ watch(
     }
 );
 
-const hiddenColumns = ref(['hourly_rate', 'full_day_rate', 'overnight_rate', 'amenities', 'rooms']);
 watch(hiddenColumns, (val) => {
     localStorage.setItem('hiddenColumns', JSON.stringify(val));
 }, { deep: true });

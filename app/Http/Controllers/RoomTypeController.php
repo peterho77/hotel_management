@@ -16,7 +16,7 @@ class RoomTypeController extends Controller
      */
     public function index()
     {
-        $roomTypeList = RoomType::with(['branches', 'rooms', 'images'])->get();
+        $roomTypeList = RoomType::with(['branches', 'rooms', 'images', 'amenities'])->get();
         $columns = [];
 
         if ($roomTypeList->isNotEmpty()) {
@@ -45,9 +45,10 @@ class RoomTypeController extends Controller
             'total_quantity' => 'integer|min:1|max:10',
             'max_adults' => 'integer|required',
             'max_children' => 'integer|required',
-            'hourly_rate' => 'required|numeric|lt:overnight_rate',
-            'overnight_rate' => 'required|numeric|gt:hourly_rate|lt:full_day_rate',
-            'full_day_rate' => 'required|numeric|gt:overnight_rate',
+            'base_price' => 'required|numeric',
+            'hourly_rate' => 'nullable|numeric|lt:overnight_rate',
+            'overnight_rate' => 'nullable|numeric|gt:hourly_rate|lt:full_day_rate',
+            'full_day_rate' => 'nullable|numeric|gt:overnight_rate',
             'status' => 'required|max:50',
         ]);
 
@@ -57,6 +58,7 @@ class RoomTypeController extends Controller
             'total_quantity' => $request->total_quantity,
             'max_adults' => $request->max_adults,
             'max_children' => $request->max_children,
+            'base_price' => $request->base_price,
             'hourly_rate' => $request->hourly_rate,
             'full_day_rate' => $request->full_day_rate,
             'overnight_rate' => $request->overnight_rate,
@@ -86,7 +88,7 @@ class RoomTypeController extends Controller
         foreach ($imagePaths as $index => $img) {
             $newRoomTypeModel->images()->create([
                 'path' => $img['path'],
-                'is_featured' => $index === 0, 
+                'is_featured' => $index === 0,
                 'sort_order' => $index + 1,
                 'alt_text' => $img['filename'],
             ]);

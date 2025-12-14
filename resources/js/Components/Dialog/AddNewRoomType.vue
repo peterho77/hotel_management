@@ -25,6 +25,14 @@
                                     {{ $form.quantity.error.message }}</Message>
                             </div>
                             <div class="flex flex-col gap-2">
+                                <label for="base_price">Base price</label>
+                                <InputNumber name="base_price" :maxFractionDigits="0" mode="currency" currency="VND"
+                                    locale="vi-VN" showButtons buttonLayout="horizontal" :step="5000" />
+                                <Message v-if="$form.base_price?.invalid" severity="error" size="small"
+                                    variant="simple">
+                                    {{ $form.base_price.error.message }}</Message>
+                            </div>
+                            <div class="flex flex-col gap-2">
                                 <label for="hourly_rate">Hourly rate</label>
                                 <InputNumber name="hourly_rate" :maxFractionDigits="0" mode="currency" currency="VND"
                                     locale="vi-VN" showButtons buttonLayout="horizontal" :step="5000" />
@@ -53,7 +61,8 @@
                                     <span>Tối đa:</span>
                                     <div class="flex gap-x-2 items-center">
                                         <div class="flex items-center gap-x-1">
-                                                <InputNumber v-model="form.max_adults" name="max_adults" showButtons :min="1" :pt="{
+                                            <InputNumber v-model="form.max_adults" name="max_adults" showButtons
+                                                :min="1" :pt="{
                                                     incrementButton: { class: 'bg-gray-100' },
                                                     decrementButton: { class: 'bg-gray-100' },
                                                     incrementIcon: { class: 'pi pi-plus' },
@@ -64,13 +73,14 @@
                                         </div>
                                         <span>và</span>
                                         <div class="flex items-center gap-x-1">
-                                            <InputNumber v-model="form.max_children" name="max_children" showButtons :min="1" :pt="{
-                                                incrementButton: { class: 'bg-gray-100' },
-                                                decrementButton: { class: 'bg-gray-100' },
-                                                incrementIcon: { class: 'pi pi-plus' },
-                                                decrementIcon: { class: 'pi pi-minus' },
+                                            <InputNumber v-model="form.max_children" name="max_children" showButtons
+                                                :min="1" :pt="{
+                                                    incrementButton: { class: 'bg-gray-100' },
+                                                    decrementButton: { class: 'bg-gray-100' },
+                                                    incrementIcon: { class: 'pi pi-plus' },
+                                                    decrementIcon: { class: 'pi pi-minus' },
 
-                                            }" />
+                                                }" />
                                             <span class="w-2/3">trẻ em</span>
                                         </div>
                                     </div>
@@ -265,28 +275,39 @@ const toNumberOrUndefined = (val) => {
 const resolver = zodResolver(
     z
         .object({
-            name: z.string({ required_error: "name.required" }).min(1, { message: "name.required" }),
+            name: z.string({ required_error: "name.required" }).min(5, { message: "Tên ít nhất phải 5 ký tự" }),
 
             total_quantity: z.preprocess(toNumberOrUndefined,
                 z.number({
                     required_error: "quantity.required",
                     invalid_type_error: "quantity.numeric",
-                }).int({ message: "quantity.integer" }).min(1, { message: "quantity.min" }).max(10, { message: "quantity.max" })
+                }).int({ message: "Yêu cầu nhập tổng số phòng." }).min(1, { message: "Tổng số phòng ít nhất là 1." }).max(30, { message: "Tổng số phòng tối đa nhất là 30." })
             ),
 
-            hourly_rate: z.preprocess(toNumberOrUndefined,
-                z.number({ required_error: "hourly_rate.required", invalid_type_error: "hourly_rate.numeric" })
+            base_price: z.preprocess(
+                toNumberOrUndefined,
+                z.number({
+                    required_error: "base_price.required",
+                    invalid_type_error: "base_price.numeric",
+                })
             ),
 
-            overnight_rate: z.preprocess(toNumberOrUndefined,
-                z.number({ required_error: "overnight_rate.required", invalid_type_error: "overnight_rate.numeric" })
+            hourly_rate: z.preprocess(
+                toNumberOrUndefined,
+                z.number({ invalid_type_error: "hourly_rate.numeric" }).optional()
             ),
 
-            full_day_rate: z.preprocess(toNumberOrUndefined,
-                z.number({ required_error: "full_day_rate.required", invalid_type_error: "full_day_rate.numeric" })
+            overnight_rate: z.preprocess(
+                toNumberOrUndefined,
+                z.number({ invalid_type_error: "overnight_rate.numeric" }).optional()
             ),
 
-            status: z.string({ required_error: "status.required" }).min(1, { message: "status.required" }).max(50, { message: "status.max" }),
+            full_day_rate: z.preprocess(
+                toNumberOrUndefined,
+                z.number({ invalid_type_error: "full_day_rate.numeric" }).optional()
+            ),
+
+            status: z.string({ required_error: "status.required" }).min(1, { message: "Yêu cầu chọn trạng thái phòng." }),
             branch_id: z.preprocess(
                 (val) => {
                     if (!val || (typeof val === 'string' && val.trim() === '')) return []
@@ -300,36 +321,65 @@ const resolver = zodResolver(
             ),
         })
         .superRefine((data, ctx) => {
-            const { hourly_rate, overnight_rate, full_day_rate } = data;
+            const { hourly_rate, overnight_rate, full_day_rate, base_price } = data;
 
-            // nếu đều là số thì kiểm tra quan hệ
-            if (typeof hourly_rate !== "undefined" && typeof overnight_rate !== "undefined" && typeof full_day_rate !== "undefined") {
-                let errorsOvernight = [];
-                if (!(hourly_rate < overnight_rate)) {
+            const isNum = (v) => typeof v === "number";
+
+            let overnightRateErrors = [];
+            let basePriceErrors = [];
+
+            // hourly < overnight
+            if (isNum(hourly_rate) && isNum(overnight_rate)) {
+                if (hourly_rate >= overnight_rate) {
                     ctx.addIssue({
                         code: 'custom',
                         path: ["hourly_rate"],
                         message: "Giá thuê theo giờ phải nhỏ hơn giá thuê qua đêm",
                     });
-                    errorsOvernight.push("Giá thuê qua đêm phải lớn hơn giá thuê theo giờ");
+                    overnightRateErrors.push("Giá thuê qua đêm phải lớn hơn giá thuê theo giờ");
                 }
+            }
 
-                if (!(overnight_rate < full_day_rate)) {
-                    errorsOvernight.push("Giá thuê qua đêm phải nhỏ hơn giá thuê qua ngày");
+            // overnight < full_day
+            if (isNum(overnight_rate) && isNum(full_day_rate)) {
+                if (overnight_rate >= full_day_rate) {
                     ctx.addIssue({
                         code: 'custom',
                         path: ["full_day_rate"],
                         message: "Giá thuê qua ngày phải lớn hơn giá thuê qua đêm",
                     });
+                    overnightRateErrors.push("Giá thuê qua đêm phải nhỏ hơn giá thuê qua ngày");
                 }
+            }
 
-                if (errorsOvernight.length) {
-                    ctx.addIssue({
-                        code: "custom",
-                        path: ["overnight_rate"],
-                        message: errorsOvernight.join(`, `),
-                    });
+            // base > hourly
+            if (isNum(base_price) && isNum(hourly_rate)) {
+                if (base_price <= hourly_rate) {
+                    basePriceErrors.push("Giá thuê phòng cơ bản phải lớn hơn giá thuê theo giờ");
                 }
+            }
+
+            // base < full_day
+            if (isNum(base_price) && isNum(full_day_rate)) {
+                if (base_price >= full_day_rate) {
+                    basePriceErrors.push("Giá thuê phòng cơ bản phải nhỏ hơn giá thuê qua ngày");
+                }
+            }
+
+            if (overnightRateErrors.length) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["overnight_rate"],
+                    message: overnightRateErrors.join(", "),
+                });
+            }
+
+            if (basePriceErrors.length) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["base_price"],
+                    message: basePriceErrors.join(", "),
+                });
             }
         }
         ));
@@ -338,6 +388,7 @@ const initialValues = reactive({
     name: '',
     description: '',
     total_quantity: 1,
+    base_price: 0,
     hourly_rate: 20000,
     overnight_rate: 50000,
     full_day_rate: 200000,
@@ -347,8 +398,6 @@ const initialValues = reactive({
     branch_id: null,
     images: []
 });
-
-const newRoomTypeForm = ref(null);
 
 // pass data from dynamic dialog primevue
 const roomList = ref([]);
@@ -477,7 +526,7 @@ const submit = (e) => {
                 data.append(`images[${idx}]`, file, file.name);
             });
         }
-        
+
         //Gửi form qua Inertia
         router.post('/admin/room-type/add-new', data, {
             forceFormData: true,
