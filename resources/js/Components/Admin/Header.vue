@@ -86,7 +86,9 @@
                             <li>
                                 <Link :href="route('manager.customer')">Khách hàng - Đối tác</Link>
                             </li>
-                            <li>Nhân viên</li>
+                            <li>
+                                <Link :href="route('manager.employee')">Nhân viên</Link>
+                            </li>
                             <li>Giao dịch</li>
                             <li>Bán online</li>
                             <li>Báo cáo thống kê</li>

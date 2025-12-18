@@ -211,7 +211,6 @@ const props = defineProps({
     roomColumns: Object,
     roomTypeColumns: Object,
     activeTab: String,
-
 })
 
 // hidden fields
@@ -268,7 +267,7 @@ const statusList = ref([
         label: 'Tất cả'
     },
 ]);
-const filterBranches = ref([])
+const filterBranches = ref([]);
 const filterStatus = ref('all');
 
 // filter room type by branch ans status

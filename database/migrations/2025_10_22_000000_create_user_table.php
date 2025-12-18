@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->string('password');
             $table->string('role')->default('customer');
+            $table->text('note')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('password_changed_at')->nullable();
             $table->rememberToken();
@@ -44,7 +45,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user');
+        Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }

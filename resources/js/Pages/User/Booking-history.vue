@@ -186,7 +186,6 @@ watch(() => [props.bookings],
 
         selectedColumns.value = columns.value;
     });
-// { immediate: true });
 
 // open add review dialog
 const dialog = useDialog();

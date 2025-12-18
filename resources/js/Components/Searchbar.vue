@@ -40,7 +40,7 @@ const props = defineProps({
     placeholder: {
         type: String,
         required: false,
-        default: 'Tìm kiếm hạng phòng'
+        default: 'Tìm kiếm'
     },
     modelValue: {
         required: true

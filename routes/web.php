@@ -10,6 +10,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -70,6 +71,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function () {
         Route::get('/customer', [CustomerController::class, 'index'])->name('customer');
         Route::post('/customer/add-new', [CustomerController::class, 'store']);
+
+        Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
     });
 
     Route::middleware('role:customer')->group(function () {

@@ -7,6 +7,16 @@
                         <!-- keyword search -->
                         <Searchbar v-model="filters['global'].value" />
 
+                        <!-- filter role -->
+                        <div class="filter-role | box flow grid">
+                            <label class="admin-label">Vai trò</label>
+                            <Select v-model="filterRole" 
+                            :options="roles" 
+                            optionLabel="label" 
+                            optionValue="name" 
+                            placeholder="Select a role" class="w-full" />
+                        </div>
+
                         <!-- filter status -->
                         <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
                     </div>
@@ -18,7 +28,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Khách hàng" icon="pi pi-plus" severity="success" size="small"/>
+                                    <Button label="Khách hàng" icon="pi pi-plus" severity="success" size="small" @click="showAddNewAccount"/>
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -29,8 +39,8 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
-                        :value="usersList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt" :value="usersList"
+                        sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 60rem">
                         <template #empty>
                             <h3 class="text-center text-lg font-medium">No users found.</h3>
@@ -40,27 +50,24 @@
                             :field="col.field" :header="formatLabel(col.header)" sortable />
                         <template #expansion="slotProps">
                             <Panel>
-                                <div class="detail-infor | grid items-start grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="booking-section | flow">
-                                        <h3 class="text-lg font-medium">Thông tin đặt phòng</h3>
-                                        <div class="grid grid-cols-2">
-                                            <template
-                                                v-for="(value, key) in getDetailRows(slotProps.data, hiddenBookingDetailRows)"
-                                                :key="key">
-                                                <!-- Các field bình thường -->
-                                                <div class="grid gap-x-4">
-                                                    <div class="flex gap-x-1">
-                                                        <span class="font-semibold text-gray-700 min-w-42">
-                                                            {{ formatLabel(key) }}:
-                                                        </span>
-                                                        <span class="text-gray-900 grow">
-                                                            {{ value }}
-                                                        </span>
-                                                    </div>
-                                                    <Divider type="dashed" />
+                                <div class="detail-infor | grid gap-6">
+                                    <h3 class="text-lg font-medium">Thông tin đặt phòng</h3>
+                                    <div class="grid grid-cols-2">
+                                        <template v-for="(value, key) in getDetailRows(slotProps.data, hiddenRows)"
+                                            :key="key">
+                                            <!-- Các field bình thường -->
+                                            <div class="grid gap-x-4">
+                                                <div class="flex gap-x-1">
+                                                    <span class="font-semibold text-gray-700 min-w-42">
+                                                        {{ formatLabel(key) }}:
+                                                    </span>
+                                                    <span class="text-gray-900 grow">
+                                                        {{ value }}
+                                                    </span>
                                                 </div>
-                                            </template>
-                                        </div>
+                                                <Divider type="dashed" />
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                                 <div class="mr-10 mt-6 flex gap-4">
@@ -84,6 +91,7 @@ import Button from 'primevue/button';
 import Panel from 'primevue/panel';
 import MultiSelect from 'primevue/multiselect';
 import Divider from 'primevue/divider';
+import Select from 'primevue/select';
 
 // data-table
 import DataTable from 'primevue/datatable';
@@ -95,11 +103,12 @@ import Radioselect from "../../Components/Radioselect.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
-import { getColumns, getDetailRows } from "@/Composables/formatDataTable";
+import { formatDataTable, getColumns, getDetailRows } from "@/Composables/formatDataTable";
 
 // router
 import { router } from '@inertiajs/vue3';
 import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 'vue';
+import { useDialog } from 'primevue/usedialog';
 
 const props = defineProps({
     usersList: {
@@ -107,7 +116,15 @@ const props = defineProps({
         required: false,
     },
 });
-const usersList = reactive(props.usersList);
+
+// hidden fields
+const hiddenColumns = reactive(
+    [
+        'email_verified_at',
+        'password_changed_at'
+    ]);
+const hiddenRows = reactive([
+])
 
 // keyword search
 const filters = ref({
@@ -136,15 +153,75 @@ const selectedColumns = ref([]);
 const currentColumns = ref([]);
 onMounted(() => {
     if (props.usersList.length > 0) {
-        currentColumns.value = getColumns(props.usersList[0]);
+        currentColumns.value = getColumns(props.usersList[0], hiddenColumns);
     }
 
     selectedColumns.value = currentColumns.value;
 })
+const toggleColumn = (val) => {
+    selectedColumns.value = currentColumns.value.filter(col => {
+        return val.includes(col);
+    })
+};
 
 // row expansion
 const expandedRows = ref({});
 
-console.log(props.usersList);
+// filter row
+const roles = reactive([
+    {
+        name: 'all',
+        label: 'Tất cả'
+    },
+    {
+        name: 'admin',
+        label: 'admin'
+    },
+    {
+        name: 'manager',
+        label: 'manager'
+    },
+    {
+        name: 'employee',
+        label: 'employee'
+    },
+    {
+        name: 'customer',
+        label: 'customer'
+    },
+])
+const filterRole = ref('all');
+
+// filter account by role and active
+const initialUsersList = reactive(formatDataTable(props.usersList));
+const usersList = computed(() => {
+    return (initialUsersList || []).filter(user => {
+        const roleMatch = filterRole.value === 'all' || user.role === filterRole.value;
+        return roleMatch;
+    })
+}); 
+
+// open add review dialog
+const dialog = useDialog();
+const addNewAccount = defineAsyncComponent(() => import('../../Components/Dialog/AddNewAccount.vue'));
+
+const showAddNewAccount = () => {
+    dialog.open(addNewAccount, {
+        props: {
+            header: 'Thêm tài khoản mới',
+            style: {
+                width: '40vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+        },
+        data: {
+        }
+    });
+}
 
 </script>
