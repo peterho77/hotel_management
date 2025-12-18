@@ -1,8 +1,8 @@
 <template>
     <div class="booking-section pb-10">
-        <div class="booking-section-header | padding-block-200">
+        <div class="booking-section-header | padding-block-400 set-bg-img" :style="$getBgStyle(bookingBackgroundImage)">
             <Form @submit="searchBestRoomOptions"
-                class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl">
+                class="booking-filter-section-form | text-center gap-y-3 bg-amber-100 padding-block-400 px-4 rounded-xl shadow-xl text-slate-950">
                 <div class="flex gap-x-4 items-center">
                     <!-- Check-in / Check-out -->
                     <div>
@@ -22,7 +22,7 @@
                         <FormField @click="toggle">
                             <IconField>
                                 <InputIcon class="pi pi-users" />
-                                <InputText :placeholder="numOfGuestsSummary" disabled />
+                                <InputText :placeholder="numOfGuestsSummary" disabled class="text-slate-950"/>
                                 <InputIcon class="pi pi-angle-down" />
                             </IconField>
                         </FormField>
@@ -306,9 +306,8 @@
 
 <style scoped>
 .booking-section-header {
-    --booking-section-height: 220px;
+    --booking-section-height: 400px;
 
-    background: var(--accent-color-300);
     height: var(--booking-section-height);
     position: relative;
 }
@@ -317,9 +316,10 @@
     position: absolute;
     min-width: 200px;
     width: fit-content;
-    top: 80px;
+    top: 70%;
     left: 50%;
     transform: translateX(-50%);
+    background: var(--primary-color-300);
 }
 
 .p-inputtext:disabled {
@@ -351,6 +351,8 @@ import { router } from '@inertiajs/vue3';
 // page
 import { usePage } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
+
+const bookingBackgroundImage = ref('/img/booking-bg.jpg')
 
 const props = defineProps({
     roomOptionList: Array,

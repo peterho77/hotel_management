@@ -9,18 +9,7 @@
             <div class="box | grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="image-gallery-section">
                     <h1 class="font-medium text-xl mx-2">{{ roomType.name }}</h1>
-                    <Galleria :value="getGalleryImages(roomType.images)" :responsiveOptions="responsiveOptions"
-                        :numVisible="4" containerStyle="max-width: 600px" :circular="true">
-                        <template #item="slotProps">
-                            <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt"
-                                class="w-full max-h-96 object-cover rounded-lg" />
-                        </template>
-
-                        <template #thumbnail="slotProps">
-                            <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt"
-                                class="max-h-30 w-20 object-cover rounded-md border-[0.5px]" />
-                        </template>
-                    </Galleria>
+                    <ImagesGallery :list="roomType.images"/>
                 </div>
                 <div class="grid mt-6 | flow" style="--flow-spacer:1rem">
                     <div class="detail-info-section | grid gap-y-1">
@@ -72,21 +61,21 @@
                                     <span>Tiện nghi</span>
                                     <span>{{ roomReviewScore / 10 }}</span>
                                 </div>
-                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore"/>
+                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore" />
                             </div>
                             <div class="cleanliness-bar">
                                 <div class="flex justify-between">
                                     <span>Sạch sẽ</span>
                                     <span>{{ roomReviewScore / 10 }}</span>
                                 </div>
-                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore"/>
+                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore" />
                             </div>
                             <div class="value-bar">
                                 <div class="flex justify-between">
                                     <span>Đáng giá tiền</span>
                                     <span>{{ roomReviewScore / 10 }}</span>
                                 </div>
-                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore"/>
+                                <ProgressBar class="no-text" severity="info" :value="roomReviewScore" />
                             </div>
                         </div>
                     </div>
@@ -101,7 +90,7 @@
     display: none !important;
 }
 
-:deep(.p-progressbar-value){
+:deep(.p-progressbar-value) {
     background: var(--primary-color-700);
 }
 </style>
@@ -114,7 +103,6 @@ import Galleria from 'primevue/galleria';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Badge from 'primevue/badge';
-import OverlayBadge from 'primevue/overlaybadge';
 import ProgressBar from 'primevue/progressbar';
 
 // router
@@ -122,6 +110,7 @@ import { router } from '@inertiajs/vue3';
 
 // component
 import Breadcrumb from '../../Components/Breadcrumb.vue';
+import ImagesGallery from '../../Components/ImagesGallery.vue';
 
 const page = usePage();
 const breadcrumb = page.props.breadcrumb;
@@ -187,25 +176,6 @@ const getRoomAmenity = (amenity) => {
 
 // room review score
 const roomReviewScore = ref(70);
-
-// room type images gallery
-const getGalleryImages = (images) => {
-    // Nếu có ảnh thật từ DB
-    if (images && images.length > 0) {
-        return images.map(img => ({
-            itemImageSrc: `/storage/${img.path}`,
-            thumbnailImageSrc: `/storage/${img.path}`,
-            alt: img.alt_text
-        }))
-    }
-
-    // Nếu không có ảnh → trả về 5 ảnh mặc định
-    return Array.from({ length: 5 }, (_, i) => ({
-        itemImageSrc: `/img/default-blank-img.jpg`,
-        thumbnailImageSrc: `/img/default-blank-img.jpg`,
-        alt: `default-blank-${i + 1}`
-    }))
-}
 
 const responsiveOptions = ref([
     {

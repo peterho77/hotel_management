@@ -33,6 +33,15 @@ export function formatDateVN(input) {
     }).format(date);
 }
 
+// format vn currency
+export function formatCurrency(value) {
+    if (!value) return "Liên hệ";
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+    }).format(value);
+}
+
 export function isDateString(value) {
     if (typeof value !== "string") return false;
 

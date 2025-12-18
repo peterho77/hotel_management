@@ -10,6 +10,13 @@ use App\Models\CustomerType;
 
 class GuestController extends Controller
 {
+    public function index()
+    {
+        $roomTypeList = RoomType::with(['images'])->get();
+        return Inertia::render('Guest/Home', [
+            'roomTypeList' => $roomTypeList,
+        ]);
+    }
     public function rooms()
     {
         $roomTypeList = RoomType::with(['images', 'amenities'])->get();

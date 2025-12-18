@@ -8,6 +8,13 @@ import { usePage } from '@inertiajs/vue3'
 const page = usePage()
 const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 
+const props = defineProps({
+    roomTypeList: {
+        type: Array,
+        required: false
+    },
+});
+
 </script>
 
 <template>
@@ -24,6 +31,6 @@ const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
     <ServicesSection />
 
     <!-- Room section -->
-    <RoomSection />
+    <RoomSection :rooms="roomTypeList"/>
 
 </template>

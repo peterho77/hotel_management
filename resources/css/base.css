@@ -620,9 +620,9 @@ ul[role="list"] > li {
 
 /* set background image */
 .set-bg-img {
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
+    background-repeat: no-repeat!important;
+    background-size: cover!important;
+    background-position: center!important;
 }
 
 /* Animation */
@@ -634,7 +634,7 @@ ul[role="list"] > li {
     > .item-pop-up {
         position: absolute;
         inset: auto 0 0 0;
-        transform: translateY(160px);
+        transform: translateY(var(--hiddenHeight, 200px));
         transition: all 300ms ease;
     }
 }

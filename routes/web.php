@@ -14,8 +14,9 @@ use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+// home page
 Route::redirect('/home', '/');
-Route::inertia('/', 'Guest/Home')->name('home');
+Route::get('/', [GuestController::class, 'index'])->name('home');
 
 //login, register account
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');

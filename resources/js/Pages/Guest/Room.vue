@@ -25,7 +25,7 @@ const pageTitle = ` | ${page.component.replace(/^(Guest\/|Admin\/)/, '')} Page`;
 const props = defineProps({
     roomTypeList: Array,
 });
-console.log(props.roomTypeList);
+
 const formattedRooms = computed(() =>
     props.roomTypeList.map(room => {
         const amenities = room.amenities || [];
@@ -34,10 +34,10 @@ const formattedRooms = computed(() =>
             id: room.id,
             name: room.name,
             features: features || [],
-            view: amenities.view || 'No View',
+            view: amenities.view || '',
             rating: 4.5,
             price: room.base_price || 0,
-            images: room.images?.length
+            images: room.images?.length > 0
                 ? room.images[0].path
                 : null,
             description: room.description,
@@ -246,10 +246,13 @@ const getSeverity = (roomType) => {
                                         <div class="flex flex-col sm:flex-row sm:items-center p-6 gap-4"
                                             :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
                                             <div class="md:w-40 relative">
-                                                <img class="block xl:block mx-auto rounded w-full max-h-40 object-cover"
-                                                    :src="item.images
-                                                        ? `/storage/${item.images}`
-                                                        : '/img/default-blank-img.jpg'" />
+                                                <div class="w-full aspect-4/3 overflow-hidden rounded-md">
+                                                    <img class="block w-full h-full object-cover" :src="(item.images && item.images.length > 0)
+                                                        ? (item.images.startsWith('/img/')
+                                                            ? item.images
+                                                            : '/storage/' + item.images)
+                                                        : '/img/default-blank-img.jpg'" :alt="item.name" />
+                                                </div>
                                                 <div class="absolute bg-black/70 rounded-border"
                                                     style="left: 4px; top: 4px">
                                                     <!-- <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" rounded>
