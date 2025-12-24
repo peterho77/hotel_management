@@ -139,12 +139,12 @@ const userRegisterSchema = zodResolver(z
         full_name: z
             .string()
             .min(1, "Họ và tên là bắt buộc.")
-            .max(255, "Họ và tên không được vượt quá 255 ký tự."),
+            .max(30, "Họ và tên không được vượt quá 30 ký tự."),
 
         user_name: z
             .string()
-            .min(1, "Tên đăng nhập là bắt buộc.")
-            .max(50, "Tên đăng nhập không được vượt quá 50 ký tự."),
+            .min(8, "Tên đăng nhập phải có ít nhất 8 ký tự")
+            .max(16, "Tên đăng nhập không được vượt quá 16 ký tự."),
 
         email: z
             .string({ required_error: "Email là bắt buộc." })
@@ -158,13 +158,14 @@ const userRegisterSchema = zodResolver(z
             .refine((val) => val.replace(/\s+/g, "") === "" || /^[0-9]+$/.test(val.replace(/\s+/g, "")), {
                 message: "Số điện thoại chỉ được chứa chữ số.",
             })
-            .refine((val) => val.replace(/\s+/g, "").length <= 15, {
-                message: "Số điện thoại không được vượt quá 15 ký tự.",
+            .refine((val) => val.replace(/\s+/g, "").length <= 12, {
+                message: "Số điện thoại không được vượt quá 12 ký tự.",
             }),
 
         password: z
             .string()
-            .min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
+            .min(8, "Mật khẩu phải có ít nhất 8 ký tự.")
+            .max(16, { message: 'Mật khẩu quá dài' }),
 
         password_confirmation: z
             .string(),

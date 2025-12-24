@@ -1,5 +1,5 @@
 <template>
-    <Form class="grid grid-cols-[200px_1fr] gap-x-2" ref="newCustomerForm" v-slot="$form" :resolver :initialValues
+    <Form class="grid grid-cols-[200px_1fr] gap-x-2" v-slot="$form" :resolver :initialValues
         validateOnUpdate="false" :validateOnBlur="true" @submit="submit">
         <div class="upload-preview-img group relative">
             <label class="upload-btn">
@@ -65,11 +65,11 @@
                         <label for="">Gender:</label>
                         <div class="flex items-center gap-x-2">
                             <RadioButton name="gender" value="male" />
-                            <label for="ingredient1">Male</label>
+                            <label for="gender">Male</label>
                         </div>
                         <div class="flex items-center gap-x-2">
                             <RadioButton name="gender" value="female" />
-                            <label for="ingredient1">Female</label>
+                            <label for="gender">Female</label>
                         </div>
                     </div>
                     <Message v-if="$form.gender?.invalid" severity="error" size="small" variant="simple">
@@ -197,7 +197,7 @@ const resolver = zodResolver(z.object({
         .string()
         .trim()
         .min(8, { message: "Email ít nhất 8 ký tự" })
-        .max(255, { message: "Email không được vượt quá 255 ký tự." })
+        .max(30, { message: "Email không được vượt quá 30 ký tự." })
         .refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), { message: "Email không hợp lệ." })
         .nullable()
         .optional(),
@@ -215,8 +215,6 @@ const resolver = zodResolver(z.object({
     customer_group_id: z.number().default(2).optional(),
     note: z.string().nullable().optional(),
 }));
-
-const newCustomerForm = ref(null);
 
 const submit = (e) => {
     if (e.valid) {

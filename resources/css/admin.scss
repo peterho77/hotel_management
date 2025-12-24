@@ -41,16 +41,6 @@
                         padding: 0.25em 0.75em;
                         border-radius: var(--size-200);
 
-                        &::before {
-                            content: "";
-                            position: absolute;
-                            width: 1px;
-                            height: 80%;
-                            background-color: var(--neutral-color-400);
-                            top: 2px;
-                            left: -1rem;
-                        }
-
                         &::after {
                             content: "";
                             position: absolute;

@@ -40,7 +40,7 @@ Route::prefix('rooms')->name('rooms.')->group(function () {
 });
 
 // review page
-Route::get('/review',[GuestController::class, 'review'])->name('review');
+Route::get('/review', [GuestController::class, 'review'])->name('review');
 
 // Role Authentication
 Route::middleware('guest')->group(function () {
@@ -74,6 +74,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/customer/add-new', [CustomerController::class, 'store']);
 
         Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
+
+        Route::inertia('/shift', 'Manager/Shift')->name('shift');
     });
 
     Route::middleware('role:customer')->group(function () {

@@ -8,36 +8,6 @@
                     </div>
                     <div class="col-span-12 lg:col-span-10">
                         <nav class="nav-wrapper">
-                            <ul class="financial-tools | nav-list | align-center" role="list">
-                                <li>
-                                    <a class="align-center" href="">
-                                        <SvgSprite symbol="file-invoice-dollar" size="0 0 24 24" role="presentation"
-                                            class="icon" />
-                                        <span>Hóa đơn điện tử</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="align-center" href="">
-                                        <SvgSprite symbol="sack-dollar" size="0 0 24 24" role="presentation"
-                                            class="icon" />
-                                        <span>Vay vốn</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="align-center" href="">
-                                        <SvgSprite symbol="credit-card" size="0 0 24 24" role="presentation"
-                                            class="icon" />
-                                        <span>Thanh toán</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="align-center" href="">
-                                        <SvgSprite symbol="circle-infor" size="0 0 24 24" role="presentation"
-                                            class="icon" />
-                                        <span>Hỗ trợ</span>
-                                    </a>
-                                </li>
-                            </ul>
                             <ul class="setting-options | nav-list">
                                 <li class="branch | justify-center align-center">
                                     <SvgSprite symbol="location-dot" size="0 0 24 24" role="presentation"
@@ -67,6 +37,7 @@
                     <ul class="primary-nav | nav-list">
                         <li>Tổng quan</li>
                         <template v-if="user.role === 'admin'">
+                            <li>Chi nhánh</li>
                             <li class="room-nav" @click="toggle">
                                 Phòng
                                 <Menu ref="menu" :model="roomItemsMenu" class="toggle-menu py-1" :popup="true">
@@ -89,8 +60,8 @@
                             <li>
                                 <Link :href="route('manager.employee')">Nhân viên</Link>
                             </li>
-                            <li>Giao dịch</li>
-                            <li>Bán online</li>
+                            <li>Đặt phòng</li>
+                            <li></li>
                             <li>Báo cáo thống kê</li>
                         </template>
                     </ul>

@@ -28,7 +28,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Khách hàng" icon="pi pi-plus" severity="success" size="small" @click="showAddNewAccount"/>
+                                    <Button label="Tài khoản" icon="pi pi-plus" severity="success" size="small" @click="showAddNewAccount"/>
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -135,11 +135,11 @@ const filters = ref({
 const statusList = ref([
     {
         name: 'active',
-        label: 'Đang kinh doanh'
+        label: 'Đang hoạt động'
     },
     {
         name: 'inactive',
-        label: 'Ngừng kinh doanh'
+        label: 'Ngừng hoạt động'
     },
     {
         name: 'all',
@@ -210,7 +210,7 @@ const showAddNewAccount = () => {
         props: {
             header: 'Thêm tài khoản mới',
             style: {
-                width: '40vw',
+                width: '50vw',
             },
             breakpoints: {
                 '960px': '50vw',

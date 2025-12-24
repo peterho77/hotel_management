@@ -132,14 +132,15 @@
                                                     <div v-for="(file, index) of files"
                                                         :key="file.name + file.type + file.size"
                                                         class="border border-surface rounded">
-                                                        <div>
+                                                        <div
+                                                            class="w-full aspect-5/6 bg-surface-100 dark:bg-surface-800">
                                                             <img role="presentation" :alt="file.name"
                                                                 :src="file.objectURL"
-                                                                class="w-full max-h-60 object-cover" />
+                                                                class="w-full h-full object-cover" />
                                                         </div>
-                                                        <div class="p-4 items-center flex flex-col gap-2">
+                                                        <div class="p-2 items-center flex flex-col gap-2">
                                                             <span
-                                                                class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
+                                                                class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">{{ file.name.split(' ')[0] }}</span>
                                                             <div>{{ formatSize(file.size) }}</div>
                                                             <Badge value="Pending" severity="warn" />
                                                             <Button icon="pi pi-times"
@@ -156,14 +157,14 @@
                                                     <div v-for="(file, index) of uploadedFiles"
                                                         :key="file.name + file.type + file.size"
                                                         class="rounded-border border border-surface">
-                                                        <div>
+                                                        <div class="w-full aspect-4/3 overflow-hidden">
                                                             <img role="presentation" :alt="file.name"
                                                                 :src="file.objectURL"
-                                                                class="w-full max-h-60 object-cover" />
+                                                                class="w-full h-full  object-cover" />
                                                         </div>
                                                         <div class="p-4 items-center flex flex-col gap-2">
                                                             <span
-                                                                class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
+                                                                class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">{{ file.name.split(' ')[0] }}</span>
                                                             <div>{{ formatSize(file.size) }}</div>
                                                             <Badge value="Completed" class="mt-4" severity="success" />
                                                             <Button icon="pi pi-times"

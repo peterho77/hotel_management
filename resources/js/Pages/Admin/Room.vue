@@ -62,24 +62,8 @@
                                     <template #expansion="slotProps">
                                         <Panel>
                                             <div class="p-2">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                    <div class="image-gallery">
-                                                        <Galleria :value="getGalleryImages(slotProps.data.images)"
-                                                            :responsiveOptions="responsiveOptions" :numVisible="4"
-                                                            containerStyle="max-width: 460px" :circular="true">
-                                                            <template #item="slotProps">
-                                                                <img :src="slotProps.item.itemImageSrc"
-                                                                    :alt="slotProps.item.alt"
-                                                                    class="w-full max-h-96 object-cover rounded-lg" />
-                                                            </template>
-
-                                                            <template #thumbnail="slotProps">
-                                                                <img :src="slotProps.item.itemImageSrc"
-                                                                    :alt="slotProps.item.alt"
-                                                                    class="max-h-30 w-20 object-cover rounded-md border-[0.5px]" />
-                                                            </template>
-                                                        </Galleria>
-                                                    </div>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <ImagesGallery :list="slotProps.data.images"/>
                                                     <div class="detail-infor">
                                                         <div class="grid grid-cols-1 lg:grid-cols-2">
                                                             <template
@@ -190,6 +174,7 @@ import Searchbar from "../../Components/Searchbar.vue";
 import Multiselect from "../../Components/Multiselect.vue";
 import Radioselect from "../../Components/Radioselect.vue";
 import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
+import ImagesGallery from "../../Components/ImagesGallery.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
@@ -512,25 +497,6 @@ const exportCSV = () => {
         }
     }
 };
-
-// room type images gallery
-const getGalleryImages = (images) => {
-    // Nếu có ảnh thật từ DB
-    if (images && images.length > 0) {
-        return images.map(img => ({
-            itemImageSrc: `/storage/${img.path}`,
-            thumbnailImageSrc: `/storage/${img.path}`,
-            alt: img.alt_text
-        }))
-    }
-
-    // Nếu không có ảnh → trả về 5 ảnh mặc định
-    return Array.from({ length: 5 }, (_, i) => ({
-        itemImageSrc: `/img/default-blank-img.jpg`,
-        thumbnailImageSrc: `/img/default-blank-img.jpg`,
-        alt: `default-blank-${i + 1}`
-    }))
-}
 
 const responsiveOptions = ref([
     {
