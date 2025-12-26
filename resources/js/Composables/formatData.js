@@ -35,7 +35,7 @@ export function formatDateVN(input) {
 
 // format vn currency
 export function formatCurrency(value) {
-    if (!value) return "Liên hệ";
+    if (!value) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND',

@@ -52,8 +52,7 @@
           <!-- Employee Info -->
           <div class="schedule-cell employee-col">
             <div class="employee-info">
-              <div class="employee-name">{{ employee.full_name }}</div>
-              <div class="employee-code">{{ employee.employee_code }}</div>
+              <span class="employee-name">{{ employee.full_name }}</span>
             </div>
           </div>
 
@@ -62,7 +61,7 @@
             <div class="day-content">
               <!-- Shift Blocks -->
               <div class="shift-blocks">
-                <div v-for="schedule in getSchedulesForDay(item, day.date)" :key="schedule.id" class="shift-block"
+                <div v-for="schedule in getSchedulesForDay(employee, day.date)" :key="schedule.id" class="shift-block"
                   :class="getShiftColorClass(schedule.shift)" @click="editSchedule(schedule, employee, day.date)">
                   {{ schedule.shift?.name || 'N/A' }}
                 </div>
@@ -70,7 +69,7 @@
 
               <!-- Add Schedule Button - Hiển thị khi chưa đạt giới hạn -->
               <button v-if="getSchedulesForDay(employee, day.date).length < 3" class="add-schedule-btn"
-                @click="openAddScheduleModal(employee, day.date)" title="Thêm lịch">
+                @click="showCreateScheduleDialog(employee, day.date)" title="Thêm lịch">
                 + Thêm lịch
               </button>
             </div>
@@ -79,8 +78,8 @@
           <!-- Estimated Salary -->
           <div class="schedule-cell salary-col">
             <div class="salary-info">
-              <div class="salary-amount">{{ formatCurrency(item.estimated_salary) }}</div>
-              <div class="shift-count">{{ item.shift_count }} ca</div>
+              <div class="salary-amount">{{ formatCurrency(employee.estimated_salary) ?? '' }}</div>
+              <div class="shift-count">{{ employee.shift_count }} ca</div>
             </div>
           </div>
         </div>
@@ -98,13 +97,6 @@
       <ProgressSpinner />
       <p>Đang tải...</p>
     </div>
-
-    <!-- Add/Edit Schedule Modal -->
-    <Dialog v-model:visible="showScheduleModal" :header="scheduleModalTitle" :modal="true" :style="{ width: '500px' }"
-      @hide="closeScheduleModal">
-      <CreateScheduleModal v-if="showScheduleModal" :employee="selectedEmployee" :schedule-date="selectedDate"
-        :schedule="editingSchedule" @saved="handleScheduleSaved" @cancel="closeScheduleModal" />
-    </Dialog>
   </div>
 </template>
 
@@ -729,29 +721,63 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { useToast } from 'primevue/usetoast' // Assuming you use PrimeVue's toast
+import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
-import CreateScheduleModal from '../../Components/Dialog/CreateSchedule.vue'
 
-// --- Props & Emits ---
+// dynamic dialog
+import { useDialog } from 'primevue/usedialog';
+
+// format data
+import { formatCurrency, formatDateVN } from "@/Composables/formatData";
+
 const props = defineProps({
-  allEmployees: Array,
+  allShifts: Array,
   scheduleData: Array,
   filters: Object
 })
+console.log(props.allShifts);
 
-console.log(props.scheduleData);
+// dialog
+const dialog = useDialog();
+const createScheduleDialog = defineAsyncComponent(() => import('../../Components/Dialog/Schedule/Create.vue'));
+const showCreateScheduleDialog = (employee, date) => {
+  dialog.open(createScheduleDialog, {
+    props: {
+      header: 'Add new schedule',
+      style: {
+        width: '40vw',
+      },
+      breakpoints: {
+        '960px': '50vw',
+        '640px': '40vw'
+      },
+      modal: true
+    },
+    data: {
+      employee,
+      scheduleDate: date,
+      shiftList: props.allShifts,
+      schedule: null
+    },
+    onClose: (options) => {
+      // options.data là dữ liệu được trả về từ dialog con khi gọi close()
+      const data = options.data;
+      if (data) {
+        // Gọi hàm xử lý lưu đã có của bạn
+        handleScheduleSaved(data);
+      }
+    }
+  });
+}
 
 // --- State (Replaces data) ---
 const loading = ref(false)
 const searchQuery = ref('')
-const weekStart = ref(null)
-const scheduleData = ref([])
-const allEmployees = ref(props.allEmployees)
+const weekStart = ref(props.filters.week_start)
+const scheduleData = ref(props.scheduleData)
 const showScheduleModal = ref(false)
 const selectedEmployee = ref(null)
 const selectedDate = ref(null)
@@ -760,35 +786,40 @@ let searchTimeout = null
 
 const toast = useToast()
 
-// --- Computed ---
+// get week days
 const weekDays = computed(() => {
   if (!weekStart.value) return []
 
   const days = []
-  const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy']
+  
+  // Tối ưu: Lấy ngày hiện tại ra ngoài vòng lặp
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  // Formatter lấy tên thứ (Thứ Hai, Thứ Ba...)
+  const dayNameFormatter = new Intl.DateTimeFormat('vi-VN', { weekday: 'long' })
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(weekStart.value)
     date.setDate(date.getDate() + i)
 
-    const dayOfWeek = date.getDay()
-    // Logic for naming (matching your original logic)
-    const dayName = i === 0 ? 'Thứ hai' : i === 6 ? 'Chủ nhật' : dayNames[dayOfWeek]
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // Tạo chuỗi ISO chuẩn (YYYY-MM-DD) dùng cho logic/API
+    const isoString = date.toISOString().split('T')[0]
+    
+    // Check ngày hiện tại
     const checkDate = new Date(date)
     checkDate.setHours(0, 0, 0, 0)
 
     days.push({
-      date: date.toISOString().split('T')[0],
-      dayName: dayName,
+      date: formatDateVN(isoString), // Dùng hàm của bạn để hiển thị (ví dụ: 26/12/2025)
+      dayName: dayNameFormatter.format(date), // Tự động: "Thứ Hai", "Thứ Ba"...
       dayNumber: date.getDate(),
       isToday: checkDate.getTime() === today.getTime()
     })
   }
   return days
 })
+console.log(weekDays.value);
 
 const weekDisplayText = computed(() => {
   if (!weekStart.value) return ''
@@ -813,7 +844,7 @@ const filteredScheduleData = computed(() => {
   }
 
   const term = searchQuery.value.toLowerCase().trim()
-  
+
   return sourceData.filter(employee => {
     // SỬA: employee chính là item, không cần .employee nữa
     const name = (employee.full_name || '').toLowerCase()
@@ -824,6 +855,7 @@ const filteredScheduleData = computed(() => {
     return name.includes(term) || code.includes(term) || phone.includes(term) || email.includes(term)
   })
 })
+console.log(filteredScheduleData.value);
 
 const scheduleModalTitle = computed(() => {
   return editingSchedule.value ? 'Chỉnh sửa lịch làm việc' : 'Thêm lịch làm việc'
@@ -851,12 +883,25 @@ const getWeekNumber = (date) => {
 
 // Chuyển đổi tuần (Thay thế cho changeWeek cũ)
 const changeWeek = (newWeekStart) => {
+  // Đảm bảo định dạng ngày là YYYY-MM-DD
+  // Nếu newWeekStart là đối tượng Date, chuyển nó về string
+  const dateString = new Date(newWeekStart).toISOString().split('T')[0];
+
   router.get('/manager/work-schedule',
-    { week_start: newWeekStart },
     {
-      preserveState: true, // Giữ lại trạng thái hiện tại của trang
-      preserveScroll: true, // Không cuộn lên đầu trang
-      only: ['scheduleData', 'filters'] // Chỉ tải lại đúng dữ liệu cần thiết
+      week_start: dateString,
+      search: searchQuery.value
+    },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      only: ['scheduleData', 'filters'],
+      onStart: () => {
+        loading.value = true
+      },
+      onFinish: () => {
+        loading.value = false
+      }
     }
   )
 }
@@ -929,14 +974,6 @@ const closeScheduleModal = () => {
 const handleScheduleSaved = () => {
   closeScheduleModal()
   changeWeek()
-}
-
-const formatCurrency = (amount) => {
-  if (!amount) return '0 ₫'
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount)
 }
 
 // --- Lifecycle ---

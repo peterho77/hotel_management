@@ -10,13 +10,13 @@
                         <div v-for="(item, index) in list" :key="index" class="flex items-center gap-2">
                             <template v-if="item.label">
                                 <RadioButton :modelValue="modelValue"
-                                    @update:modelValue="value => emit('update:modelValue', value)" :inputId="item.name ?? item.value"
+                                    @update:modelValue="value => emit('update:modelValue', value)" :inputId="`${item.name ?? item.value}`"
                                     :value="item.name ?? item.value"/>
                                 <label :for="item.name">{{ item.label }}</label>
                             </template>
                             <template v-else>
                                 <RadioButton :modelValue="modelValue"
-                                    @update:modelValue="value => emit('update:modelValue', value)" :inputId="item.name ?? item.value"
+                                    @update:modelValue="value => emit('update:modelValue', value)" :inputId="`${item.name ?? item.value}`"
                                     :value="item.name ?? item.value"/>
                                 <label :for="item.name">{{ item.name }}</label>
                             </template>

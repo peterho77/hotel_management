@@ -163,7 +163,7 @@
                                     </div>
                                 </div>
                                 <div class="main-content">
-                                    <Form v-slot="$form" class="grid gap-y-6">
+                                    <Form class="grid gap-y-6">
                                         <div class="booker-infor | box px-6 py-4 flow" style="--flow-spacer:.75em">
                                             <h3 class="font-semibold text-2xl">Nhập thông tin chi tiết của bạn</h3>
                                             <div class="grid gap-y-6">
@@ -322,7 +322,7 @@
                                 <div class="payment-section | box flow p-6" style="--flow-spacer:1rem">
                                     <h3 class="text-xl font-semibold">Thông tin thanh toán</h3>
                                     <Button class="flex items-center gap-x-2" severity="info" variant="text" fluid
-                                        @click="showAddPaymentMethod">
+                                        @click="showAddPaymentMethodDialog">
                                         <template #default>
                                             <div v-if="selectedPayment"
                                                 class="flex items-center justify-between w-full">
@@ -346,23 +346,23 @@
                                     <div class="grid gap-3">
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Khách hàng</label>
-                                            <span>{{ bookingData.full_name }}</span>
+                                            <span>{{ bookingFormData.full_name }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Số điện thoại</label>
-                                            <span>{{ bookingData.phone }}</span>
+                                            <span>{{ bookingFormData.phone }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Email</label>
-                                            <span>{{ bookingData.email }}</span>
+                                            <span>{{ bookingFormData.email }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Dịch vụ</label>
-                                            <span>{{ getTravelServices(bookingData.travel_services) || '-' }}</span>
+                                            <span>{{ getTravelServices(bookingFormData.travel_services) || '-' }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <label class="text-gray-500">Yêu cầu đặc biệt</label>
-                                            <span>{{ bookingData.special_request || '-' }}</span>
+                                            <span>{{ bookingFormData.special_request || '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -572,10 +572,10 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 const selectedPayment = ref(null);
 
-const addPaymentMethod = defineAsyncComponent(() => import('../../Components/Dialog/AddPaymentMethod.vue'));
+const addPaymentMethodDialog = defineAsyncComponent(() => import('../../Components/Dialog/Payment/Add.vue'));
 
-const showAddPaymentMethod = () => {
-    const dialogRef = dialog.open(addPaymentMethod, {
+const showAddPaymentMethodDialog = () => {
+    const dialogRef = dialog.open(addPaymentMethodDialog, {
         props: {
             header: 'Chọn phương thức thanh toán',
             style: {
@@ -678,7 +678,7 @@ const getBookerInfo = (getToNextStep) => {
     }
 }
 
-const bookingData = computed(() => {
+const bookingFormData = computed(() => {
     const { surname, firstname, ...rest } = bookerInforForm;
 
     return {
@@ -709,9 +709,7 @@ const bookingData = computed(() => {
 
 
 const confirmPayment = async () => {
-    console.log(bookingData.value);
-
-    const res = await axios.post(route('booking.confirm'), bookingData.value);
+    const res = await axios.post(route('booking.confirm'), bookingFormData.value);
 
     if (res.data.redirect_url) {
         window.location.href = res.data.redirect_url;

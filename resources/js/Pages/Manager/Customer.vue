@@ -53,7 +53,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <AddNewItemsButton label="Khách hàng" :hasMenu="false"
-                                        @parentClickEvent="showAddNewCustomer" />
+                                        @parentClickEvent="showCreateCustomerDialog" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -223,12 +223,12 @@ const toggleColumn = (val) => {
 const expandedRows = ref({});
 
 // open add new or update dialog
-const addNewCustomer = defineAsyncComponent(() => import('../../Components/Dialog/AddNewCustomer.vue'));
+const createCustomerDialog = defineAsyncComponent(() => import('../../Components/Dialog/Customer/Create.vue'));
 
 const dialog = useDialog();
 // add new dialog
-const showAddNewCustomer = () => {
-    const dialogRef = dialog.open(addNewCustomer, {
+const showCreateCustomerDialog = () => {
+    dialog.open(createCustomerDialog, {
         props: {
             header: 'Add new customer',
             style: {

@@ -8,7 +8,7 @@
                     <div>
                         <label class="block mb-1">Check-in/Check-out</label>
                         <FormField name="dateRange" v-slot="{ field, error }">
-                            <DatePicker v-model="filterRoomBookingForm.dateRange" dateFormat="dd/mm/yy"
+                            <DatePicker v-model="bookingFormData.dateRange" dateFormat="dd/mm/yy"
                                 selectionMode="range" :manualInput="false" :min-date="new Date()" showIcon fluid />
                             <small v-if="error" class="text-red-500 text-md">{{ error.message }}</small>
                         </FormField>
@@ -22,7 +22,7 @@
                         <FormField @click="toggle">
                             <IconField>
                                 <InputIcon class="pi pi-users" />
-                                <InputText :placeholder="numOfGuestsSummary" disabled class="text-slate-950"/>
+                                <InputText :placeholder="numOfGuestsDisplayText" disabled class="text-slate-950"/>
                                 <InputIcon class="pi pi-angle-down" />
                             </IconField>
                         </FormField>
@@ -36,7 +36,7 @@
                                         <span class="text-base">Người lớn</span>
                                         <span class="fs-300 text-gray-500">18 tuổi trở lên</span>
                                     </div>
-                                    <InputNumber v-model="filterRoomBookingForm.numOfAdults" name="num_of_guests"
+                                    <InputNumber v-model="bookingFormData.numOfAdults" name="num_of_guests"
                                         showButtons size="small" :min="1" :pt="{
                                             incrementButton: { class: 'bg-gray-100' },
                                             decrementButton: { class: 'bg-gray-100' },
@@ -51,7 +51,7 @@
                                         <span class="text-base">Trẻ em</span>
                                         <span class="fs-300 text-gray-500">0-17 tuổi</span>
                                     </div>
-                                    <InputNumber v-model="filterRoomBookingForm.numOfChildren" showButtons size="small"
+                                    <InputNumber v-model="bookingFormData.numOfChildren" showButtons size="small"
                                         :min="0" :max="10" :pt="{
                                             incrementButton: { class: 'bg-gray-100' },
                                             decrementButton: { class: 'bg-gray-100' },
@@ -67,12 +67,12 @@
                     <div>
                         <label class="block mb-1">Room</label>
                         <FormField name="num_of_rooms" v-slot="{ field, error }">
-                            <InputNumber v-model="filterRoomBookingForm.numOfRooms" showButtons :min="1" :pt="{
+                            <InputNumber v-model="bookingFormData.numOfRooms" showButtons :min="1" :pt="{
                                 incrementButton: { class: 'bg-gray-100' },
                                 decrementButton: { class: 'bg-gray-100' },
                                 incrementIcon: { class: 'pi pi-plus' },
                                 decrementIcon: { class: 'pi pi-minus' }
-                            }" :suffix="` room${filterRoomBookingForm.numOfRooms > 1 ? 's' : ''}`" />
+                            }" :suffix="` room${bookingFormData.numOfRooms > 1 ? 's' : ''}`" />
                         </FormField>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                         <Column header="Giá" style="text-align: center">
                             <template #body="{ data }">
                                 <div class="flex flex-col items-center"
-                                    :v.tooltip.html="getPriceDesc(data.room_option.price, filterRoomBookingForm.numOfNights)">
+                                    :v.tooltip.html="getPriceDesc(data.room_option.price, bookingFormData.numOfNights)">
                                     <span class="line-through text-gray-400 text-sm">
                                         VND {{ data.total_base_price_per_room_type }}
                                     </span>
@@ -377,11 +377,11 @@ const getLabel = (key, num) => {
     }
 };
 
-const numOfGuestsSummary = computed(() => {
-    let label = getLabel('adult', filterRoomBookingForm.numOfAdults);
+const numOfGuestsDisplayText = computed(() => {
+    let label = getLabel('adult', bookingFormData.numOfAdults);
 
-    if (filterRoomBookingForm.numOfChildren > 0) {
-        label += ' and ' + getLabel('child', filterRoomBookingForm.numOfChildren);
+    if (bookingFormData.numOfChildren > 0) {
+        label += ' and ' + getLabel('child', bookingFormData.numOfChildren);
     }
     return label;
 });
@@ -463,8 +463,8 @@ const updateAllRoomQuantityOptions = () => {
         row.options = getOptions(row);
     });
     totalSelectedBookingRooms.value = emptyRoomOptions.value.reduce((sum, r) => sum + (r.selected_quantity || 0), 0);
-    totalFinalPrice.value = emptyRoomOptions.value.filter(r => r.selected_quantity > 0).reduce((sum, r) => sum + r.room_option.final_price * r.selected_quantity * filterRoomBookingForm.numOfNights, 0);
-    totalBasePrice.value = emptyRoomOptions.value.filter(r => r.selected_quantity > 0).reduce((sum, r) => sum + r.room_option.price * r.selected_quantity * filterRoomBookingForm.numOfNights, 0);
+    totalFinalPrice.value = emptyRoomOptions.value.filter(r => r.selected_quantity > 0).reduce((sum, r) => sum + r.room_option.final_price * r.selected_quantity * bookingFormData.numOfNights, 0);
+    totalBasePrice.value = emptyRoomOptions.value.filter(r => r.selected_quantity > 0).reduce((sum, r) => sum + r.room_option.price * r.selected_quantity * bookingFormData.numOfNights, 0);
 };
 
 // total price booking
@@ -488,7 +488,7 @@ const calculateNumOfNights = (checkInStr, checkOutStr) => {
     return Math.max(0, Math.floor(nights));
 };
 
-const filterRoomBookingForm = reactive({
+const bookingFormData = reactive({
     numOfNights: 0,
     numOfAdults: 1,
     numOfChildren: 0,
@@ -497,7 +497,7 @@ const filterRoomBookingForm = reactive({
 })
 
 // find other room options
-const emptyRoomOptions = ref(getEmptyRoomOptions(roomOptionList.value, filterRoomBookingForm));
+const emptyRoomOptions = ref(getEmptyRoomOptions(roomOptionList.value, bookingFormData));
 console.log(emptyRoomOptions.value);
 
 updateAllRoomQuantityOptions();
@@ -510,10 +510,10 @@ watch(
 
 watch(
     () => ({
-        adults: filterRoomBookingForm.numOfAdults,
-        children: filterRoomBookingForm.numOfChildren,
-        rooms: filterRoomBookingForm.numOfRooms,
-        dateRange: filterRoomBookingForm.dateRange
+        adults: bookingFormData.numOfAdults,
+        children: bookingFormData.numOfChildren,
+        rooms: bookingFormData.numOfRooms,
+        dateRange: bookingFormData.dateRange
     }),
     (value) => {
         localStorage.setItem('bookingFilterOptions', JSON.stringify(value));
@@ -529,12 +529,12 @@ onMounted(() => {
 
     // 1. Trường hợp quay về từ Booking Detail → ưu tiên storage
     if ((fromDetail && savedBookingData) || (!fromHome && !fromDetail)) {
-        filterRoomBookingForm.numOfAdults = savedBookingData.adults;
-        filterRoomBookingForm.numOfChildren = savedBookingData.children;
-        filterRoomBookingForm.numOfRooms = savedBookingData.rooms;
+        bookingFormData.numOfAdults = savedBookingData.adults;
+        bookingFormData.numOfChildren = savedBookingData.children;
+        bookingFormData.numOfRooms = savedBookingData.rooms;
         const d1 = parseVNDate(savedBookingData.dateRange[0]);
         const d2 = parseVNDate(savedBookingData.dateRange[1]);
-        filterRoomBookingForm.dateRange = (d1 && d2) ? [d1, d2] : [];
+        bookingFormData.dateRange = (d1 && d2) ? [d1, d2] : [];
 
         localStorage.removeItem('bookingFromDetailPage');
 
@@ -543,25 +543,25 @@ onMounted(() => {
         localStorage.removeItem('bookingFilterOptions');
         localStorage.removeItem('bookingFromHomePage');
 
-        filterRoomBookingForm.numOfAdults = props.num_of_guests;
-        filterRoomBookingForm.numOfChildren = 0;
-        filterRoomBookingForm.numOfRooms = props.num_of_rooms;
-        filterRoomBookingForm.dateRange = [
+        bookingFormData.numOfAdults = props.num_of_guests;
+        bookingFormData.numOfChildren = 0;
+        bookingFormData.numOfRooms = props.num_of_rooms;
+        bookingFormData.dateRange = [
             parseVNDate(props.checkIn),
             parseVNDate(props.checkOut)
         ];
     }
 
     // caculate num of nights
-    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
-    filterRoomBookingForm.numOfNights = calculateNumOfNights(checkIn, checkOut);
+    const [checkIn, checkOut] = bookingFormData.dateRange;
+    bookingFormData.numOfNights = calculateNumOfNights(checkIn, checkOut);
 
     // summary text
-    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
-    summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
+    summaryBookingInfor.value = getLabel('night', bookingFormData.numOfNights) + ', ' + numOfGuestsDisplayText.value;
+    summarySearchInfor.value = `${getLabel('room', bookingFormData.numOfRooms)} for ${numOfGuestsDisplayText.value}`;
 
     // find best room option
-    bestRoomOptions.value = getBestRoomOption(roomOptionList, filterRoomBookingForm);
+    bestRoomOptions.value = getBestRoomOption(roomOptionList, bookingFormData);
     console.log(bestRoomOptions.value);
 })
 
@@ -602,21 +602,21 @@ const searchBestRoomOptions = async (e) => {
     if (!e.valid) return;
 
     // caculate num of nights
-    const [checkIn, checkOut] = filterRoomBookingForm.dateRange;
+    const [checkIn, checkOut] = bookingFormData.dateRange;
     const numNights = calculateNumOfNights(checkIn, checkOut);
-    filterRoomBookingForm.numOfNights = numNights;
+    bookingFormData.numOfNights = numNights;
 
     await nextTick();
 
     // summary text
-    summaryBookingInfor.value = getLabel('night', filterRoomBookingForm.numOfNights) + ', ' + numOfGuestsSummary.value;
-    summarySearchInfor.value = `${getLabel('room', filterRoomBookingForm.numOfRooms)} for ${numOfGuestsSummary.value}`;
-    console.log(filterRoomBookingForm);
+    summaryBookingInfor.value = getLabel('night', bookingFormData.numOfNights) + ', ' + numOfGuestsDisplayText.value;
+    summarySearchInfor.value = `${getLabel('room', bookingFormData.numOfRooms)} for ${numOfGuestsDisplayText.value}`;
+    console.log(bookingFormData);
 
     const searchRequest = {
-        numOfAdults: filterRoomBookingForm.numOfAdults,
-        numOfChildren: filterRoomBookingForm.numOfChildren,
-        numOfRooms: filterRoomBookingForm.numOfRooms,
+        numOfAdults: bookingFormData.numOfAdults,
+        numOfChildren: bookingFormData.numOfChildren,
+        numOfRooms: bookingFormData.numOfRooms,
         numOfNights: numNights,
     };
 
@@ -837,12 +837,12 @@ const clearSelectedBookingRooms = () => {
 const sendRoomBookingDetail = () => {
     if (selectedBookingRooms.value) {
         const roomBookingDetail = {
-            date_range: filterRoomBookingForm.dateRange.map(d => formatDate(d)),
-            num_adults: filterRoomBookingForm.numOfAdults,
-            num_children: filterRoomBookingForm.numOfChildren,
-            initial_num_rooms: filterRoomBookingForm.numOfRooms,
+            date_range: bookingFormData.dateRange.map(d => formatDate(d)),
+            num_adults: bookingFormData.numOfAdults,
+            num_children: bookingFormData.numOfChildren,
+            initial_num_rooms: bookingFormData.numOfRooms,
             num_rooms: selectedBookingRooms.value.reduce((sum, room) => sum + room.selected_quantity, 0),
-            num_nights: filterRoomBookingForm.numOfNights,
+            num_nights: bookingFormData.numOfNights,
             selected_rooms: JSON.parse(JSON.stringify(selectedBookingRooms.value || [])),
             total_final_price: totalFinalPrice.value,
             total_base_price: totalBasePrice.value

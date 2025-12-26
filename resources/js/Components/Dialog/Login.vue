@@ -40,7 +40,7 @@
                 <Link>Forgot Password</Link>
             </div>
             <p class="text-center">Not a member?
-                <Link class="text-blue-400" @click="showSignupForm()">Sign up</Link>
+                <Link class="text-blue-400" @click="showRegisterForm()">Sign up</Link>
             </p>
         </Form>
     </div>
@@ -65,11 +65,11 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 
 // open sign up dialog
-const signupForm = defineAsyncComponent(() => import('../Dialog/SignupForm.vue'));
-const showSignupForm = async () => {
+const registerForm = defineAsyncComponent(() => import('./Register.vue'));
+const showRegisterForm = async () => {
     closeDialog();
     await nextTick();
-    const dialogRef = dialog.open(signupForm, {
+    dialog.open(registerForm, {
         props: {
             style: {
                 width: '30vw',
@@ -80,7 +80,7 @@ const showSignupForm = async () => {
             },
             modal: true,
             closable: false,
-            class: 'signup-dialog',
+            class: 'register-dialog',
         },
     });
 }

@@ -28,7 +28,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Tài khoản" icon="pi pi-plus" severity="success" size="small" @click="showAddNewAccount"/>
+                                    <Button label="Tài khoản" icon="pi pi-plus" severity="success" size="small" @click="showCreateAccountDialog"/>
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -205,12 +205,12 @@ watch(() => props.usersList, (newVal) => {
     initialUsersList.splice(0, initialUsersList.length, ...formatDataTable(newVal));
 }, { deep: true });
 
-// open add review dialog
+// dialog
 const dialog = useDialog();
-const addNewAccount = defineAsyncComponent(() => import('../../Components/Dialog/AddNewAccount.vue'));
+const createAccountDialog = defineAsyncComponent(() => import('../../Components/Dialog/Account/Create.vue'));
 
-const showAddNewAccount = () => {
-    dialog.open(addNewAccount, {
+const showCreateAccountDialog = () => {
+    dialog.open(createAccountDialog, {
         props: {
             header: 'Thêm tài khoản mới',
             style: {

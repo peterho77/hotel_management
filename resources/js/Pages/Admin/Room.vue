@@ -29,7 +29,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="addNewItems" />
+                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="createItemsList" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -62,8 +62,10 @@
                                     <template #expansion="slotProps">
                                         <Panel>
                                             <div class="p-2">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <ImagesGallery :list="slotProps.data.images"/>
+                                                <div
+                                                    :class="['grid grid-cols-1 gap-6', { 'md:grid-cols-2': currentTab !== 'room' }]">
+                                                    <ImagesGallery v-if="currentTab !== 'room'"
+                                                        :list="slotProps.data.images" />
                                                     <div class="detail-infor">
                                                         <div class="grid grid-cols-1 lg:grid-cols-2">
                                                             <template
@@ -110,9 +112,9 @@
                                                 </div>
                                                 <div class="update-buttons | flex mr-10">
                                                     <Button raised severity="success"
-                                                        @click="currentTab === 'room' ? showUpdateRoom(slotProps.data) : showUpdateRoomType(slotProps.data)">Update</Button>
+                                                        @click="currentTab === 'room' ? showUpdateRoomDialog(slotProps.data) : showUpdateRoomTypeDialog(slotProps.data)">Update</Button>
                                                     <Button raised severity="danger"
-                                                        @click="deleteConfirm(slotProps.data.id, currentTab)">Delete</Button>
+                                                        @click="showDeleteConfirmDialog(slotProps.data.id, currentTab)">Delete</Button>
                                                 </div>
                                             </div>
                                         </Panel>
@@ -212,11 +214,11 @@ const hiddenColumns = reactive([
     'images'
 ]);
 const hiddenRows = reactive([
-    'rooms', 
-    'amenities', 
-    'images', 
-    'description', 
-    'branches', 
+    'rooms',
+    'amenities',
+    'images',
+    'description',
+    'branches',
     'id'
 ]);
 
@@ -228,9 +230,20 @@ const currentTab = useRemember(props.activeTab, 'admin-current-tab')
 const expandedRoomRows = ref({});
 const expandedRoomTypeRows = ref({});
 
-const expandedRows = computed(
-    () => currentTab.value === 'room' ? expandedRoomRows.value : expandedRoomTypeRows.value,
-)
+const expandedRows = computed({
+    get: () => {
+        return currentTab.value === 'room'
+            ? expandedRoomRows.value
+            : expandedRoomTypeRows.value
+    },
+    set: (val) => {
+        if (currentTab.value === 'room') {
+            expandedRoomRows.value = val
+        } else {
+            expandedRoomTypeRows.value = val
+        }
+    }
+})
 
 // keyword search
 const filters = ref({
@@ -296,17 +309,17 @@ const filteredRoomList = computed(() => {
 })
 
 // toggle add new item menu
-const addNewItems = ref([
+const createItemsList = ref([
     {
         label: 'Hạng phòng',
         command: () => {
-            showAddNewRoomType();
+            showCreateRoomTypeDialog();
         }
     },
     {
         label: 'Phòng',
         command: () => {
-            showAddNewRoom();
+            showCreateRoomDialog();
         }
     },
 ]);
@@ -351,16 +364,16 @@ const toggleColumn = (val) => {
     })
 };
 
-// open add new or update dialog
-const addNewRoom = defineAsyncComponent(() => import('../../Components/Dialog/AddNewRoom.vue'));
-const addNewRoomType = defineAsyncComponent(() => import('../../Components/Dialog/AddNewRoomType.vue'));
-const updateRoom = defineAsyncComponent(() => import('../../Components/Dialog/UpdateRoom.vue'));
-const updateRoomType = defineAsyncComponent(() => import('../../Components/Dialog/UpdateRoomType.vue'));
+// dialog
+const createRoomDialog = defineAsyncComponent(() => import('../../Components/Dialog/Room/Create.vue'));
+const createRoomTypeDialog = defineAsyncComponent(() => import('../../Components/Dialog/Room-type/Create.vue'));
+const updateRoomDialog = defineAsyncComponent(() => import('../../Components/Dialog/Room/Update.vue'));
+const updateRoomTypeDialog = defineAsyncComponent(() => import('../../Components/Dialog/Room-type/Update.vue'));
 
 const dialog = useDialog();
-// add new dialog
-const showAddNewRoom = () => {
-    const dialogRef = dialog.open(addNewRoom, {
+// create dialog
+const showCreateRoomDialog = () => {
+    dialog.open(createRoomDialog, {
         props: {
             header: 'Add new room',
             style: {
@@ -378,8 +391,8 @@ const showAddNewRoom = () => {
         }
     });
 }
-const showAddNewRoomType = () => {
-    const dialogRef = dialog.open(addNewRoomType, {
+const showCreateRoomTypeDialog = () => {
+    dialog.open(createRoomTypeDialog, {
         props: {
             header: 'Add new room type',
             style: {
@@ -399,8 +412,8 @@ const showAddNewRoomType = () => {
 }
 
 // update dialog
-const showUpdateRoom = (oldData) => {
-    const dialogRef = dialog.open(updateRoom, {
+const showUpdateRoomDialog = (oldData) => {
+    dialog.open(updateRoomDialog, {
         props: {
             header: 'Update room',
             style: {
@@ -419,8 +432,8 @@ const showUpdateRoom = (oldData) => {
         }
     });
 }
-const showUpdateRoomType = (oldData) => {
-    const dialogRef = dialog.open(updateRoomType, {
+const showUpdateRoomTypeDialog = (oldData) => {
+    dialog.open(updateRoomTypeDialog, {
         props: {
             header: 'Update room type',
             style: {
@@ -443,7 +456,7 @@ const showUpdateRoomType = (oldData) => {
 const confirm = useConfirm();
 const toast = useToast();
 
-const deleteConfirm = (id, tab) => {
+const showDeleteConfirmDialog = (id, tab) => {
     confirm.require({
         message: 'Do you want to delete this record?',
         header: 'Danger Zone',

@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
             DiscountSeeder::class,
             RoomOptionRatePolicySeeder::class,
             RoomOptionDiscountSeeder::class,
+            ShiftSeeder::class
         ]);
     }
 }

@@ -148,7 +148,6 @@ import RadioButton from 'primevue/radiobutton';
 
 import { router } from '@inertiajs/vue3';
 import { usePrimeVue } from 'primevue/config';
-import { useToast } from "primevue/usetoast";
 
 // zod validate
 import { zodResolver } from '@primevue/forms/resolvers/zod';
@@ -159,8 +158,6 @@ const dialogRef = inject('dialogRef');
 
 const customerTypeList = ref([])
 const customerGroupList = ref([])
-
-const toast = useToast();
 
 const initialValues = {
     full_name: '',

@@ -66,8 +66,6 @@ import { z } from 'zod';
 // select status
 const statusList = ref([{ name: 'Đang kinh doanh', value: 'active' }, { name: 'Ngừng kinh doanh', value: 'inactive' }]);
 
-const dialogRef = inject('dialogRef');
-
 const branchList = ref([]);
 const roomTypeList = ref([]);
 
@@ -143,6 +141,7 @@ const submit = (e) => {
 }
 
 // pass data from dynamic dialog primevue
+const dialogRef = inject('dialogRef');
 const ready = ref(false); // wait for data to mount
 onMounted(() => {
     const params = dialogRef.value.data;

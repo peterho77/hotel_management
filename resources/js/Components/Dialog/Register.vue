@@ -98,11 +98,11 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 
 // open login dialog
-const loginForm = defineAsyncComponent(() => import('../Dialog/LoginForm.vue'));
+const loginForm = defineAsyncComponent(() => import('./Login.vue'));
 const showLoginForm = async () => {
     closeDialog();
     await nextTick();
-    const dialogRef = dialog.open(loginForm, {
+    dialog.open(loginForm, {
         props: {
             style: {
                 width: '30vw',

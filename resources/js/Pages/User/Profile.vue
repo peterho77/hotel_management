@@ -8,11 +8,11 @@ import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 
 const dialog = useDialog();
-const changeUserPassword = defineAsyncComponent(() => import('../../Components/Dialog/UserChangePassword.vue'));
-const updateUserProfile = defineAsyncComponent(() => import('../../Components/Dialog/UserUpdateProfile.vue'));
+const changePasswordDialog = defineAsyncComponent(() => import('../../Components/Dialog/User/ChangePassword.vue'));
+const updateProfileDialog = defineAsyncComponent(() => import('../../Components/Dialog/User/UpdateProfile.vue'));
 
-const showChangeUserPassword = () => {
-    dialog.open(changeUserPassword, {
+const showChangePasswordDialog = () => {
+    dialog.open(changePasswordDialog, {
         props: {
             header: 'Đổi mật khẩu',
             style: {
@@ -31,8 +31,8 @@ const showChangeUserPassword = () => {
     });
 }
 
-const showUpdateUserProfile = () => {
-    dialog.open(updateUserProfile, {
+const showUpdateProfileDialog = () => {
+    dialog.open(updateProfileDialog, {
         props: {
             header: 'Cập nhật thông tin cá nhân',
             style: {
@@ -114,7 +114,7 @@ function getGender(val) {
     <div class="user-infor-section | box flow px-20 py-4" style="--flow-spacer:1rem">
         <div class="flex justify-between items-center">
             <h3 class="font-semibold text-lg">Thông tin cá nhân</h3>
-            <Button @click="showUpdateUserProfile" label="Cập nhật" icon="pi pi-user-edit" severity="danger"
+            <Button @click="showUpdateProfileDialog" label="Cập nhật" icon="pi pi-user-edit" severity="danger"
                 variant="text" raised />
         </div>
         <ul class="columns-2 gap-12">
@@ -133,7 +133,7 @@ function getGender(val) {
     <div class="password-section | box flow px-20 py-4" style="--flow-spacer:1rem">
         <div class="flex justify-between items-center">
             <h3 class="font-semibold text-lg">Mật khẩu</h3>
-            <Button @click="showChangeUserPassword" label="Thay đổi mật khẩu" icon="pi pi-user-edit" severity="danger"
+            <Button @click="showChangePasswordDialog" label="Thay đổi mật khẩu" icon="pi pi-user-edit" severity="danger"
                 variant="text" raised />
         </div>
         <div class="flex justify-betwen gap-x-6 py-2">

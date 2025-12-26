@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Models\Shift;
-use App\Models\EmployeeSchedule;
 use App\Models\Employee;
 
 class WorkScheduleController extends Controller
@@ -19,7 +18,7 @@ class WorkScheduleController extends Controller
 
         return Inertia::render('Manager/WorkSchedule', [
             // Load danh sách nhân viên
-            'allEmployees' => Employee::all(),
+            'allShifts' => Shift::all(),
 
             // Load lịch làm việc kèm quan hệ shift và employee
             'scheduleData' => Employee::with(['schedules' => function ($query) use ($weekStart, $weekEnd) {
@@ -31,5 +30,10 @@ class WorkScheduleController extends Controller
                 'week_start' => $weekStart
             ]
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        
     }
 }

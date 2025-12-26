@@ -49,7 +49,7 @@
                                     <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
                                         @click="showLoginForm" />
                                     <Button label="Register" class="fs-600" severity="info" variant="text" raised
-                                        @click="showSignupForm" />
+                                        @click="showRegisterForm" />
                                 </template>
                                 <template v-else>
                                     <Button class="button" label="Book now" raised
@@ -170,13 +170,13 @@ import Badge from 'primevue/badge';
 // dynamic dialog
 const dialog = useDialog();
 
-const loginForm = defineAsyncComponent(() => import('../../Components/Dialog/LoginForm.vue'));
-const signupForm = defineAsyncComponent(() => import('../../Components/Dialog/SignupForm.vue'));
+const loginForm = defineAsyncComponent(() => import('../../Components/Dialog/Login.vue'));
+const registerForm = defineAsyncComponent(() => import('../../Components/Dialog/Register.vue'));
 
 const loginImg = '/img/login-bg.jpg';
 
 const showLoginForm = () => {
-    const dialogRef = dialog.open(loginForm, {
+    dialog.open(loginForm, {
         props: {
             style: {
                 width: '30vw',
@@ -191,8 +191,8 @@ const showLoginForm = () => {
         },
     })
 };
-const showSignupForm = () => {
-    const dialogRef = dialog.open(signupForm, {
+const showRegisterForm = () => {
+    dialog.open(registerForm, {
         props: {
             style: {
                 width: '30vw',
@@ -203,7 +203,7 @@ const showSignupForm = () => {
             },
             modal: true,
             closable: false,
-            class: 'signup-dialog',
+            class: 'register-dialog',
         },
     });
 }

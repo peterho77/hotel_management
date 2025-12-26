@@ -1,6 +1,6 @@
 <template>
-    <Galleria :value="getImagesList(list)" :responsiveOptions="responsiveOptions" :numVisible="4"
-        containerStyle="max-width: 600px" :circular="true">
+    <Galleria :value="getImagesList(list)" :responsiveOptions :numVisible="4" containerStyle="max-width: 600px"
+        :circular="true">
         <template #item="slotProps">
             <div class="w-full aspect-4/3 overflow-hidden rounded-lg">
                 <img :src="slotProps.item.src" :alt="slotProps.item.alt" class="w-full h-full object-cover" />
@@ -17,6 +17,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import Galleria from 'primevue/galleria';
 
 const props = defineProps({
@@ -43,4 +44,15 @@ const getImagesList = (images) => {
         alt: `default-blank-${i + 1}`
     }))
 }
+
+const responsiveOptions = ref([
+    {
+        breakpoint: '1300px',
+        numVisible: 4
+    },
+    {
+        breakpoint: '575px',
+        numVisible: 2
+    }
+]);
 </script>

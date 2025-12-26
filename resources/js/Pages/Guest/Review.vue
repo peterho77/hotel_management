@@ -15,7 +15,7 @@
                             <span class="font-medium fs-500">Tốt</span>
                             <!-- num_reviews -->
                             <span>{{ reviewList.length }} đánh giá</span>
-                            <Button label="Đọc tất cả các đánh giá" variant="link" @click="showFilterReview" />
+                            <Button label="Đọc tất cả các đánh giá" variant="link" @click="showFilterReviewListDialog" />
                         </div>
                     </div>
                     <div class="room-review-detail | grid gap-y-3">
@@ -96,7 +96,7 @@
                                         </div>
                                     </div>
                                     <Button variant="link" label="Tìm hiểu thêm" class="text-xs"
-                                        @click="showMoreReviewDetail(review)" />
+                                        @click="showMoreDetailReviewDialog(review)" />
                                 </div>
                             </template>
                         </div>
@@ -173,11 +173,11 @@ const roomReviewScore = ref(70);
 
 // open review dialog
 const dialog = useDialog();
-const filterReview = defineAsyncComponent(() => import('../../Components/Dialog/FilterReview.vue'));
-const detailReview = defineAsyncComponent(() => import('../../Components/Dialog/DetailReview.vue'));
+const filterReviewListDialog = defineAsyncComponent(() => import('../../Components/Dialog/Review/FilterList.vue'));
+const detailReviewDialog = defineAsyncComponent(() => import('../../Components/Dialog/Review/Detail.vue'));
 
-const showFilterReview = () => {
-    dialog.open(filterReview, {
+const showFilterReviewListDialog = () => {
+    dialog.open(filterReviewListDialog, {
         props: {
             header: 'Đánh giá của khách hàng',
             blockScroll: true,
@@ -202,9 +202,8 @@ const showFilterReview = () => {
     });
 }
 
-const showMoreReviewDetail = (review) => {
-    console.log(review);
-    dialog.open(detailReview, {
+const showMoreDetailReviewDialog = (review) => {
+    dialog.open(detailReviewDialog, {
         props: {
             blockScroll: true,
             style: {
