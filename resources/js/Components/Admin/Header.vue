@@ -61,7 +61,9 @@
                                 <Link :href="route('manager.employee')">Nhân viên</Link>
                             </li>
                             <li>Đặt phòng</li>
-                            <li></li>
+                            <li>
+                                <Link :href="route('manager.work-schedule')">Lịch làm việc</Link>
+                            </li>
                             <li>Báo cáo thống kê</li>
                         </template>
                     </ul>

@@ -48,12 +48,12 @@
         </div>
 
         <!-- Employee Rows -->
-        <div v-for="item in filteredScheduleData" :key="item.employee.id" class="schedule-row">
+        <div v-for="employee in filteredScheduleData" :key="employee.id" class="schedule-row">
           <!-- Employee Info -->
           <div class="schedule-cell employee-col">
             <div class="employee-info">
-              <div class="employee-name">{{ item.employee.full_name }}</div>
-              <div class="employee-code">{{ item.employee.employee_code }}</div>
+              <div class="employee-name">{{ employee.full_name }}</div>
+              <div class="employee-code">{{ employee.employee_code }}</div>
             </div>
           </div>
 
@@ -63,14 +63,14 @@
               <!-- Shift Blocks -->
               <div class="shift-blocks">
                 <div v-for="schedule in getSchedulesForDay(item, day.date)" :key="schedule.id" class="shift-block"
-                  :class="getShiftColorClass(schedule.shift)" @click="editSchedule(schedule, item.employee, day.date)">
+                  :class="getShiftColorClass(schedule.shift)" @click="editSchedule(schedule, employee, day.date)">
                   {{ schedule.shift?.name || 'N/A' }}
                 </div>
               </div>
 
               <!-- Add Schedule Button - Hiển thị khi chưa đạt giới hạn -->
-              <button v-if="getSchedulesForDay(item, day.date).length < 3" class="add-schedule-btn"
-                @click="openAddScheduleModal(item.employee, day.date)" title="Thêm lịch">
+              <button v-if="getSchedulesForDay(employee, day.date).length < 3" class="add-schedule-btn"
+                @click="openAddScheduleModal(employee, day.date)" title="Thêm lịch">
                 + Thêm lịch
               </button>
             </div>
@@ -584,153 +584,153 @@
 /* Employee Modals CSS */
 
 .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .salary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .address-field {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .field-label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
 }
 
 .required {
-    color: #ef4444;
+  color: #ef4444;
 }
 
 .field-input {
-    width: 100%;
-    border-radius: 6px;
-    font-size: 14px;
+  width: 100%;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .field-textarea {
-    width: 100%;
-    border-radius: 6px;
-    font-size: 14px;
+  width: 100%;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .input-group {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .input-group .field-input {
-    flex: 1;
+  flex: 1;
 }
 
 .generate-btn {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 /* Dynamic sections */
 .dynamic-section {
-    margin-bottom: 24px;
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #f9fafb;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
 }
 
 .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .section-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #111827;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
 }
 
 .dynamic-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .dynamic-item {
-    padding: 12px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
 }
 
 .dynamic-item-fields {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 /* Error */
 .p-error {
-    color: #ef4444;
-    font-size: 12px;
+  color: #ef4444;
+  font-size: 12px;
 }
 
 .p-invalid {
-    border-color: #ef4444 !important;
+  border-color: #ef4444 !important;
 }
 
 .text-muted {
-    color: #6b7280;
-    font-size: 12px;
-    margin-top: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 /* Footer */
 .flex {
-    display: flex;
+  display: flex;
 }
 
 .justify-end {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .gap-2 {
-    gap: 8px;
+  gap: 8px;
 }
 
 /* Create Schedule Modal */
 .create-schedule-modal {
-    padding: 8px;
+  padding: 8px;
 }
 
 .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
 }
 </style>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import axios from 'axios'
+import { router } from '@inertiajs/vue3'
 import { useToast } from 'primevue/usetoast' // Assuming you use PrimeVue's toast
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -738,16 +738,20 @@ import ProgressSpinner from 'primevue/progressspinner'
 import CreateScheduleModal from '../../Components/Dialog/CreateSchedule.vue'
 
 // --- Props & Emits ---
-// Define if this component receives props or emits events
-// const props = defineProps(['...'])
-// const emit = defineEmits(['...'])
+const props = defineProps({
+  allEmployees: Array,
+  scheduleData: Array,
+  filters: Object
+})
+
+console.log(props.scheduleData);
 
 // --- State (Replaces data) ---
 const loading = ref(false)
 const searchQuery = ref('')
 const weekStart = ref(null)
 const scheduleData = ref([])
-const allEmployees = ref([])
+const allEmployees = ref(props.allEmployees)
 const showScheduleModal = ref(false)
 const selectedEmployee = ref(null)
 const selectedDate = ref(null)
@@ -801,17 +805,21 @@ const weekDisplayText = computed(() => {
 })
 
 const filteredScheduleData = computed(() => {
+  // Kiểm tra null safety cho props
+  const sourceData = props.scheduleData || []
+
   if (!searchQuery.value || !searchQuery.value.trim()) {
-    return scheduleData.value
+    return sourceData
   }
 
   const term = searchQuery.value.toLowerCase().trim()
-  return scheduleData.value.filter(item => {
-    const employee = item.employee
+  
+  return sourceData.filter(employee => {
+    // SỬA: employee chính là item, không cần .employee nữa
     const name = (employee.full_name || '').toLowerCase()
     const code = (employee.employee_code || '').toLowerCase()
     const phone = (employee.phone_number || '').toLowerCase()
-    const email = (employee.user?.email || '').toLowerCase()
+    const email = (employee.email || '').toLowerCase() // User relation hoặc column email
 
     return name.includes(term) || code.includes(term) || phone.includes(term) || email.includes(term)
   })
@@ -841,33 +849,16 @@ const getWeekNumber = (date) => {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-const loadSchedules = async () => {
-  loading.value = true
-  try {
-    const response = await axios.get('/admin/employee-schedules/api/weekly', {
-      params: { week_start: weekStart.value }
-    })
-    scheduleData.value = response.data.employees || []
-  } catch (error) {
-    console.error('Error loading schedules:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Lỗi',
-      detail: 'Không thể tải lịch làm việc',
-      life: 3000
-    })
-  } finally {
-    loading.value = false
-  }
-}
-
-const loadEmployees = async () => {
-  try {
-    const response = await axios.get('/admin/employees/api')
-    allEmployees.value = response.data || []
-  } catch (error) {
-    console.error('Error loading employees:', error)
-  }
+// Chuyển đổi tuần (Thay thế cho changeWeek cũ)
+const changeWeek = (newWeekStart) => {
+  router.get('/manager/work-schedule',
+    { week_start: newWeekStart },
+    {
+      preserveState: true, // Giữ lại trạng thái hiện tại của trang
+      preserveScroll: true, // Không cuộn lên đầu trang
+      only: ['scheduleData', 'filters'] // Chỉ tải lại đúng dữ liệu cần thiết
+    }
+  )
 }
 
 const debounceSearch = () => {
@@ -881,25 +872,28 @@ const previousWeek = () => {
   const date = new Date(weekStart.value)
   date.setDate(date.getDate() - 7)
   weekStart.value = date.toISOString().split('T')[0]
-  loadSchedules()
+  changeWeek()
 }
 
 const nextWeek = () => {
   const date = new Date(weekStart.value)
   date.setDate(date.getDate() + 7)
   weekStart.value = date.toISOString().split('T')[0]
-  loadSchedules()
+  changeWeek()
 }
 
 const goToCurrentWeek = () => {
   initializeWeek()
-  loadSchedules()
+  changeWeek()
 }
 
-const getSchedulesForDay = (item, date) => {
-  if (!item.schedules || typeof item.schedules !== 'object') return []
-  const daySchedules = item.schedules[date]
-  return Array.isArray(daySchedules) ? daySchedules : []
+const getSchedulesForDay = (employee, dateString) => {
+  // Kiểm tra an toàn
+  if (!employee || !employee.schedules || !Array.isArray(employee.schedules)) {
+    return []
+  }
+  // Lọc mảng schedules để lấy ra các ca trong ngày dateString
+  return employee.schedules.filter(s => s.schedule_date === dateString)
 }
 
 const getShiftColorClass = (shift) => {
@@ -934,7 +928,7 @@ const closeScheduleModal = () => {
 
 const handleScheduleSaved = () => {
   closeScheduleModal()
-  loadSchedules()
+  changeWeek()
 }
 
 const formatCurrency = (amount) => {
@@ -948,7 +942,5 @@ const formatCurrency = (amount) => {
 // --- Lifecycle ---
 onMounted(() => {
   initializeWeek()
-  loadSchedules()
-  loadEmployees()
 })
 </script>

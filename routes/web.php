@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -67,6 +69,8 @@ Route::middleware('auth')->group(function () {
         // account section
         Route::get('/account', [UserController::class, 'index'])
             ->name('account');
+        Route::post('/account/create', [AdminController::class, 'createAccount'])
+            ->name('account.create');
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function () {
@@ -75,7 +79,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
 
-        Route::inertia('/shift', 'Manager/Shift')->name('shift');
+        Route::get('/work-schedule', [WorkScheduleController::class, 'index'])->name('work-schedule');
     });
 
     Route::middleware('role:customer')->group(function () {

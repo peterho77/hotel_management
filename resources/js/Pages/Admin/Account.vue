@@ -199,7 +199,11 @@ const usersList = computed(() => {
         const roleMatch = filterRole.value === 'all' || user.role === filterRole.value;
         return roleMatch;
     })
-}); 
+});
+watch(() => props.usersList, (newVal) => {
+    // Cập nhật lại danh sách khi có tài khoản mới
+    initialUsersList.splice(0, initialUsersList.length, ...formatDataTable(newVal));
+}, { deep: true });
 
 // open add review dialog
 const dialog = useDialog();

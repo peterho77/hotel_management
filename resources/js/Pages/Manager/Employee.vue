@@ -22,7 +22,7 @@
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Nhân viên" icon="pi pi-plus" severity="success" size="small"/>
+                                    <Button label="Nhân viên" icon="pi pi-plus" severity="success" size="small" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -33,8 +33,8 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt" :value="employeeList"
-                        sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
+                        :value="employeeList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 60rem">
                         <template #empty>
                             <h3 class="text-center text-lg font-medium">No employee found.</h3>
@@ -55,7 +55,10 @@
                                                     <span class="font-semibold text-gray-700 min-w-42">
                                                         {{ formatLabel(key) }}:
                                                     </span>
-                                                    <span class="text-gray-900 grow">
+                                                    <span v-if="key === 'branch'" class="text-gray-900 grow">
+                                                        {{ value.name }}
+                                                    </span>
+                                                    <span v-else class="text-gray-900 grow">
                                                         {{ value }}
                                                     </span>
                                                 </div>
@@ -118,6 +121,10 @@ const props = defineProps({
 // hidden fields
 const hiddenColumns = reactive(
     [
+        'branch',
+        'branch_id',
+        'user_id',
+        'has_account',
         'created_at',
         'updated_at'
     ]);
@@ -128,6 +135,9 @@ const hiddenRows = reactive([
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+// filter employee by status
+const filterStatus = ref('all');
 
 // filter employee by branch
 const statusList = ref([
@@ -148,7 +158,10 @@ const employeeList = computed(() => {
         const branchMatch = !filterBranches.value.length || filterBranches.value.some(id => id === employee.branch.id);
         return branchMatch;
     })
-}); 
+});
+
+// expanded row
+const expandedRows = ref({});
 
 // toggle column
 const selectedColumns = ref([]);

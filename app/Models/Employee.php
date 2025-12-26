@@ -8,7 +8,7 @@ class Employee extends Model
 {
     protected $table = 'employee';
     protected $fillable = [
-        'name',
+        'full_name',
         'gender',
         'user_id',
         'phone',
@@ -36,5 +36,10 @@ class Employee extends Model
     public function user()
     {
         return $this->hasOne(User::class);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(EmployeeSchedule::class);
     }
 }

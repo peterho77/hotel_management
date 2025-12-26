@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->string('full_name');
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            
+
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->string('address')->nullable();
@@ -26,10 +26,11 @@ return new class extends Migration
             $table->date('birth_date')->nullable();
 
             // CMND/CCCD
-            $table->string('identity_number', 12)->unique();
+            $table->string('identity_number', 12)->unique()->nullable();
 
             // chi nhánh làm việc
             $table->foreignId('branch_id')
+                ->default(1)
                 ->constrained('branch')
                 ->cascadeOnDelete();
 

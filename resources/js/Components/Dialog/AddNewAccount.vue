@@ -206,18 +206,12 @@ const gender = ref([
 
 const submit = (e) => {
     if (e.valid) {
-        console.log(e.states);
+        const formData = { ...e.values };
+        console.log(formData);
 
-        // Gửi form qua Inertia
-        // router.post('/admin/customer/add-new', data, {
-        //     forceFormData: true,
-        //     onSuccess: () => {
-        //         console.log('Tạo tài khoản thành công!')
-        //     },
-        // })
-        // toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        // dialogRef.value.close();
-        // router.post('/register', JSON.parse(JSON.stringify(e.values)))
+        router.post(route('admin.account.create', formData));
+        dialogRef.value.close();
+
     }
 }
 
