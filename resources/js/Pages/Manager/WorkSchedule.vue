@@ -61,14 +61,16 @@
             <div class="day-content">
               <!-- Shift Blocks -->
               <div class="shift-blocks">
-                <div v-for="schedule in getSchedulesForDay(employee, day.date)" :key="schedule.id" class="shift-block"
-                  :class="getShiftColorClass(schedule.shift)" @click="editSchedule(schedule, employee, day.date)">
-                  {{ schedule.shift?.name || 'N/A' }}
-                </div>
+                <template v-for="schedule in getSchedulesForDay(employee, day.date)" :key="schedule.id">
+                  <Button class="shift-block" :severity="getShiftColorClass(schedule.shift)" raised
+                    @click="showUpdateScheduleDialog(schedule, employee, day.date)">
+                    {{ schedule.shift?.name || 'N/A' }}
+                  </Button>
+                </template>
               </div>
 
               <!-- Add Schedule Button - Hiển thị khi chưa đạt giới hạn -->
-              <button v-if="getSchedulesForDay(employee, day.date).length < 3" class="add-schedule-btn"
+              <button v-if="getSchedulesForDay(employee, day.date).length < 2" class="add-schedule-btn"
                 @click="showCreateScheduleDialog(employee, day.date)" title="Thêm lịch">
                 + Thêm lịch
               </button>
@@ -335,12 +337,13 @@
 .shift-blocks {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   margin-bottom: 4px;
 }
 
 .shift-block {
-  padding: 4px 8px;
+  padding: .25rem;
+  border: none;
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
@@ -352,21 +355,6 @@
 
 .shift-block:hover {
   opacity: 0.8;
-}
-
-.shift-morning {
-  background: #fff3e0;
-  color: #e65100;
-}
-
-.shift-afternoon {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-
-.shift-evening {
-  background: #e8f5e9;
-  color: #2e7d32;
 }
 
 .shift-default {
@@ -743,7 +731,10 @@ console.log(props.allShifts);
 // dialog
 const dialog = useDialog();
 const createScheduleDialog = defineAsyncComponent(() => import('../../Components/Dialog/Schedule/Create.vue'));
+const updateScheduleDialog = defineAsyncComponent(() => import('../../Components/Dialog/Schedule/Update.vue'));
 const showCreateScheduleDialog = (employee, date) => {
+  const existingSchedules = getSchedulesForDay(employee, date);
+  console.log(existingSchedules);
   dialog.open(createScheduleDialog, {
     props: {
       header: 'Add new schedule',
@@ -760,7 +751,40 @@ const showCreateScheduleDialog = (employee, date) => {
       employee,
       scheduleDate: date,
       shiftList: props.allShifts,
+      existingSchedules,
       schedule: null
+    },
+    onClose: (options) => {
+      // options.data là dữ liệu được trả về từ dialog con khi gọi close()
+      const data = options.data;
+      if (data) {
+        // Gọi hàm xử lý lưu đã có của bạn
+        handleScheduleSaved(data);
+      }
+    }
+  });
+}
+const showUpdateScheduleDialog = (schedule, employee, date) => {
+  const existingSchedules = getSchedulesForDay(employee, date);
+  console.log(existingSchedules);
+  dialog.open(updateScheduleDialog, {
+    props: {
+      header: 'Update schedule',
+      style: {
+        width: '40vw',
+      },
+      breakpoints: {
+        '960px': '50vw',
+        '640px': '40vw'
+      },
+      modal: true
+    },
+    data: {
+      employee,
+      scheduleDate: date,
+      shiftList: props.allShifts,
+      existingSchedules,
+      schedule
     },
     onClose: (options) => {
       // options.data là dữ liệu được trả về từ dialog con khi gọi close()
@@ -791,7 +815,7 @@ const weekDays = computed(() => {
   if (!weekStart.value) return []
 
   const days = []
-  
+
   // Tối ưu: Lấy ngày hiện tại ra ngoài vòng lặp
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -805,7 +829,7 @@ const weekDays = computed(() => {
 
     // Tạo chuỗi ISO chuẩn (YYYY-MM-DD) dùng cho logic/API
     const isoString = date.toISOString().split('T')[0]
-    
+
     // Check ngày hiện tại
     const checkDate = new Date(date)
     checkDate.setHours(0, 0, 0, 0)
@@ -838,21 +862,29 @@ const weekDisplayText = computed(() => {
 const filteredScheduleData = computed(() => {
   // Kiểm tra null safety cho props
   const sourceData = props.scheduleData || []
+  let result = sourceData
 
-  if (!searchQuery.value || !searchQuery.value.trim()) {
-    return sourceData
+  if (searchQuery.value && searchQuery.value.trim()) {
+    const term = searchQuery.value.toLowerCase().trim()
+
+    result = sourceData.filter(employee => {
+      const name = (employee.full_name || '').toLowerCase()
+      const code = (employee.employee_code || '').toLowerCase()
+      const phone = (employee.phone_number || '').toLowerCase()
+      const email = (employee.email || '').toLowerCase()
+
+      return name.includes(term) || code.includes(term) || phone.includes(term) || email.includes(term)
+    })
   }
 
-  const term = searchQuery.value.toLowerCase().trim()
-
-  return sourceData.filter(employee => {
-    // SỬA: employee chính là item, không cần .employee nữa
-    const name = (employee.full_name || '').toLowerCase()
-    const code = (employee.employee_code || '').toLowerCase()
-    const phone = (employee.phone_number || '').toLowerCase()
-    const email = (employee.email || '').toLowerCase() // User relation hoặc column email
-
-    return name.includes(term) || code.includes(term) || phone.includes(term) || email.includes(term)
+  return result.map(employee => {
+    return {
+      ...employee,
+      schedules: (employee.schedules || []).map(schedule => ({
+        ...schedule,
+        schedule_date: formatDateVN(schedule.schedule_date),
+      }))
+    }
   })
 })
 console.log(filteredScheduleData.value);
@@ -938,23 +970,26 @@ const getSchedulesForDay = (employee, dateString) => {
     return []
   }
   // Lọc mảng schedules để lấy ra các ca trong ngày dateString
-  return employee.schedules.filter(s => s.schedule_date === dateString)
+  const schedules = employee.schedules.filter(s => s.schedule_date === dateString)
+
+  // 3. Sắp xếp: Ca nào giờ nhỏ hơn (sớm hơn) thì đứng trước
+  return schedules.sort((a, b) => {
+    // Lấy giờ bắt đầu, nếu không có thì mặc định là chuỗi rỗng
+    const timeA = a.shift?.start_time || '';
+    const timeB = b.shift?.start_time || '';
+
+    // So sánh chuỗi giờ (VD: "07:00" sẽ nhỏ hơn "14:00")
+    return timeA.localeCompare(timeB);
+  })
 }
 
 const getShiftColorClass = (shift) => {
   if (!shift) return 'shift-default'
   const name = shift.name.toLowerCase()
-  if (name.includes('sáng') || name.includes('morning')) return 'shift-morning'
-  if (name.includes('chiều') || name.includes('afternoon')) return 'shift-afternoon'
-  if (name.includes('tối') || name.includes('evening') || name.includes('night')) return 'shift-evening'
+  if (name.includes('sáng') || name.includes('morning')) return 'warn'
+  if (name.includes('chiều') || name.includes('afternoon')) return 'info'
+  if (name.includes('tối') || name.includes('evening') || name.includes('night')) return 'success'
   return 'shift-default'
-}
-
-const openAddScheduleModal = (employee, date) => {
-  selectedEmployee.value = employee
-  selectedDate.value = date
-  editingSchedule.value = null
-  showScheduleModal.value = true
 }
 
 const editSchedule = (schedule, employee, date) => {

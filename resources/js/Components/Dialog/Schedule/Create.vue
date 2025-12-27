@@ -17,9 +17,9 @@
       <!-- ca làm việc -->
       <div class="form-field">
         <label class="field-label">Ca làm việc <span class="required">*</span></label>
-        <Select v-model="scheduleFormData.shift_id" :options="shiftList" optionLabel="name" optionValue="id"
-          placeholder="Chọn ca làm việc" class="field-input" :class="{ 'p-invalid': errors.shift_id }" />
-        <small v-if="errors.shift_id" class="p-error">{{ errors.shift_id[0] }}</small>
+        <Select v-model="scheduleFormData.shift_id" :options="processedShiftList" optionLabel="name" optionValue="id"
+          optionDisabled="disabled" placeholder="Chọn ca làm việc" class="field-input"
+          :class="{ 'p-invalid': errors.shift_id }" />
       </div>
 
       <!-- Notes -->
@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, inject } from 'vue'
+import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
 // Import các components
@@ -52,7 +52,7 @@ import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 
 import { router } from '@inertiajs/vue3';
-import { formatDateVN } from "@/Composables/formatData";
+import { formatDateVN, formatDateOnlyVN } from "@/Composables/formatData";
 
 // 2. Định nghĩa Emits
 const emit = defineEmits(['saved', 'close'])
@@ -73,6 +73,7 @@ const dialogRef = inject('dialogRef');
 const ready = ref(false); // wait for data to mount
 const shiftList = ref([]);
 const employeeInfo = ref(null);
+const existingSchedules = ref([]);
 
 onMounted(() => {
   const params = dialogRef.value.data;
@@ -81,23 +82,14 @@ onMounted(() => {
     // 1. Lấy danh sách ca làm việc & thông tin nhân viên
     shiftList.value = params.shiftList || [];
     employeeInfo.value = params.employee || null;
+    existingSchedules.value = params.existingSchedules || [];
 
-    console.log(params.scheduleDate);
-
-    if (params) {
-      // 1. Lấy danh sách ca làm việc & thông tin nhân viên
-      shiftList.value = params.shiftList || [];
-      employeeInfo.value = params.employee || null;
-
-      Object.assign(scheduleFormData, {
-        employee_id: params.employee ? params.employee.id : null,
-        shift_id: null,
-        schedule_date: params.scheduleDate,
-        note: ''
-      });
-
-      console.log(scheduleFormData);
-    }
+    Object.assign(scheduleFormData, {
+      employee_id: params.employee ? params.employee.id : null,
+      shift_id: null,
+      schedule_date: params.scheduleDate,
+      note: ''
+    });
   }
 
   ready.value = true;
@@ -109,9 +101,54 @@ const employeeDisplay = computed(() => {
   return `${employeeInfo.value.full_name}`
 })
 
+// check if schedule is duplicate
+const checkDuplicateSchedule = (shift_id) => {
+  if (!scheduleFormData.schedule_date) return false;
+
+  let currentScheduleDate = '';
+
+  if (typeof scheduleFormData.schedule_date === 'string') {
+    currentScheduleDate = scheduleFormData.schedule_date;
+  } else {
+    currentScheduleDate = formatDateOnlyVN(scheduleFormData.schedule_date);
+  }
+
+  return existingSchedules.value.some(schedule => {
+    const existingShiftId = schedule.shift_id || (schedule.shift ? schedule.shift.id : null);
+    const existingScheduleDate = schedule.schedule_date;
+    return existingShiftId === shift_id && existingScheduleDate === currentScheduleDate;
+  });
+};
+
+const processedShiftList = computed(() => {
+  return shiftList.value.map(shift => {
+    return {
+      ...shift,
+      // Gọi hàm check cho từng ca trong danh sách
+      disabled: checkDuplicateSchedule(shift.id)
+    };
+  });
+});
+
 const saveSchedule = () => {
-  errors.value = {}
   console.log(scheduleFormData);
+  const payload = { ...scheduleFormData };
+
+  // convert schedule date format to dd/mm/yyyy before sending
+  if (payload.schedule_date instanceof Date) {
+    payload.schedule_date = formatDateOnlyVN(payload.schedule_date);
+  }
+  console.log(payload);
+  router.post(route('manager.work-schedule.store'), payload, {
+    preserveScroll: true,
+    onSuccess: () => {
+      dialogRef.value.close();
+    },
+    onError: (errors) => {
+      // Nếu có lỗi Validation, dialog vẫn mở để user sửa
+      toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Vui lòng kiểm tra lại thông tin.', life: 3000 });
+    },
+  })
 }
 
 const closeDialog = () => {

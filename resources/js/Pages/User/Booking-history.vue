@@ -80,7 +80,7 @@
                     <div class="mr-10 mt-6 flex gap-4">
                         <Button severity="info" label="Đổi thời gian check in" raised />
                         <Button severity="secondary" label="Viết bài đánh giá" raised
-                            @click="showAddNewReview(slotProps.data.id, slotProps.data.customer_id)" />
+                            @click="showCreateReviewDialog(slotProps.data.id, slotProps.data.customer_id)" />
                     </div>
                 </Panel>
             </template>
@@ -189,10 +189,10 @@ watch(() => [props.bookings],
 
 // open add review dialog
 const dialog = useDialog();
-const addNewReview = defineAsyncComponent(() => import('../../Components/Dialog/AddNewReview.vue'));
+const createReviewDialog = defineAsyncComponent(() => import('../../Components/Dialog/Review/Create.vue'));
 
-const showAddNewReview = (bookingId, userId) => {
-    dialog.open(addNewReview, {
+const showCreateReviewDialog = (bookingId, userId) => {
+    dialog.open(createReviewDialog, {
         props: {
             header: 'Đánh giá của bạn',
             style: {

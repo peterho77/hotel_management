@@ -33,6 +33,25 @@ export function formatDateVN(input) {
     }).format(date);
 }
 
+/**
+ * Dùng để chuyển Date Object sang chuỗi dd/mm/yyyy
+ * Input: Date Object (VD: Sun Dec 27 2025...)
+ * Output: String "27/12/2025" (để so sánh hoặc gửi API)
+ */
+export function formatDateOnlyVN(dateInput) {
+    if (!dateInput) return "";
+    
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "";
+
+    const day = String(date.getDate()).padStart(2, '0');
+    // Tháng trong JS bắt đầu từ 0
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+}
+
 // format vn currency
 export function formatCurrency(value) {
     if (!value) return '0 ₫';

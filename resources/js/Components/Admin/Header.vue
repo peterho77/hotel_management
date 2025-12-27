@@ -62,7 +62,7 @@
                             </li>
                             <li>Đặt phòng</li>
                             <li>
-                                <Link :href="route('manager.work-schedule')">Lịch làm việc</Link>
+                                <Link :href="route('manager.work-schedule.index')">Lịch làm việc</Link>
                             </li>
                             <li>Báo cáo thống kê</li>
                         </template>

@@ -79,7 +79,11 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
 
-        Route::get('/work-schedule', [WorkScheduleController::class, 'index'])->name('work-schedule');
+        Route::prefix('work-schedule')->name('work-schedule.')->group(function(){
+            Route::get('/', [WorkScheduleController::class, 'index'])->name('index');
+            Route::post('/store', [WorkScheduleController::class, 'store'])->name('store');
+            Route::post('/update', [WorkScheduleController::class, 'update'])->name('update');
+        });
     });
 
     Route::middleware('role:customer')->group(function () {
