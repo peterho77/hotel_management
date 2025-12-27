@@ -82,7 +82,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('work-schedule')->name('work-schedule.')->group(function(){
             Route::get('/', [WorkScheduleController::class, 'index'])->name('index');
             Route::post('/store', [WorkScheduleController::class, 'store'])->name('store');
-            Route::post('/update', [WorkScheduleController::class, 'update'])->name('update');
+            Route::post('/{id}/update', [WorkScheduleController::class, 'update'])->name('update');
         });
     });
 
