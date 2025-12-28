@@ -1,34 +1,34 @@
 <template>
-    <Form v-if="ready" ref="newRoomTypeForm" v-slot="$form" :resolver :initialValues :validateOnValueUpdate="true"
-        :validateOnBlur="true" class="grid gap-y-6" @submit="submit">
+    <Form v-if="ready" v-slot="$form" :resolver :initialValues="roomTypeFormData" :validateOnValueUpdate="true"
+        :validateOnBlur="false" class="grid gap-y-6" @submit="submit">
         <div class="flex flex-col gap-2">
             <label for="name">Name</label>
-            <InputText id="name" name="name" />
+            <InputText v-model="roomTypeFormData.name" name="name" />
             <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.name.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="description">Description</label>
-            <Textarea name="description" rows="4" cols="30" autoResize />
+            <Textarea v-model="roomTypeFormData.description" name="description" rows="4" cols="30" autoResize />
             <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.description.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
-            <label for="quantity">Quantity</label>
-            <InputNumber name="quantity" :maxFractionDigits="0" :min="1" :max="10" showButtons default="1" />
+            <label for="total_quantity">Quantity</label>
+            <InputNumber v-model="roomTypeFormData.total_quantity" name="total_quantity" :maxFractionDigits="0" :min="1" :max="20" showButtons default="1" />
             <Message v-if="$form.quantity?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.quantity.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="hourly_rate">Hourly rate</label>
-            <InputNumber name="hourly_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
+            <InputNumber v-model="roomTypeFormData.hourly_rate" name="hourly_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
                 showButtons buttonLayout="horizontal" :step="5000" />
             <Message v-if="$form.hourly_rate?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.hourly_rate.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="overnight_rate">Overnight rate</label>
-            <InputNumber name="overnight_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
+            <InputNumber v-model="roomTypeFormData.overnight_rate" name="overnight_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
                 showButtons buttonLayout="horizontal" :step="5000" />
             <Message v-if="$form.overnight_rate?.invalid" severity="error" size="small" variant="simple">
                 <div v-for="(msg, i) in $form.overnight_rate.error.message.split(', ')" :key="i">
@@ -38,21 +38,21 @@
         </div>
         <div class="flex flex-col gap-2">
             <label for="full_day_rate">Full day rate</label>
-            <InputNumber name="full_day_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
+            <InputNumber v-model="roomTypeFormData.full_day_rate" name="full_day_rate" :maxFractionDigits="0" mode="currency" currency="VND" locale="vi-VN"
                 showButtons buttonLayout="horizontal" :step="5000" />
             <Message v-if="$form.full_day_rate?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.full_day_rate.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="status">Status</label>
-            <Select name="status" :options="statusList" optionValue="name" optionLabel="name"
+            <Select v-model="roomTypeFormData.status" name="status" :options="statusList" optionValue="value" optionLabel="name"
                 placeholder="Select status" class="w-full" />
             <Message v-if="$form.status?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.status.error.message }}</Message>
         </div>
         <div class="flex flex-col gap-2">
             <label for="branch_id">Branch</label>
-            <MultiSelect :options="branchList" name="branch_id" display="chip" optionLabel="name" optionValue="id"
+            <MultiSelect v-model="roomTypeFormData.branch_id" :options="branchList" name="branch_id" display="chip" optionLabel="name" optionValue="id"
                 filter placeholder="Chọn chi nhánh" :maxSelectedLabels="3" fluid>
             </MultiSelect>
             <Message v-if="$form.branch_id?.invalid" severity="error" size="small" variant="simple">
@@ -89,10 +89,6 @@ import { z } from 'zod';
 const statusList = ref([{ name: 'Đang kinh doanh', value: 'active' }, { name: 'Ngừng kinh doanh', value: 'inactive' }]);
 
 const dialogRef = inject('dialogRef');
-
-const branchList = ref([])
-const roomTypeList = ref([])
-
 const toast = useToast();
 
 const toNumberOrUndefined = (val) => {
@@ -104,9 +100,8 @@ const toNumberOrUndefined = (val) => {
 const resolver = zodResolver(
     z
         .object({
-            name: z.string({ required_error: "name.required" }).min(1, { message: "name.required" }),
-            description: z.string({ required_error: "description.required" }).min(1, { message: "description.required" }),
-
+            name: z.string({ required_error: "name.required" }).min(1, { message: "Yêu cầu nhập tên hạng phòng." }),
+            
             quantity: z.preprocess(toNumberOrUndefined,
                 z.number({
                     required_error: "quantity.required",
@@ -172,18 +167,17 @@ const resolver = zodResolver(
         }
         ));
 
-const initialValues = reactive({
+const roomTypeFormData = reactive({
+    id: '',
     name: '',
     description: '',
-    quantity: 1,
+    total_quantity: 1,
     hourly_rate: 20000,
     overnight_rate: 50000,
     full_day_rate: 200000,
     status: '',
     branch_id: null,
 });
-
-const newRoomTypeForm = ref(null);
 
 // confirm update dialog
 const confirm = useConfirm();
@@ -205,45 +199,43 @@ const updateConfirm = (onAccept) => {
             return onAccept && onAccept(); //call back
         },
         reject: () => {
-            toast.add({
-                severity: 'error',
-                summary: 'Rejected',
-                detail: 'You have rejected',
-                life: 3000
-            });
         }
     });
 };
 
 const submit = (e) => {
     if (!e.valid) return
-    const id = dialogRef.value.data?.initialData?.id;
-    updateConfirm(() => {
-        router.put(
-            route('admin.room-type.update', id),
-            e.values,
-            {
-                preserveScroll: true,
-                preserveState: true,
-            }
-        );
-        dialogRef.value.close();
-    })
+    console.log(roomTypeFormData);
+    // updateConfirm(() => {
+    //     router.put(
+    //         route('admin.room-type.update', roomTypeFormData.id),
+    //         e.values,
+    //         {
+    //             preserveScroll: true,
+    //             preserveState: true,
+    //             onSuccess: () => {
+    //                 dialogRef.value.close();
+    //             },
+    //         }
+    //     );
+    // })
 }
 
 // pass data from dynamic dialog primevue
 const ready = ref(false);
+const branchList = ref([]);
 onMounted(() => {
     const params = dialogRef.value.data;
 
     if (params) {
         branchList.value = params.branchList || [];
 
-        const { branches, ...rest } = toRaw(params.initialData);
-        Object.assign(initialValues, {
+        const { branches, ...rest } = toRaw(params.currentRoomType);
+        Object.assign(roomTypeFormData, {
             ...rest,
             branch_id: branches?.map(item => item.id)
         });
+        console.log(roomTypeFormData);
     }
     ready.value = true;
 })

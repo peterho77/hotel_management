@@ -148,7 +148,7 @@ const saveSchedule = () => {
         payload.schedule_date = formatDateOnlyVN(payload.schedule_date);
     }
     console.log(payload);
-    router.post(route('manager.work-schedule.update', scheduleFormData.id), payload, {
+    router.put(route('manager.work-schedule.update', scheduleFormData.id), payload, {
         preserveScroll: true,
         onSuccess: () => {
             dialogRef.value.close();

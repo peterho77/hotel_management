@@ -64,7 +64,11 @@
                 <template v-for="schedule in getSchedulesForDay(employee, day.date)" :key="schedule.id">
                   <Button class="shift-block" :severity="getShiftColorClass(schedule.shift)" raised
                     @click="showUpdateScheduleDialog(schedule, employee, day.date)">
-                    {{ schedule.shift?.name || 'N/A' }}
+                    <div class="flex justify-between items-center gap-2">
+                      <span>{{ schedule.shift?.name || 'N/A' }}</span>
+                      <i class="pi pi-times" style="font-size:.75rem"
+                        @click.stop="showDeleteConfirmDialog(schedule.id)"></i>
+                    </div>
                   </Button>
                 </template>
               </div>
@@ -712,11 +716,13 @@
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { useToast } from 'primevue/usetoast'
+import Chip from 'primevue/chip';
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 
 // dynamic dialog
 import { useDialog } from 'primevue/usedialog';
+import { useConfirm } from "primevue/useconfirm";
 
 // format data
 import { formatCurrency, formatDateVN } from "@/Composables/formatData";
@@ -797,6 +803,40 @@ const showUpdateScheduleDialog = (schedule, employee, date) => {
   });
 }
 
+// confirm dialog 
+const confirm = useConfirm();
+const toast = useToast();
+
+const showDeleteConfirmDialog = (schedule_id) => {
+  confirm.require({
+    message: 'Bạn có muốn xóa lịch làm việc này không?',
+    header: 'Danger Zone',
+    icon: 'pi pi-info-circle',
+    rejectLabel: 'Cancel',
+    rejectProps: {
+      label: 'Cancel',
+      severity: 'secondary',
+      outlined: true
+    },
+    acceptProps: {
+      label: 'Delete',
+      severity: 'danger'
+    },
+    accept: () => {
+      router.delete(
+        route('manager.work-schedule.delete', schedule_id),
+        {
+          preserveScroll: true,
+          preserveState: true,
+        }
+      );
+    },
+    reject: () => {
+      toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+    }
+  })
+};
+
 // --- State (Replaces data) ---
 const loading = ref(false)
 const searchQuery = ref('')
@@ -807,8 +847,6 @@ const selectedEmployee = ref(null)
 const selectedDate = ref(null)
 const editingSchedule = ref(null)
 let searchTimeout = null
-
-const toast = useToast()
 
 // get week days
 const weekDays = computed(() => {

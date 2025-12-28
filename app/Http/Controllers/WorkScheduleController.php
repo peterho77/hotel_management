@@ -126,4 +126,11 @@ class WorkScheduleController extends Controller
 
         return redirect()->back()->with('success', 'Cập nhật lịch làm việc thành công.');
     }
+
+    public function destroy(string $id)
+    {
+        $schedule = EmployeeSchedule::where('id', $id)->first();
+        $schedule->delete();
+        return redirect()->back()->with('success','Xóa ca làm việc thành công');
+    }
 }

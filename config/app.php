@@ -80,6 +80,10 @@ return [
 
     'locale' => env('APP_LOCALE', 'en'),
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),

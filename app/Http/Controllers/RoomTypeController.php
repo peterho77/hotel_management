@@ -42,7 +42,7 @@ class RoomTypeController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'total_quantity' => 'integer|min:1|max:10',
+            'total_quantity' => 'integer|min:1|max:20',
             'max_adults' => 'integer|required',
             'max_children' => 'integer|required',
             'base_price' => 'required|numeric',
@@ -94,27 +94,30 @@ class RoomTypeController extends Controller
             ]);
         }
 
-        //Lấy danh sách branch id hợp lệ
         $branchIds = Branch::pluck('id');
-
-        // Lấy input từ request (nếu là mảng thì xử lý mảng, nếu 1 id thì xử lý 1 id)
         $inputBranchIds = $request->input('branch_id');
 
-        if (is_array($inputBranchIds)) {
-            // lọc các id hợp lệ
-            $validBranchIds = collect($inputBranchIds)->filter(fn($id) => $branchIds->contains($id));
-
-            if ($validBranchIds->isNotEmpty()) {
-                $newRoomTypeModel->branches()->attach($validBranchIds->toArray());
-            }
-        } else {
-            $branchId = (int)$inputBranchIds;
-            if ($branchIds->contains($branchId)) {
-                $newRoomTypeModel->branches()->attach($branchId);
+        if (!is_array($inputBranchIds)) {
+            // Nếu là chuỗi có dấu phẩy "1,2,3" -> explode thành [1, 2, 3]
+            if (is_string($inputBranchIds) && str_contains($inputBranchIds, ',')) {
+                $inputBranchIds = explode(',', $inputBranchIds);
+            } else {
+                // Nếu là số đơn lẻ "1" -> ép thành mảng [1]
+                $inputBranchIds = [$inputBranchIds];
             }
         }
 
-        return redirect()->route('admin.room-type-management');
+        // Dùng values() để reset key mảng về 0,1,2... tránh lỗi key nhảy cóc
+        $validBranchIds = collect($inputBranchIds)
+            ->filter(fn($id) => $branchIds->contains($id))
+            ->values();
+
+        if ($validBranchIds->isNotEmpty()) {
+            // Dùng sync sẽ an toàn hơn attach (tránh bị trùng lặp dữ liệu nếu chạy 2 lần)
+            $newRoomTypeModel->branches()->sync($validBranchIds->toArray());
+        }
+
+        return redirect()->route('admin.room-type.index');
     }
 
     /**
@@ -127,10 +130,11 @@ class RoomTypeController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        dd($request);
         $validated = $request->validate([
             'name' => 'required',
             'description' => 'required',
-            'quantity' => 'min:1|max:10',
+            'total_quantity' => 'min:1|max:20',
             'hourly_rate' => 'required|numeric|lt:overnight_rate',
             'full_day_rate' => 'required|numeric|gt:overnight_rate',
             'overnight_rate' => 'required|numeric|gt:hourly_rate|lt:full_day_rate',
@@ -141,29 +145,28 @@ class RoomTypeController extends Controller
         $roomType->update($validated);
 
         // update các chi nhánh nếu có thay đổi
-        // Lấy danh sách branch id hợp lệ
-        $branchIds = Branch::pluck('id');
-
-        // Lấy input từ request là string 
         $inputBranchIds = $request->input('branch_id');
 
-        if (is_array($inputBranchIds)) {
-            // ép kiểu sang int tất cả phần tử
-            $inputBranchIds = collect($inputBranchIds)->map(fn($id) => (int) $id);
-
-            // lọc các id hợp lệ
-            $validBranchIds = $inputBranchIds->filter(fn($id) => $branchIds->contains($id));
-
-            if ($validBranchIds->isNotEmpty()) {
-                $roomType->branches()->sync($validBranchIds->toArray());
-            }
-        } else {
-            $branchId = (int)$inputBranchIds;
-            if ($branchIds->contains($branchId)) {
-                $roomType->branches()->sync($branchId);
+        // 2. Xử lý chuẩn hóa Input về dạng Mảng (Array)
+        // Logic: Nếu là chuỗi "1,2,3" -> tách thành mảng. Nếu là số lẻ -> gói vào mảng.
+        if (!is_array($inputBranchIds)) {
+            if (is_string($inputBranchIds) && str_contains($inputBranchIds, ',')) {
+                $inputBranchIds = explode(',', $inputBranchIds);
+            } else {
+                // Trường hợp null hoặc số lẻ, ép về mảng (nếu null thì thành mảng rỗng [])
+                $inputBranchIds = $inputBranchIds ? [$inputBranchIds] : [];
             }
         }
-        return redirect()->route('admin.room-type-management');
+
+        // 3. Lọc ID hợp lệ
+        // Thay vì pluck toàn bộ bảng Branch (rất nặng), ta chỉ check những ID user gửi lên
+        $validBranchIds = Branch::whereIn('id', $inputBranchIds)->pluck('id')->toArray();
+
+        // 4. Thực hiện Sync
+        // sync sẽ làm cho bảng trung gian khớp hoàn toàn với $validBranchIds
+        // (Cái nào thừa thì xóa, cái nào thiếu thì thêm)
+        $roomType->branches()->sync($validBranchIds);
+        return redirect()->route('admin.room-type.index');
     }
 
     /**
@@ -190,6 +193,6 @@ class RoomTypeController extends Controller
         // Xóa record ảnh trong DB
         $roomType->images()->delete();
         $roomType->delete();
-        return redirect()->route('admin.room-type-management');
+        return redirect()->route('admin.room-type.index');
     }
 }

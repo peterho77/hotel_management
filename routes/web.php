@@ -13,6 +13,8 @@ use App\Http\Controllers\GuestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\WorkScheduleController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -53,24 +55,32 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
 
         //room type section
-        Route::get('/room-type', [RoomTypeController::class, 'index'])
-            ->name('room-type-management');
-        Route::post('/room-type/add-new', [RoomTypeController::class, 'store']);
-        Route::put('/room-type/update/{id}', [RoomTypeController::class, 'update'])->name('room-type.update');
-        Route::delete('/room-type/delete/{id}', [RoomTypeController::class, 'destroy'])->name('room-type.delete');
+        Route::prefix('room-type')->name('room-type.')->group(function () {
+            Route::get('/', [RoomTypeController::class, 'index'])->name('index');
+            Route::post('/create', [RoomTypeController::class, 'store'])->name('store');
+            Route::put('/{id}/update', [RoomTypeController::class, 'update'])->name('update');
+            Route::delete('/{id}/delete', [RoomTypeController::class, 'destroy'])->name('delete');
+        });
 
         // room section
-        Route::get('/room', [RoomController::class, 'index'])
-            ->name('room-management');
-        Route::post('/room/add-new', [RoomController::class, 'store']);
-        Route::put('/room/update/{id}', [RoomController::class, 'update'])->name('room.update');
-        Route::delete('/room/delete/{id}', [RoomController::class, 'destroy'])->name('room.delete');
+        Route::prefix('room')->name('room.')->group(function () {
+            Route::get('/', [RoomController::class, 'index'])->name('index');
+            Route::post('/create', [RoomController::class, 'store'])->name('store');
+            Route::put('/{id}/update', [RoomController::class, 'update'])->name('update');
+            Route::delete('/{id}/delete', [RoomController::class, 'destroy'])->name('delete');
+        });
 
         // account section
         Route::get('/account', [UserController::class, 'index'])
             ->name('account');
         Route::post('/account/create', [AdminController::class, 'createAccount'])
             ->name('account.create');
+
+        // product section
+        Route::prefix('product')->name('product.')->group(function () {
+            Route::get('/', [ProductController::class, 'index'])
+                ->name('index');
+        });
     });
 
     Route::middleware('role:manager')->prefix('manager')->name('manager.')->group(function () {
@@ -79,10 +89,11 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
 
-        Route::prefix('work-schedule')->name('work-schedule.')->group(function(){
+        Route::prefix('work-schedule')->name('work-schedule.')->group(function () {
             Route::get('/', [WorkScheduleController::class, 'index'])->name('index');
             Route::post('/store', [WorkScheduleController::class, 'store'])->name('store');
-            Route::post('/{id}/update', [WorkScheduleController::class, 'update'])->name('update');
+            Route::put('/{id}/update', [WorkScheduleController::class, 'update'])->name('update');
+            Route::delete('/{id}/delete', [WorkScheduleController::class, 'destroy'])->name('delete');
         });
     });
 
@@ -100,4 +111,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
+
+    // Route::post('/api/chatbot/chat', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 });

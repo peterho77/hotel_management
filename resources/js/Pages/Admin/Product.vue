@@ -1,28 +1,24 @@
 <template>
-    <main class="employee-section | padding-block-600">
+    <main class="product-section | padding-block-600">
         <div class="container">
             <div class="main-content">
                 <section class="main-content__left">
                     <div class="side-bar | flow" style="--flow-spacer:1em">
-                        <h3 class="fs-semibold">Danh sách nhân viên</h3>
-
                         <!-- keyword search -->
                         <Searchbar v-model="filters['global'].value" />
 
                         <!-- filter status -->
-                        <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái nhân viên" />
-
-                        <!-- filter branches -->
-                        <MultiSelect :list="branchList" placeholder="Chọn chi nhánh" v-model="filterBranches" />
+                        <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
                     </div>
                 </section>
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
                     <nav class="table-toolbar">
                         <div class="nav-wrapper">
+                            <span class="admin-label | fs-700">Tài khoản</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Nhân viên" icon="pi pi-plus" severity="success" size="small" />
+                                    <Button label="Tài khoản" icon="pi pi-plus" severity="success" size="small" @click="showCreateAccountDialog"/>
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -33,11 +29,11 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
-                        :value="employeeList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt" :value="usersList"
+                        sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 60rem">
                         <template #empty>
-                            <h3 class="text-center text-lg font-medium">No employee found.</h3>
+                            <h3 class="text-center text-lg font-medium">No users found.</h3>
                         </template>
                         <Column expander style="width: 3.5rem" />
                         <Column v-for="(col, index) of selectedColumns" :key="col.field + '_' + index"
@@ -45,7 +41,7 @@
                         <template #expansion="slotProps">
                             <Panel>
                                 <div class="detail-infor | grid gap-6">
-                                    <h3 class="text-lg font-medium">Thông tin nhân viên</h3>
+                                    <h3 class="text-lg font-medium">Thông tin đặt phòng</h3>
                                     <div class="grid grid-cols-2">
                                         <template v-for="(value, key) in getDetailRows(slotProps.data, hiddenRows)"
                                             :key="key">
@@ -55,10 +51,7 @@
                                                     <span class="font-semibold text-gray-700 min-w-42">
                                                         {{ formatLabel(key) }}:
                                                     </span>
-                                                    <span v-if="key === 'branch'" class="text-gray-900 grow">
-                                                        {{ value.name }}
-                                                    </span>
-                                                    <span v-else class="text-gray-900 grow">
+                                                    <span class="text-gray-900 grow">
                                                         {{ value }}
                                                     </span>
                                                 </div>
@@ -97,6 +90,7 @@ import Column from 'primevue/column';
 // component
 import Searchbar from "../../Components/Searchbar.vue";
 import Radioselect from "../../Components/Radioselect.vue";
+import Checkboxselect from "../../Components/Checkboxselect.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
@@ -108,11 +102,7 @@ import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 
 import { useDialog } from 'primevue/usedialog';
 
 const props = defineProps({
-    employeeList: {
-        type: Array,
-        required: false,
-    },
-    branchList: {
+    usersList: {
         type: Array,
         required: false,
     },
@@ -121,14 +111,8 @@ const props = defineProps({
 // hidden fields
 const hiddenColumns = reactive(
     [
-        'address',
-        'identity_number',
-        'branch',
-        'branch_id',
-        'user_id',
-        'has_account',
-        'created_at',
-        'updated_at'
+        'email_verified_at',
+        'password_changed_at'
     ]);
 const hiddenRows = reactive([
 ])
@@ -138,39 +122,29 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-// filter employee by status
-const filterStatus = ref('all');
-
-// filter employee by branch
+// filter status
 const statusList = ref([
     {
         name: 'active',
-        label: 'Đang làm việc'
+        label: 'Đang hoạt động'
     },
     {
         name: 'inactive',
-        label: 'Đã nghỉ'
+        label: 'Ngừng hoạt động'
+    },
+    {
+        name: 'all',
+        label: 'Tất cả'
     },
 ]);
-const filterBranches = ref([]);
-
-const initialEmployeeList = reactive(formatDataTable(props.employeeList));
-const employeeList = computed(() => {
-    return (initialEmployeeList || []).filter(employee => {
-        const branchMatch = !filterBranches.value.length || filterBranches.value.some(id => id === employee.branch.id);
-        return branchMatch;
-    })
-});
-
-// expanded row
-const expandedRows = ref({});
+const filterStatus = ref('all');
 
 // toggle column
 const selectedColumns = ref([]);
 const currentColumns = ref([]);
 onMounted(() => {
-    if (props.employeeList.length > 0) {
-        currentColumns.value = getColumns(props.employeeList[0], hiddenColumns);
+    if (props.usersList.length > 0) {
+        currentColumns.value = getColumns(props.usersList[0], hiddenColumns);
     }
 
     selectedColumns.value = currentColumns.value;
@@ -181,5 +155,68 @@ const toggleColumn = (val) => {
     })
 };
 
+// row expansion
+const expandedRows = ref({});
+
+// filter row
+const roles = reactive([
+    {
+        name: 'all',
+        label: 'Tất cả'
+    },
+    {
+        name: 'admin',
+        label: 'admin'
+    },
+    {
+        name: 'manager',
+        label: 'manager'
+    },
+    {
+        name: 'employee',
+        label: 'employee'
+    },
+    {
+        name: 'customer',
+        label: 'customer'
+    },
+])
+const filterRole = ref('all');
+
+// filter account by role and active
+const initialUsersList = reactive(formatDataTable(props.usersList));
+const usersList = computed(() => {
+    return (initialUsersList || []).filter(user => {
+        const roleMatch = filterRole.value === 'all' || user.role === filterRole.value;
+        return roleMatch;
+    })
+});
+watch(() => props.usersList, (newVal) => {
+    // Cập nhật lại danh sách khi có tài khoản mới
+    initialUsersList.splice(0, initialUsersList.length, ...formatDataTable(newVal));
+}, { deep: true });
+
+// dialog
+const dialog = useDialog();
+const createAccountDialog = defineAsyncComponent(() => import('../../Components/Dialog/Account/Create.vue'));
+
+const showCreateAccountDialog = () => {
+    dialog.open(createAccountDialog, {
+        props: {
+            header: 'Thêm tài khoản mới',
+            style: {
+                width: '50vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+        },
+        data: {
+        }
+    });
+}
 
 </script>

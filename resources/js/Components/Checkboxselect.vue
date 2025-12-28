@@ -43,7 +43,6 @@
 </style>
 
 <script setup>
-import RadioButton from 'primevue/radiobutton';
 import Checkbox from 'primevue/checkbox';
 
 import Accordion from 'primevue/accordion';

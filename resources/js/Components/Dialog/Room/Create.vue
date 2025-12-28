@@ -95,7 +95,7 @@ const newRoomForm = ref(null);
 
 const submit = (e) => {
     if (e.valid) {
-        router.post('/admin/room/add-new', JSON.parse(JSON.stringify(e.values)))
+        router.post(route('admin.room.store'), JSON.parse(JSON.stringify(e.values)))
         toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
         dialogRef.value.close();
     }

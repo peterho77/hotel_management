@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('full_name');
+            $table->string('code')->nullable()->unique();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();

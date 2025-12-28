@@ -81,7 +81,7 @@ class AuthController extends Controller
         // Chuyển role
         if ($user->role === 'admin') {
             return redirect()
-                ->route('admin.room-type-management')
+                ->route('admin.room-type.index')
                 ->with('success', 'Welcome back, Admin!');
         } elseif ($user->role === 'manager') {
             return redirect()

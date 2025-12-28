@@ -43,7 +43,7 @@
                                 <Menu ref="menu" :model="roomItemsMenu" class="toggle-menu py-1" :popup="true">
                                     <template #item="{ item, props }">
                                         <div class="toggle-menu-item">
-                                            <Link :href="route('admin.room-management')">{{ item.label }}</Link>
+                                            <Link :href="route('admin.room.index')">{{ item.label }}</Link>
                                         </div>
                                     </template>
                                 </Menu>

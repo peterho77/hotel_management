@@ -7,7 +7,7 @@
                 <Tab value="2">Danh sách phòng</Tab>
             </TabList>
             <TabPanels>
-                <Form v-slot="$form" ref="newRoomTypeForm" :resolver :initialValues validateOnUpdate="false"
+                <Form v-slot="$form" :resolver :initialValues :validateOnUpdate="false"
                     :validateOnBlur="true" @submit="submit">
                     <TabPanel value="0">
                         <div class="grid gap-y-4">
@@ -107,16 +107,13 @@
                         <div class="flex flex-col gap-4">
                             <div class="flex flex-col gap-2">
                                 <label for="upload-img">Upload images:</label>
-                                <FileUpload v-model="form.images" @upload="onTemplatedUpload($event)" :multiple="true"
+                                <FileUpload v-model="form.images" :multiple="true"
                                     accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles">
-                                    <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
+                                    <template #header="{ chooseCallback, clearCallback, files }">
                                         <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
                                             <div class="flex gap-2">
                                                 <Button @click="chooseCallback()" icon="pi pi-images" rounded
                                                     variant="outlined" severity="secondary"></Button>
-                                                <Button @click="uploadEvent(uploadCallback)" icon="pi pi-cloud-upload"
-                                                    rounded variant="outlined" severity="success"
-                                                    :disabled="!files || files.length === 0"></Button>
                                                 <Button @click="onClearTemplatingUpload(clearCallback)"
                                                     icon="pi pi-times" rounded variant="outlined" severity="danger"
                                                     :disabled="!files || files.length === 0"></Button>
@@ -179,7 +176,7 @@
                                     <template #empty>
                                         <div class="flex items-center justify-center flex-col">
                                             <i
-                                                class="pi pi-cloud-upload border-2! rounded-full! !p-8 !text-4xl !text-muted-color" />
+                                                class="pi pi-cloud-upload border! border-gray-300! rounded-full! p-8! text-4xl! text-gray-500!" />
                                             <p class="mt-6 mb-0">Drag and drop files to here to upload.</p>
                                         </div>
                                     </template>
@@ -273,10 +270,13 @@ const toNumberOrUndefined = (val) => {
     return Number.isNaN(n) ? val : n;
 };
 
+// validation
 const resolver = zodResolver(
     z
         .object({
-            name: z.string({ required_error: "name.required" }).min(5, { message: "Tên ít nhất phải 5 ký tự" }),
+            name: z.string({ required_error: "name.required" }).min(5, { message: "Tên hạng phòng ít nhất phải 5 ký tự" }),
+
+            description: z.string({ required_error: "description.required" }).min(1, { message: "Yêu cầu nhập mô tả hạng phòng." }),
 
             total_quantity: z.preprocess(toNumberOrUndefined,
                 z.number({
@@ -415,7 +415,6 @@ onMounted(() => {
 
 // upload room type images
 const $primevue = usePrimeVue();
-
 const totalSize = ref(0);
 const totalSizePercent = ref(0);
 
@@ -474,15 +473,6 @@ const onClearTemplatingUpload = (clear) => {
     totalSizePercent.value = 0;
 };
 
-const uploadEvent = (callback) => {
-    totalSizePercent.value = totalSize.value / 10;
-    callback();
-};
-
-const onTemplatedUpload = () => {
-    toast.add({ severity: "info", summary: "Success", detail: "File Uploaded", life: 3000 });
-};
-
 const formatSize = (bytes) => {
     const k = 1024;
     const dm = 3;
@@ -505,9 +495,10 @@ const closeDialog = () => {
 // submit form
 const submit = (e) => {
     if (e.valid) {
+        console.log(e.values);
         e.values.max_adults = form.max_adults;
         e.values.max_children = form.max_children;
-        const data = new FormData()
+        const payload = new FormData()
 
         // duyệt qua toàn bộ field trong form
         for (const key in e.values) {
@@ -515,28 +506,29 @@ const submit = (e) => {
 
             // Nếu là date object (ví dụ birth_date)
             if (value instanceof Date) {
-                data.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
+                payload.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
             }
             // Còn lại là text / number
             else {
-                data.append(key, value ?? '')
+                payload.append(key, value ?? '')
             }
         }
         if (Array.isArray(form.images) && form.images.length && form.images[0] instanceof File) {
             form.images.forEach((file, idx) => {
-                data.append(`images[${idx}]`, file, file.name);
+                payload.append(`images[${idx}]`, file, file.name);
             });
         }
+        console.log(payload);
 
         //Gửi form qua Inertia
-        router.post('/admin/room-type/add-new', data, {
-            forceFormData: true,
-            onSuccess: () => {
-                console.log('Thêm loại phòng thành công!')
-            },
-        })
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        dialogRef.value.close();
+        // router.post(route('admin.room-type.store'), payload, {
+        //     forceFormData: true,
+        //     onSuccess: () => {
+        //         console.log('Thêm loại phòng thành công!')
+        //     },
+        // })
+        // toast.add({ severity: 'success', summary: 'Thêm loại phòng thành công!', life: 3000 });
+        // dialogRef.value.close();
     }
 }
 

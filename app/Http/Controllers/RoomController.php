@@ -59,7 +59,7 @@ class RoomController extends Controller
 
         Room::create($newRoom);
 
-        return redirect()->route('admin.room-management');
+        return redirect()->route('admin.room.index');
     }
 
     /**
@@ -85,7 +85,7 @@ class RoomController extends Controller
 
         $room = Room::find($id);
         $room->update($validated);
-        return redirect()->route('admin.room-management')->with('success', 'Record updated successfully.');
+        return redirect()->route('admin.room.index')->with('success', 'Record updated successfully.');
     }
 
     /**
@@ -95,6 +95,6 @@ class RoomController extends Controller
     {
         $room = Room::where('id', $id)->first();
         $room->delete();
-        return redirect()->route('admin.room-management')->with('success', 'Record deleted successfully.');
+        return redirect()->route('admin.room.index')->with('success', 'Record deleted successfully.');
     }
 }

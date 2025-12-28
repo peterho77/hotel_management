@@ -11,7 +11,7 @@
                     <h1 class="font-medium text-xl mx-2">{{ roomType.name }}</h1>
                     <ImagesGallery :list="roomType.images"/>
                 </div>
-                <div class="grid mt-6 | flow" style="--flow-spacer:1rem">
+                <div class="grid mt-6 | flow" style="--flow-spacer:.75rem">
                     <div class="detail-info-section | grid gap-y-1">
                         <label class="text-lg font-medium">Thông tin chi tiết</label>
                         <template v-for="(value, key) in detailRoomTypeInfo">
@@ -30,15 +30,15 @@
                             </template>
                         </template>
                     </div>
-                    <div class="amenities-section | grid gap-y-1">
-                        <label class="text-lg font-medium">Các tiện nghi phòng</label>
-                        <div class="flex flex-wrap gap-x-2">
-                            <template v-for="amenity in roomType.amenities">
-                                <Tag :icon="amenity.icon" :value="formatLabel(amenity.name)" severity="secondary"></Tag>
-                            </template>
-                        </div>
-                    </div>
-                    <div>
+                    <div class="amenities-section">
+                        <template v-if="roomType.amenities">
+                            <label class="text-lg font-medium">Các tiện nghi phòng</label>
+                            <div class="flex flex-wrap gap-x-2 my-4">
+                                <template v-for="amenity in roomType.amenities">
+                                    <Tag :icon="amenity.icon" :value="formatLabel(amenity.name)" severity="secondary"></Tag>
+                                </template>
+                            </div>
+                        </template>
                         <Button label="Đặt phòng ngay" severity="success" :disabled="roomType.status === 'inactive'" />
                     </div>
                 </div>

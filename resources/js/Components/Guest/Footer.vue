@@ -75,5 +75,10 @@
                 </div>
             </div>
         </div>
+        <!-- <FloatingButton/> -->
     </footer>
 </template>
+
+<script setup>
+// import FloatingButton from "../Components/Global/Chat/FloatingButton.vue";
+</script>

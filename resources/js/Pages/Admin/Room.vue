@@ -157,9 +157,6 @@ import Panel from 'primevue/panel';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
-// galleria
-import Galleria from 'primevue/galleria';
-
 // dynamic dialog
 import { useDialog } from 'primevue/usedialog';
 
@@ -199,6 +196,7 @@ const props = defineProps({
     roomTypeColumns: Object,
     activeTab: String,
 })
+console.log(props.roomTypeList);
 
 // hidden fields
 const hiddenColumns = reactive([
@@ -328,10 +326,11 @@ const createItemsList = ref([
 const selectedColumns = ref([]);
 const currentColumns = ref([]);
 
+// switch tab
 watch(currentTab, (newValue, oldValue) => {
     if (newValue === oldValue) return
 
-    router.visit(route(`admin.${newValue}-management`), {
+    router.visit(route(`admin.${newValue}.index`), {
         preserveState: true,
         preserveScroll: true,
         replace: true,
@@ -377,11 +376,11 @@ const showCreateRoomDialog = () => {
         props: {
             header: 'Add new room',
             style: {
-                width: '30vw',
+                width: '50vw',
             },
             breakpoints: {
-                '960px': '50vw',
-                '640px': '40vw'
+                '960px': '60vw',
+                '640px': '50vw'
             },
             modal: true
         },
@@ -396,11 +395,11 @@ const showCreateRoomTypeDialog = () => {
         props: {
             header: 'Add new room type',
             style: {
-                width: '40%',
+                width: '50vw',
             },
             breakpoints: {
-                '960px': '80%',
-                '640px': '90%'
+                '960px': '60vw',
+                '640px': '50vw'
             },
             modal: true
         },
@@ -412,42 +411,42 @@ const showCreateRoomTypeDialog = () => {
 }
 
 // update dialog
-const showUpdateRoomDialog = (oldData) => {
+const showUpdateRoomDialog = (room) => {
     dialog.open(updateRoomDialog, {
         props: {
             header: 'Update room',
             style: {
-                width: '30vw',
+                width: '50vw',
             },
             breakpoints: {
-                '960px': '50vw',
-                '640px': '40vw'
+                '960px': '60vw',
+                '640px': '50vw'
             },
             modal: true
         },
         data: {
             roomTypeList: props.roomTypeList,
             branchList: props.branchList,
-            initialData: oldData
+            currentRoom: room
         }
     });
 }
-const showUpdateRoomTypeDialog = (oldData) => {
+const showUpdateRoomTypeDialog = (roomType) => {
     dialog.open(updateRoomTypeDialog, {
         props: {
             header: 'Update room type',
             style: {
-                width: '30vw',
+                width: '50vw',
             },
             breakpoints: {
-                '960px': '50vw',
-                '640px': '40vw'
+                '960px': '60vw',
+                '640px': '50vw'
             },
             modal: true
         },
         data: {
             branchList: props.branchList,
-            initialData: oldData
+            currentRoomType: roomType
         }
     });
 }
@@ -474,7 +473,7 @@ const showDeleteConfirmDialog = (id, tab) => {
         accept: () => {
             if (tab === 'room') {
                 router.delete(
-                    route('admin.room.delete', id), // hoặc '/users/123'
+                    route('admin.room.delete', id),
                     {
                         preserveScroll: true, // không cuộn lại đầu trang
                         preserveState: true, // reset state page
@@ -483,10 +482,10 @@ const showDeleteConfirmDialog = (id, tab) => {
             }
             else {
                 router.delete(
-                    route('admin.room-type.delete', id), // hoặc '/users/123'
+                    route('admin.room-type.delete', id), 
                     {
-                        preserveScroll: true, // không cuộn lại đầu trang
-                        preserveState: true, // reset state page
+                        preserveScroll: true, 
+                        preserveState: true,
                     }
                 );
             }

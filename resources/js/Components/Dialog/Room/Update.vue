@@ -19,7 +19,7 @@
         </div>
         <div class="flex flex-col gap-2">
             <label for="name">Status</label>
-            <Select name="status" :options="statusList" optionValue="name" optionLabel="name"
+            <Select :options="statusList" optionValue="value" optionLabel="name"
                 placeholder="Select status" class="w-full" />
             <Message v-if="$form.status?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.status.error.message }}</Message>
@@ -92,8 +92,6 @@ const initialValues = reactive({
     branch_id: null
 });
 
-const newRoomForm = ref(null);
-
 // confirm update dialog
 const confirm = useConfirm();
 
@@ -156,6 +154,7 @@ onMounted(() => {
             branch_id: branch?.id ?? null,
             room_type_id: room_type?.id ?? null,
         });
+        console.log(initialValues);
     }
     ready.value = true;
 })
