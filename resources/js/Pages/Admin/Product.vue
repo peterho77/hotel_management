@@ -7,6 +7,9 @@
                         <!-- keyword search -->
                         <Searchbar v-model="filters['global'].value" />
 
+                        <!-- filter category -->
+                        <Checkboxselect :list="categoryList" v-model="filterCategory" label="Trạng thái" />
+
                         <!-- filter status -->
                         <Radioselect :list="statusList" v-model="filterStatus" label="Trạng thái" />
                     </div>
@@ -14,11 +17,11 @@
                 <section class="main-content__right | flow" style="--flow-spacer:1em">
                     <nav class="table-toolbar">
                         <div class="nav-wrapper">
-                            <span class="admin-label | fs-700">Tài khoản</span>
+                            <span class="admin-label | fs-700">Hàng hóa</span>
                             <div class="table-toolbar-buttons">
                                 <div class="text-right flex items-center justify-end gap-x-4">
                                     <!-- toggle add new items menu -->
-                                    <Button label="Tài khoản" icon="pi pi-plus" severity="success" size="small" @click="showCreateAccountDialog"/>
+                                    <AddNewItemsButton label="Thêm mới" :hasMenu="true" :menuItems="createItemsList" />
 
                                     <MultiSelect :modelValue="selectedColumns" :options="currentColumns"
                                         optionLabel="header" @update:modelValue="toggleColumn"
@@ -29,8 +32,8 @@
                         </div>
                     </nav>
 
-                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt" :value="usersList"
-                        sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
+                    <DataTable v-model:expandedRows="expandedRows" v-model:filters="filters" ref="dt"
+                        :value="productList" sortMode="multiple" dataKey="id" removableSort paginator :rows="5"
                         :rowsPerPageOptions="[5, 10, 20, 50]" tableStyle="min-width: 60rem">
                         <template #empty>
                             <h3 class="text-center text-lg font-medium">No users found.</h3>
@@ -41,7 +44,12 @@
                         <template #expansion="slotProps">
                             <Panel>
                                 <div class="detail-infor | grid gap-6">
-                                    <h3 class="text-lg font-medium">Thông tin đặt phòng</h3>
+                                    <template v-if="slotProps.data.category === 'service'">
+                                        <h3 class="text-lg font-medium">Thông tin dịch vụ</h3>
+                                    </template>
+                                    <template v-else>
+                                        <h3 class="text-lg font-medium">Thông tin hàng hóa</h3>
+                                    </template>
                                     <div class="grid grid-cols-2">
                                         <template v-for="(value, key) in getDetailRows(slotProps.data, hiddenRows)"
                                             :key="key">
@@ -81,7 +89,6 @@ import Button from 'primevue/button';
 import Panel from 'primevue/panel';
 import MultiSelect from 'primevue/multiselect';
 import Divider from 'primevue/divider';
-import Select from 'primevue/select';
 
 // data-table
 import DataTable from 'primevue/datatable';
@@ -91,6 +98,7 @@ import Column from 'primevue/column';
 import Searchbar from "../../Components/Searchbar.vue";
 import Radioselect from "../../Components/Radioselect.vue";
 import Checkboxselect from "../../Components/Checkboxselect.vue";
+import AddNewItemsButton from "../../Components/AddNewItemsButton.vue";
 
 // format
 import { formatLabel } from "@/Composables/formatData";
@@ -102,9 +110,13 @@ import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 
 import { useDialog } from 'primevue/usedialog';
 
 const props = defineProps({
-    usersList: {
+    productList: {
         type: Array,
-        required: false,
+        default: () => [],
+    },
+    serviceList: {
+        type: Array,
+        default: () => [],
     },
 });
 
@@ -115,6 +127,7 @@ const hiddenColumns = reactive(
         'password_changed_at'
     ]);
 const hiddenRows = reactive([
+    'id'
 ])
 
 // keyword search
@@ -125,12 +138,12 @@ const filters = ref({
 // filter status
 const statusList = ref([
     {
-        name: 'active',
-        label: 'Đang hoạt động'
+        name: true,
+        label: 'Đang kinh doanh'
     },
     {
-        name: 'inactive',
-        label: 'Ngừng hoạt động'
+        name: false,
+        label: 'Ngừng kinh doanh'
     },
     {
         name: 'all',
@@ -139,15 +152,42 @@ const statusList = ref([
 ]);
 const filterStatus = ref('all');
 
+// filter category
+const categoryList = ref([
+    {
+        name: 'all',
+        label: 'Tất cả'
+    },
+    {
+        name: 'service',
+        label: 'Dịch vụ'
+    },
+    {
+        name: 'food',
+        label: 'Đồ ăn'
+    },
+    {
+        name: 'drink',
+        label: 'Đồ uống'
+    },
+]);
+const filterCategory = ref([]);
+
 // toggle column
+const generalColumns = [
+    { field: 'code', header: 'Mã' },
+    { field: 'name', header: 'Tên sản phẩm' },
+    { field: 'category', header: 'Nhóm hàng' },
+    { field: 'selling_price', header: 'Giá bán' },
+    { field: 'cost_price', header: 'Giá vốn' },
+];
 const selectedColumns = ref([]);
 const currentColumns = ref([]);
 onMounted(() => {
-    if (props.usersList.length > 0) {
-        currentColumns.value = getColumns(props.usersList[0], hiddenColumns);
-    }
-
-    selectedColumns.value = currentColumns.value;
+    currentColumns.value = generalColumns
+    selectedColumns.value = currentColumns.value.filter(col =>
+        !hiddenColumns.includes(col.field)
+    );
 })
 const toggleColumn = (val) => {
     selectedColumns.value = currentColumns.value.filter(col => {
@@ -158,65 +198,77 @@ const toggleColumn = (val) => {
 // row expansion
 const expandedRows = ref({});
 
-// filter row
-const roles = reactive([
-    {
-        name: 'all',
-        label: 'Tất cả'
-    },
-    {
-        name: 'admin',
-        label: 'admin'
-    },
-    {
-        name: 'manager',
-        label: 'manager'
-    },
-    {
-        name: 'employee',
-        label: 'employee'
-    },
-    {
-        name: 'customer',
-        label: 'customer'
-    },
-])
-const filterRole = ref('all');
-
 // filter account by role and active
-const initialUsersList = reactive(formatDataTable(props.usersList));
-const usersList = computed(() => {
-    return (initialUsersList || []).filter(user => {
-        const roleMatch = filterRole.value === 'all' || user.role === filterRole.value;
-        return roleMatch;
-    })
+const initialProductList = computed(() => {
+    const products = props.productList || [];
+    const services = props.serviceList || [];
+
+    return formatDataTable([...products, ...services]);
 });
-watch(() => props.usersList, (newVal) => {
-    // Cập nhật lại danh sách khi có tài khoản mới
-    initialUsersList.splice(0, initialUsersList.length, ...formatDataTable(newVal));
+console.log(initialProductList.value);
+const productList = computed(() => {
+    // 1. Lấy danh sách gốc
+    let list = initialProductList.value || [];
+
+    // 2. Lọc
+    return list.filter(item => {
+        if (filterCategory.value.length === 0 || filterCategory.value.includes('all')) {
+            return true;
+        }
+
+        const categoryMatch = filterCategory.value.some(category => {
+            if (category === 'service') {
+                return item.category === 'service';
+            }
+            return item.category === category;
+        });
+        const statusMatch = filterStatus.value === 'all' || item.is_active === filterStatus.value;
+
+        return statusMatch && categoryMatch;
+    });
+});
+watch(() => [props.serviceList, props.productList], (newVal) => {
+    // Cập nhật lại danh sách khi có dữ liệu mới
+    initialProductList.splice(0, initialProductList.length, ...formatDataTable(newVal));
 }, { deep: true });
 
 // dialog
 const dialog = useDialog();
-const createAccountDialog = defineAsyncComponent(() => import('../../Components/Dialog/Account/Create.vue'));
+// const createAccountDialog = defineAsyncComponent(() => import('../../Components/Dialog/Account/Create.vue'));
+// const showCreateAccountDialog = () => {
+//     dialog.open(createAccountDialog, {
+//         props: {
+//             header: 'Thêm tài khoản mới',
+//             style: {
+//                 width: '50vw',
+//             },
+//             breakpoints: {
+//                 '960px': '50vw',
+//                 '640px': '40vw'
+//             },
+//             modal: true,
+//             position: 'center',
+//         },
+//         data: {
+//         }
+//     });
+// }
 
-const showCreateAccountDialog = () => {
-    dialog.open(createAccountDialog, {
-        props: {
-            header: 'Thêm tài khoản mới',
-            style: {
-                width: '50vw',
-            },
-            breakpoints: {
-                '960px': '50vw',
-                '640px': '40vw'
-            },
-            modal: true,
-            position: 'center',
-        },
-        data: {
+// toggle add new item menu
+const createItemsList = ref([
+    {
+        label: 'Hàng hóa',
+        command: () => {
+
         }
-    });
-}
+    },
+    {
+        label: 'Dịch vụ',
+        command: () => {
+
+        }
+    },
+]);
+
 
 </script>

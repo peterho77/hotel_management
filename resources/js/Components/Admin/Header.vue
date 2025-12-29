@@ -48,9 +48,11 @@
                                     </template>
                                 </Menu>
                             </li>
-                            <li>Hàng hóa - Dịch vụ</li>
                             <li>
-                                <Link :href="route('admin.account')">Tài khoản</Link>
+                                <Link :href="route('admin.product.index')">Hàng hóa - Dịch vụ</Link>
+                            </li>
+                            <li>
+                                <Link :href="route('admin.account.index')">Tài khoản</Link>
                             </li>
                         </template>
                         <template v-if="user.role === 'manager'">

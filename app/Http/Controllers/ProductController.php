@@ -10,7 +10,7 @@ use App\Models\Service;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         $productList = Product::get();
         $serviceList = Service::get();

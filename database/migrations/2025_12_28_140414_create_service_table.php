@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('code')->nullable()->unique(); // Mã hàng hóa (DV0019)
             $table->string('name'); // Tên dịch vụ (Câu cá (Lượt))
 
+            $table->string('category')->default('service');
+
             // Đặc thù dịch vụ
             $table->integer('duration')->default(0); // Thời lượng (tính bằng giờ)
 
@@ -26,7 +28,7 @@ return new class extends Migration
 
             // Thông tin bổ sung
             $table->text('description')->nullable(); // Mô tả
-            $table->text('notes')->nullable(); // Ghi chú
+            $table->text('note')->nullable(); // Ghi chú
 
             // Trạng thái
             $table->boolean('is_active')->default(true); // Bán trực tiếp / Ngừng kinh doanh

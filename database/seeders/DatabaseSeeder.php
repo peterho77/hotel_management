@@ -14,17 +14,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        $test_users = [[
-            'user_name' => 'testadmin',
-            'email' => 'admin@example.com',
-            'role' => 'admin',
-            'password' => bcrypt('thiendat123'),
-        ], [
-            'user_name' => 'testmanager',
-            'email' => 'manager@example.com',
-            'role' => 'manager',
-            'password' => bcrypt('thiendat123'),
-        ]];
+        $test_users = [
+            [
+                'user_name' => 'testadmin',
+                'email' => 'admin@example.com',
+                'role' => 'admin',
+                'password' => bcrypt('thiendat123'),
+            ],
+            [
+                'user_name' => 'testmanager',
+                'email' => 'manager@example.com',
+                'role' => 'manager',
+                'password' => bcrypt('thiendat123'),
+            ],
+            [
+                'user_name' => 'testemployee',
+                'email' => 'employee@example.com',
+                'role' => 'employee',
+                'password' => bcrypt('thiendat123'),
+            ]
+        ];
 
         foreach ($test_users as $user) {
             User::factory()->create($user);
@@ -45,7 +54,9 @@ class DatabaseSeeder extends Seeder
             DiscountSeeder::class,
             RoomOptionRatePolicySeeder::class,
             RoomOptionDiscountSeeder::class,
-            ShiftSeeder::class
+            ShiftSeeder::class,
+            ProductSeeder::class,
+            ServiceSeeder::class
         ]);
     }
 }

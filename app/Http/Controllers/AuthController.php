@@ -87,6 +87,10 @@ class AuthController extends Controller
             return redirect()
                 ->route('manager.customer')
                 ->with('success', 'Welcome back, Manager!');
+        } elseif ($user->role === 'employee') {
+            return redirect()
+                ->route('employee.index', Auth::user()->user_name)
+                ->with('success', 'Welcome back, ' . Auth::user()->user_name . '!');
         }
 
         return redirect()

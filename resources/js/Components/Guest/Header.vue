@@ -130,9 +130,6 @@
                                 <Link :href="route('rooms.index')"><span>Rooms</span></Link>
                             </li>
                             <li>
-                                <a href=""><span>Blogs</span></a>
-                            </li>
-                            <li>
                                 <Link :href="route('about')"><span>About us</span></Link>
                             </li>
                             <li>
@@ -159,7 +156,6 @@
 import { defineAsyncComponent, ref, watch, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDialog } from 'primevue/usedialog';
-import { useToast } from "primevue/usetoast";
 import { router } from '@inertiajs/vue3';
 
 import TieredMenu from 'primevue/tieredmenu';

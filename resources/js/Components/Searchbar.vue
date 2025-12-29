@@ -1,7 +1,7 @@
 <template>
     <div class="search-bar | box | flow" style="--flow-spacer:1em">
         <label class="admin-label" for="room-type-search">{{ label }}</label>
-        <IconField iconPosition="left" class="flex items-center gap-x-2">
+        <IconField iconPosition="left" class="flex items-center gap-x-1">
             <InputIcon>
                 <i class="pi pi-search" />
             </InputIcon>

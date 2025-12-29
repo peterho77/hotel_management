@@ -71,10 +71,12 @@ Route::middleware('auth')->group(function () {
         });
 
         // account section
-        Route::get('/account', [UserController::class, 'index'])
-            ->name('account');
-        Route::post('/account/create', [AdminController::class, 'createAccount'])
-            ->name('account.create');
+        Route::prefix('account')->name('account.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])
+                ->name('index');
+            Route::post('/account/create', [AdminController::class, 'createAccount'])
+                ->name('create');
+        });
 
         // product section
         Route::prefix('product')->name('product.')->group(function () {
@@ -94,6 +96,15 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [WorkScheduleController::class, 'store'])->name('store');
             Route::put('/{id}/update', [WorkScheduleController::class, 'update'])->name('update');
             Route::delete('/{id}/delete', [WorkScheduleController::class, 'destroy'])->name('delete');
+        });
+    });
+
+    Route::middleware('role:employee')->group(function () {
+        Route::prefix('employee')->name('employee.')->group(function () {
+            Route::get('/{user_name}/dashboard', function ($user_name) {
+                abort_unless(Auth::user()->user_name === $user_name, 403);
+                return Inertia::render('Employee/Dashboard');
+            })->name('index');
         });
     });
 

@@ -1,5 +1,6 @@
 import {
     formatLabel,
+    formatCurrency,
     formatDateVN,
     isDateString,
 } from "@/Composables/formatData";
@@ -7,23 +8,31 @@ import {
 // data table prime vue
 
 export function formatDataTable(data) {
-
-    // Nếu là mảng → xử lý từng object
+    // 1. Nếu là mảng → xử lý đệ quy từng phần tử
     if (Array.isArray(data)) {
-        return data.map(item => formatDataTable(item));
+        return data.map((item) => formatDataTable(item));
     }
 
-    // Nếu là object → duyệt từng key
+    // 2. Nếu là object → duyệt từng key
     if (data !== null && typeof data === "object") {
         let result = {};
 
         for (const [key, value] of Object.entries(data)) {
+            // Kiểm tra key kết thúc bằng 'price' (ví dụ: cost_price, sellingPrice)
+            // Và đảm bảo value là số hoặc chuỗi số để tránh format nhầm object
+            if (
+                key.toLowerCase().endsWith("price") &&
+                (typeof value === "number" ||
+                    (typeof value === "string" && !isNaN(value)))
+            ) {
+                result[key] = formatCurrency(value);
+            }
 
-            // Nếu là date string → format
-            if (isDateString(value)) {
+            // Nếu là date string → format Date
+            else if (isDateString(value)) {
                 result[key] = formatDateVN(value);
             }
-            // Nếu là object → đệ quy
+            // Nếu là object con → đệ quy tiếp
             else if (typeof value === "object" && value !== null) {
                 result[key] = formatDataTable(value);
             }
@@ -32,11 +41,10 @@ export function formatDataTable(data) {
                 result[key] = value;
             }
         }
-
         return result;
     }
 
-    // Giá trị không phải object → return luôn
+    // 3. Giá trị primitive (số, chuỗi thường...) → return luôn
     return data;
 }
 

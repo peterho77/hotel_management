@@ -7,6 +7,7 @@ import { createInertiaApp, Head, Link } from "@inertiajs/vue3";
 import { svgSpritePlugin } from "vue-svg-sprite";
 import Guest from "./Layouts/Guest.vue";
 import Admin from "./Layouts/Admin.vue";
+import Employee from "./Layouts/Employee.vue";
 import Dashboard from "./Layouts/Dashboard.vue";
 import PrimeVue from "primevue/config";
 import Breadcrumb from "primevue/breadcrumb";
@@ -35,6 +36,9 @@ createInertiaApp({
         }
         else if (name.startsWith("User/")) {
             page.default.layout = page.default.layout || Dashboard;
+        }
+        else{
+            page.default.layout = page.default.layout || Employee;
         }
 
         return page;
