@@ -88,45 +88,47 @@ class Room extends Model
 
         $in = Carbon::parse($item->booking->check_in);
         $out = Carbon::parse($item->booking->check_out);
-        
+
         // Format hiển thị tùy ý: VD "01/11 - 03/11"
         return $in->format('d/m') . ' - ' . $out->format('d/m');
     }
 
     protected static function booted()
     {
-        // 1. Khi tạo mới một phòng (Created)
-        static::created(function ($room) {
+        // Định nghĩa hàm callback chung để đỡ viết lại code
+        $triggerRefresh = function ($room) {
             if ($room->roomType) {
-                $room->roomType->increment('total_quantity');
+                // Gọi hàm đếm lại bên RoomType (Hàm này đã lo cả total lẫn available)
+                $room->roomType->refreshQuantity();
             }
-        });
+        };
 
-        // 2. Khi xóa một phòng (Deleted)
-        static::deleted(function ($room) {
-            if ($room->roomType) {
-                // Kiểm tra để không bị âm
-                if ($room->roomType->total_quantity > 0) {
-                    $room->roomType->decrement('total_quantity');
-                }
-            }
-        });
+        // 1. Khi tạo mới phòng (Created) -> Tính lại
+        static::created($triggerRefresh);
 
-        // Trường hợp đặc biệt: Admin đổi phòng này từ loại A sang loại B
+        // 2. Khi xóa phòng (Deleted) -> Tính lại
+        static::deleted($triggerRefresh);
+
+        // 3. Khi cập nhật thông tin phòng (Updated)
         static::updated(function ($room) {
-            // Kiểm tra xem cột 'room_type_id' có bị thay đổi không
-            if ($room->isDirty('room_type_id')) {
-                // Giảm số lượng ở loại phòng cũ
-                $oldRoomTypeId = $room->getOriginal('room_type_id');
-                $oldRoomType = RoomType::find($oldRoomTypeId);
-                if ($oldRoomType && $oldRoomType->total_quantity > 0) {
-                    $oldRoomType->decrement('total_quantity');
+
+            // Chỉ chạy khi có thay đổi quan trọng: Đổi Status hoặc Đổi Loại phòng
+            if ($room->isDirty('status') || $room->isDirty('room_type_id')) {
+
+                // Cập nhật cho loại phòng hiện tại (New Type)
+                if ($room->roomType) {
+                    $room->roomType->refreshQuantity();
                 }
 
-                // Tăng số lượng ở loại phòng mới
-                $newRoomType = RoomType::find($room->room_type_id);
-                if ($newRoomType) {
-                    $newRoomType->increment('total_quantity');
+                // TRƯỜNG HỢP ĐẶC BIỆT: Nếu đổi loại phòng (VD: Standard -> Deluxe)
+                // Thì phải cập nhật lại số lượng cho cả loại phòng cũ (Standard) nữa
+                if ($room->isDirty('room_type_id')) {
+                    $oldTypeId = $room->getOriginal('room_type_id');
+                    $oldType = RoomType::find($oldTypeId);
+
+                    if ($oldType) {
+                        $oldType->refreshQuantity();
+                    }
                 }
             }
         });

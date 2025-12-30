@@ -50,37 +50,53 @@ class RoomType extends Model
 
     public function refreshQuantity()
     {
-        // Đếm số phòng thực tế trong DB
-        $realCount = $this->rooms()->count();
+        $totalRooms = $this->rooms()->count();
+        $totalActiveRooms = $this->rooms()->where('status', 'active')->count();
 
-        // Cập nhật vào cột total_quantity
-        $this->total_quantity = $realCount;
-        $this->save();
+        // Cập nhật cho chính RoomType (Nếu có thay đổi)
+        if ($this->total_quantity !== $totalRooms) {
+            $this->total_quantity = $totalRooms;
+            $this->saveQuietly(); // Lưu mà không kích hoạt event 'updated' để tránh loop
+        }
 
-        return $realCount;
+        $this->room_options()->update([
+            'available_quantity' => $totalActiveRooms
+        ]);
+
+        return [
+            'total_rooms' => $totalRooms,
+            'available_rooms' => $totalActiveRooms
+        ];
     }
 
     /**
-     * Static Method: Gọi hàm này để tính lại cho TOÀN BỘ các loại phòng
-     * Cách dùng: RoomType::syncAllQuantities();
+     * Hàm tiện ích để chạy đồng bộ lại toàn bộ hệ thống (dùng trong Seeder hoặc Tinker)
      */
     public static function syncAllQuantities()
     {
         $types = self::all();
+        $count = 0;
         foreach ($types as $type) {
             $type->refreshQuantity();
+            $count++;
         }
-        return "Đã đồng bộ xong số lượng phòng cho " . $types->count() . " loại phòng.";
+        return "Đã đồng bộ xong dữ liệu cho {$count} loại phòng.";
     }
 
     protected static function booted()
     {
+        // Sự kiện khi Admin sửa thủ công RoomType (ví dụ đổi status active -> inactive)
         static::updated(function ($roomType) {
-            if ($roomType->isDirty('total_quantity')) {
-                // Tự động update cột available_quantity của tất cả RoomOption con
-                $roomType->room_options()->update([
-                    'available_quantity' => $roomType->total_quantity
-                ]);
+
+            // Nếu Admin đổi trạng thái của Loại phòng (VD: Tắt hoạt động cả loại phòng này)
+            if ($roomType->wasChanged('status')) {
+                if ($roomType->status !== 'active') {
+                    // Nếu loại phòng bị tắt -> Set available của Option về 0 hết
+                    $roomType->room_options()->update(['available_quantity' => 0]);
+                } else {
+                    // Nếu bật lại -> Tính toán lại số lượng active
+                    $roomType->refreshQuantity();
+                }
             }
         });
     }

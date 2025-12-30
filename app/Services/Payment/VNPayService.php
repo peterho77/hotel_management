@@ -93,30 +93,24 @@ class VNPayService
             return ['success' => false, 'message' => 'Thiếu mã đơn hàng'];
         }
 
-        $booking = Booking::find($bookingId);
-        $payment = $booking->payments()->latest()->first();
-        if (!$booking) {
+        if (!$bookingId) {
             return ['success' => false, 'message' => 'Không tìm thấy đơn hàng'];
         }
 
         $code = $filtered['vnp_ResponseCode'] ?? null;
         if ($code === '00') {
-            $payment->status = 'paid';  
-            $booking->status = "confirmed";
-            $payment->save();
-            $booking->save();
 
             return [
                 'success' => true,
                 'message' => 'Thanh toán thành công!',
-                'bookingId' => $booking->id,
+                'bookingId' => $bookingId,
             ];
         }
 
         return [
             'success' => false,
             'message' => 'Thanh toán thất bại! Mã: ' . ($code ?? 'N/A'),
-            'bookingId' => $booking->id,
+            'bookingId' => $bookingId,
         ];
     }
 }

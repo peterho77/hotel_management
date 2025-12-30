@@ -49,17 +49,29 @@ class RoomSeeder extends Seeder
 
         // Insert Batch (Nhanh)
         DB::table('room')->insert($rooms);
-
-        // Cách 1: Nếu bạn đã viết hàm syncAllQuantities() trong Model RoomType
-        // RoomType::syncAllQuantities();
-
-        // Cách 2: Nếu chưa viết hàm trong Model, chạy trực tiếp ở đây:
         $types = DB::table('room_type')->get();
+
         foreach ($types as $type) {
-            $count = DB::table('room')->where('room_type_id', $type->id)->count();
-            DB::table('room_type')->where('id', $type->id)->update(['total_quantity' => $count]);
+            // A. Đếm tổng vật lý (Bất kể trạng thái) -> Update RoomType
+            $totalCount = DB::table('room')
+                ->where('room_type_id', $type->id)
+                ->count();
+
+            DB::table('room_type')
+                ->where('id', $type->id)
+                ->update(['total_quantity' => $totalCount]);
+
+            // B. Đếm tổng bán được (Chỉ Active) -> Update RoomOption
+            $activeCount = DB::table('room')
+                ->where('room_type_id', $type->id)
+                ->where('status', 'active')
+                ->count();
+
+            DB::table('room_option')
+                ->where('room_type_id', $type->id)
+                ->update(['available_quantity' => $activeCount]);
         }
 
-        $this->command->info('Đã insert phòng và cập nhật lại số lượng (total_quantity)!');
+        $this->command->info('Đã insert phòng và đồng bộ số lượng (Total & Available)!');
     }
 }

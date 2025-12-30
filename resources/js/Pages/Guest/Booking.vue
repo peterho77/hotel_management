@@ -862,4 +862,8 @@ function formatDate(dateStr) {
     return `${dd}/${mm}/${yyyy}`;
 }
 
+// flash message
+import { useFlashToast } from "@/Composables/useFlashToast";
+useFlashToast();
+
 </script>

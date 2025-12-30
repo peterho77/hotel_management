@@ -34,49 +34,59 @@ class PaymentController extends Controller
     public function vnpayReturn(Request $request)
     {
         $result = $this->vnpayService->processReturn($request->all());
+
         if ($result['success']) {
             try {
-                // Eager load room_booking_items để tối ưu query
                 $booking = Booking::with('room_booking_items')->find($result['bookingId']);
 
                 if ($booking) {
-                    // QUAN TRỌNG: Chỉ trừ số lượng nếu đơn hàng chưa được xử lý (tránh trừ đôi khi F5)
+                    // Chỉ xử lý nếu đơn đang pending
                     if ($booking->status === 'pending') {
-                        DB::transaction(function () use ($booking) {
-                            // 1. Cập nhật trạng thái Booking
-                            $booking->update(['status' => 'confirmed']); // Hoặc 'paid' tùy enum của bạn
 
-                            // 2. Cập nhật trạng thái thanh toán (Payment)
-                            // Giả sử booking có quan hệ hasOne/hasMany với Payment
+                        DB::transaction(function () use ($booking) {
+                            $booking->update(['status' => 'confirmed']);
+
                             $booking->payments()->where('status', 'pending')->update(['status' => 'paid']);
 
-                            // 3. Trừ số lượng available_quantity của RoomOption
+                            // Duyệt qua từng item (mỗi item là 1 phòng được đặt)
                             foreach ($booking->room_booking_items as $item) {
-                                // Lưu ý: Trong logic create trước đó, mỗi row item = 1 phòng
-                                // Nên ta trừ 1 đơn vị cho mỗi item.
-                                if ($item->room_option_id) {
-                                    RoomOption::where('id', $item->room_option_id)
-                                        ->where('available_quantity', '>', 0) // Kiểm tra để không bị số âm
-                                        ->decrement('available_quantity');
+                                // Lấy thông tin RoomOption của item này để biết nó thuộc RoomType nào
+                                $currentOption = RoomOption::find($item->room_option_id);
+
+                                if ($currentOption) {
+                                    // Logic: Tìm TẤT CẢ các option thuộc cùng loại phòng (room_type_id)
+                                    // và trừ available_quantity đi 1
+                                    RoomOption::where('room_type_id', $currentOption->room_type_id)
+                                        ->where('available_quantity', '>', 0) // Check > 0 để tránh âm
+                                        ->decrement('available_quantity', 1);
                                 }
                             }
                         });
 
-                        // 4. Gửi email xác nhận (Chỉ gửi 1 lần khi xử lý thành công)
-                        $this->emailService->sendBookingConfirmation($booking);
+                        // Đặt trong try-catch riêng để nếu lỗi mail cũng KHÔNG làm lỗi booking
+                        try {
+                            Log::info("Bắt đầu gửi email xác nhận cho Booking ID: " . $booking->id);
+                            $this->emailService->sendBookingConfirmation($booking);
+                            Log::info("Đã gửi email thành công.");
+                        } catch (\Exception $e) {
+                            // Ghi log lỗi để debug nguyên nhân không gửi được mail
+                            Log::error("Lỗi gửi email confirmation: " . $e->getMessage());
+                        }
                     }
                 }
 
                 return redirect()->route('booking.index')->with('success', $result['message']);
             } catch (\Exception $e) {
                 Log::error('Lỗi xử lý sau khi thanh toán VNPay', [
-                    'booking_id' => $result['bookingId'],
+                    'booking_id' => $result['bookingId'] ?? 'N/A',
                     'error' => $e->getMessage()
                 ]);
-                // Vẫn báo lỗi nhưng tiền đã trừ, cần xử lý thủ công hoặc log kỹ
-                return redirect()->route('booking.index')->with('warning', 'Thanh toán thành công nhưng có lỗi khi cập nhật đơn hàng. Vui lòng liên hệ CSKH.');
+
+                return redirect()->route('booking.index')->with('error', 'Thanh toán thành công nhưng xảy ra lỗi hệ thống. Vui lòng liên hệ CSKH.');
             }
         }
+
+        // Trường hợp thanh toán thất bại
         return redirect()->route('booking.index')->with('error', $result['message']);
     }
 

@@ -260,7 +260,7 @@
                                                             tầng</label>
                                                         <Select v-model="room.selected_floor[idx - 1]"
                                                             :id="`floor-${room.id}-${index}`"
-                                                            :name="`room[${index}]${idx}`" :options="floors"
+                                                            :name="`room[${index}]${idx}`" :options="getFloorOptions(room)"
                                                             optionLabel="name" optionValue="value"
                                                             placeholder="Không có" class="max-w-60" />
                                                     </div>
@@ -526,11 +526,15 @@ const countries = ref([
 ])
 
 // floors
-const numOfFloors = ref(5);
-const floors = ref(Array.from({ length: numOfFloors.value }).map((_, index) => ({
-    name: `Tầng ${index + 1}`,
-    value: index + 1
-})))
+const getFloorOptions = (roomItem) => {
+    const floors = roomItem.available_floors || [];
+
+    // Map sang format cho Select (PrimeVue)
+    return floors.map(floorNum => ({
+        name: `Tầng ${floorNum}`,
+        value: floorNum
+    }));
+};
 
 // add floor options to selected room
 roomBookingDetail.selected_rooms = roomBookingDetail.selected_rooms.map(room => ({
@@ -706,11 +710,11 @@ const bookingFormData = computed(() => {
 
 const confirmPayment = async () => {
     console.log(bookingFormData.value);
-    // const res = await axios.post(route('booking.confirm'), bookingFormData.value);
+    const res = await axios.post(route('booking.confirm'), bookingFormData.value);
 
-    // if (res.data.redirect_url) {
-    //     window.location.href = res.data.redirect_url;
-    // }
+    if (res.data.redirect_url) {
+        window.location.href = res.data.redirect_url;
+    }
 }
 
 </script>
