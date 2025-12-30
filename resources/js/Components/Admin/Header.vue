@@ -35,7 +35,9 @@
             <div class="container">
                 <nav class="nav-wrapper">
                     <ul class="primary-nav | nav-list">
-                        <li>Tổng quan</li>
+                        <li>
+                            <Link :href="route('dashboard')">Tổng quan</Link>
+                        </li>
                         <template v-if="user.role === 'admin'">
                             <li>Chi nhánh</li>
                             <li class="room-nav" @click="toggle">

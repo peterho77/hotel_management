@@ -13,6 +13,7 @@ use App\Http\Controllers\GuestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\WorkScheduleController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +53,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+
 
         //room type section
         Route::prefix('room-type')->name('room-type.')->group(function () {

@@ -9,6 +9,7 @@ use App\Services\EmailSMTP\EmailService;
 use Illuminate\Support\Facades\DB;
 use App\Models\Booking;
 use App\Models\RoomOption;
+use App\Models\Room;
 
 class PaymentController extends Controller
 {
@@ -54,11 +55,15 @@ class PaymentController extends Controller
                                 $currentOption = RoomOption::find($item->room_option_id);
 
                                 if ($currentOption) {
-                                    // Logic: Tìm TẤT CẢ các option thuộc cùng loại phòng (room_type_id)
-                                    // và trừ available_quantity đi 1
                                     RoomOption::where('room_type_id', $currentOption->room_type_id)
                                         ->where('available_quantity', '>', 0) // Check > 0 để tránh âm
                                         ->decrement('available_quantity', 1);
+                                }
+
+                                if ($item->assigned_room_id) {
+                                    Room::where('id', $item->assigned_room_id)
+                                        ->update(['status' => 'booked']);
+                                    // Bạn có thể đổi 'booked' thành 'occupied' tùy enum trong DB của bạn
                                 }
                             }
                         });

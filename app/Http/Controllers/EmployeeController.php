@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Employee;
 use App\Models\Branch;
 use App\Models\Room;
+use App\Models\RoomBookingItem;
 
 class EmployeeController extends Controller
 {
@@ -37,6 +38,7 @@ class EmployeeController extends Controller
 
                     // Logic màu sắc (Gọi accessor getUiStatusAttribute)
                     'status' => $room->ui_status,
+                    'housekeeping_status' => $room->housekeeping_status,
 
                     // Logic Badge Sạch/Bẩn (Lấy trực tiếp từ DB)
                     'isDirty' => $room->housekeeping_status === Room::HK_DIRTY,
@@ -54,9 +56,10 @@ class EmployeeController extends Controller
                     'note' => $room->note
                 ];
             });
+        $roomBookingList = RoomBookingItem::get();
         return Inertia::render('Employee/Dashboard', [
             'roomList' => $roomList,
-
+            'roomBookingList' => $roomBookingList,
         ]);
     }
 }
