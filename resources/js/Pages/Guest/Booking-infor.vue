@@ -294,10 +294,6 @@
                                                 <span>Vui lòng ghi yêu cầu của bạn vào đây.(không bắt buộc)</span>
                                                 <Textarea v-model="bookerInforForm.special_request" rows="4" cols="30"
                                                     style="resize: none" />
-                                                <div class="flex items-center gap-2">
-                                                    <Checkbox name="special_request" value="close-room" />
-                                                    <label for="air-ticket">Tôi muốn các phòng ở gần nhau</label>
-                                                </div>
                                             </div>
                                         </div>
                                         <div class="arrival-time | box flow" style="--flow-spacer:1rem">
@@ -709,11 +705,12 @@ const bookingFormData = computed(() => {
 
 
 const confirmPayment = async () => {
-    const res = await axios.post(route('booking.confirm'), bookingFormData.value);
+    console.log(bookingFormData.value);
+    // const res = await axios.post(route('booking.confirm'), bookingFormData.value);
 
-    if (res.data.redirect_url) {
-        window.location.href = res.data.redirect_url;
-    }
+    // if (res.data.redirect_url) {
+    //     window.location.href = res.data.redirect_url;
+    // }
 }
 
 </script>

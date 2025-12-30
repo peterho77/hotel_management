@@ -11,7 +11,7 @@
                     <Avatar icon="pi pi-user" class="mr-2" style="background-color: #ece9fc; color: #2a1261" />
                     <span>{{ user.user_name }}</span>
                 </div>
-                <span>{{ user.phone ?? '999999' }}</span>
+                <span>{{ user.phone ?? 'NV0000' }}</span>
                 <div>
                     <div class="user-menu | flex items-center">
                         <Button icon="pi pi-ellipsis-v" @click="toggleUserMenu" severity="success" variant="text"/>
@@ -73,6 +73,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Avatar from 'primevue/avatar';
@@ -143,6 +144,11 @@ const userMenuItems = ref([
 ]);
 const toggleUserMenu = (event) => {
     userMenu.value.toggle(event);
+}
+
+// logout
+const logout = () => {
+    router.post('/logout');
 }
 
 </script>

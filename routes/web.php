@@ -101,10 +101,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:employee')->group(function () {
         Route::prefix('employee')->name('employee.')->group(function () {
-            Route::get('/{user_name}/dashboard', function ($user_name) {
-                abort_unless(Auth::user()->user_name === $user_name, 403);
-                return Inertia::render('Employee/Dashboard');
-            })->name('index');
+            Route::get('/{user_name}/dashboard', [EmployeeController::class, 'dashboard'])->name('index');
         });
     });
 

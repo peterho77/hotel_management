@@ -67,4 +67,18 @@ class RoomOption extends Model
 
         return max($basePrice - $totalDiscount, 0);
     }
+
+    protected static function booted()
+    {
+        // KHI TẠO MỚI (Creating)
+        // Tự động copy số lượng từ RoomType sang RoomOption nếu người dùng không nhập
+        static::creating(function ($option) {
+            if (is_null($option->available_quantity)) {
+                $type = RoomType::find($option->room_type_id);
+                if ($type) {
+                    $option->available_quantity = $type->total_quantity;
+                }
+            }
+        });
+    }
 }

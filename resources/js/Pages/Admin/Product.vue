@@ -205,7 +205,6 @@ const initialProductList = computed(() => {
 
     return formatDataTable([...products, ...services]);
 });
-console.log(initialProductList.value);
 const productList = computed(() => {
     // 1. Lấy danh sách gốc
     let list = initialProductList.value || [];

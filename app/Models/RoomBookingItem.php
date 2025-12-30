@@ -26,4 +26,9 @@ class RoomBookingItem extends Model
     {
         return $this->belongsTo(Booking::class, 'booking_id');
     }
+
+    public function assigned_room()
+    {
+        return $this->belongsTo(Room::class, 'assigned_room_id');
+    }
 }

@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('room', function (Blueprint $table) {
             $table->mediumIncrements('id');
-            $table->string('name', 20);
+            $table->string('name', 20)->unique();
             $table->foreignId('room_type_id')->constrained('room_type')->onDelete('cascade');
             $table->unsignedTinyInteger('floor')->default(1);
             $table->string('status', 50);
+            $table->string('housekeeping_status', 20)->default('clean')->after('status');
             $table->text('note')->nullable();
             $table->foreignId('branch_id')->nullable()->constrained('branch')->onDelete('cascade');
         });

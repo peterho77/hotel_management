@@ -47,4 +47,41 @@ class RoomType extends Model
         'full_day_rate',
         'overnight_rate',
     ];
+
+    public function refreshQuantity()
+    {
+        // Đếm số phòng thực tế trong DB
+        $realCount = $this->rooms()->count();
+
+        // Cập nhật vào cột total_quantity
+        $this->total_quantity = $realCount;
+        $this->save();
+
+        return $realCount;
+    }
+
+    /**
+     * Static Method: Gọi hàm này để tính lại cho TOÀN BỘ các loại phòng
+     * Cách dùng: RoomType::syncAllQuantities();
+     */
+    public static function syncAllQuantities()
+    {
+        $types = self::all();
+        foreach ($types as $type) {
+            $type->refreshQuantity();
+        }
+        return "Đã đồng bộ xong số lượng phòng cho " . $types->count() . " loại phòng.";
+    }
+
+    protected static function booted()
+    {
+        static::updated(function ($roomType) {
+            if ($roomType->isDirty('total_quantity')) {
+                // Tự động update cột available_quantity của tất cả RoomOption con
+                $roomType->room_options()->update([
+                    'available_quantity' => $roomType->total_quantity
+                ]);
+            }
+        });
+    }
 }
