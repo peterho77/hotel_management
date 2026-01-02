@@ -4,14 +4,14 @@
             <div class="container">
                 <div class="even-columns" style="--custom-gap:var(--size-900)">
                     <div class="align-center">
-                        <div class="hero__text | flow">
+                        <div class="hero__text | flow text-center md:text-left md:flex md:flex-col md:items-start">
                             <h1 class="fs-primary-heading">Sona A luxury hotel</h1>
-                            <p data-width="wide">Here are the best hotel booking sites, including recommendations for
+                            <p class="text-center md:text-left">Here are the best hotel booking sites, including recommendations for
                                 international travel and for finding low-priced hotel rooms.</p>
                             <button class="button">Discover now</button>
                         </div>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex justify-center md:justify-end">
                         <div class="booking-form | padding-block-600 flow">
                             <h5 class="fs-normal-heading | text-center">Booking your hotel</h5>
 

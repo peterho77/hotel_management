@@ -1,11 +1,11 @@
 <template>
     <header class="primary-header">
         <section class="top-nav | bg-sky-200 padding-block-200 section-divider">
-            <div class="container">
-                <div class="even-columns">
+            <div class="container mx-auto">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
                     <nav class="top-nav__left">
-                        <ul class="nav-list" role="list">
-                            <li class="padding-block-200">
+                        <ul class="nav-list | flex flex-row items-center gap-2 sm:gap-6" role="list">
+                            <li>
                                 <SvgSprite symbol="telephone-fill" size="0 0 24 24" role="presentation" class="icon" />
                                 <span class="fw-semi-bold">037 619 3244</span>
                             </li>
@@ -16,8 +16,8 @@
                         </ul>
                     </nav>
                     <nav class="top-nav__right">
-                        <div class="nav-wrapper gap-x-18">
-                            <ul class="social-list" role="list">
+                        <div class="nav-wrapper | gap-x-18">
+                            <ul class="social-list | hidden! xl:flex!" role="list">
                                 <li>
                                     <a href="">
                                         <SvgSprite symbol="facebook" size="0 0 24 24" role="presentation"
@@ -43,7 +43,6 @@
                                     </a>
                                 </li>
                             </ul>
-                            <!-- UI show user name -->
                             <div class="show-login | flex justify-center gap-x-2">
                                 <template v-if="!user">
                                     <Button label="Login" icon="pi pi-user" class="fs-600" severity="info" raised
@@ -113,12 +112,11 @@
         </section>
         <section class="bottom-nav | padding-block-400">
             <div class="container">
-                <div class="even-columns">
-                    <div class="header-logo">
+                <div class="mx-4 flex items-center justify-between">
+                    <div class="header-logo | shrink-0">
                         <img src="../../../../public/img/logo.png" alt="" />
                     </div>
-                    <nav class="primary-bottom-nav">
-                        <div class="search-bar"></div>
+                    <nav class="primary-bottom-nav | hidden! lg:flex! items-center">
                         <ul class="nav-list" role="list">
                             <li>
                                 <Link :href="route('home')"><span>Home</span></Link>
@@ -137,7 +135,30 @@
                             </li>
                         </ul>
                     </nav>
+                    <div class="mobile-sidebar | lg:hidden! flex! justify-center">
+                        <Drawer v-model:visible="visible">
+                            <ul class="flex flex-col gap-y-2| text-lg font-medium" role="list">
+                                <li>
+                                    <Link :href="route('home')"><span>Home</span></Link>
+                                </li>
+                                <li v-if="user?.role === 'customer'">
+                                    <Link :href="route('user.profile', user.user_name)"><span>Dashboard</span></Link>
+                                </li>
+                                <li>
+                                    <Link :href="route('rooms.index')"><span>Rooms</span></Link>
+                                </li>
+                                <li>
+                                    <Link :href="route('about')"><span>About us</span></Link>
+                                </li>
+                                <li>
+                                    <a :href="route('review')"><span>Review</span></a>
+                                </li>
+                            </ul>
+                        </Drawer>
+                        <Button icon="pi pi-align-justify" @click="visible = true" severity="info" variant="text" size="large" raised/>
+                    </div>
                 </div>
+
             </div>
         </section>
     </header>
@@ -162,6 +183,8 @@ import TieredMenu from 'primevue/tieredmenu';
 import Button from 'primevue/button';
 import Avatar from 'primevue/avatar';
 import Badge from 'primevue/badge';
+
+import Drawer from 'primevue/drawer';
 
 // dynamic dialog
 const dialog = useDialog();
@@ -298,5 +321,8 @@ const guestMenuItems = ref([
 const logout = () => {
     router.post('/logout');
 }
+
+// toggle menu mobile
+const visible = ref(false);
 
 </script>

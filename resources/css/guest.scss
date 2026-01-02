@@ -5,11 +5,11 @@
         color: var(--text-color);
         background: var(--neutral-color-300);
 
-        &__left,
-        &__right {
-            display: flex;
-            align-items: stretch;
-        }
+        // &__left,
+        // &__right {
+        //     display: flex;
+        //     align-items: stretch;
+        // }
 
         &__left {
             .nav-list {
