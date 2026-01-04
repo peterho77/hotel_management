@@ -75,10 +75,10 @@
                 </div>
             </div>
         </div>
-        <!-- <FloatingButton/> -->
+        <FloatingButton/>
     </footer>
 </template>
 
 <script setup>
-// import FloatingButton from "../Components/Global/Chat/FloatingButton.vue";
+import FloatingButton from "../../Components/Global/Chat/FloatingButton.vue";
 </script>

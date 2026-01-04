@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('category')->default('service');
 
             // Đặc thù dịch vụ
-            $table->integer('duration')->default(0); // Thời lượng (tính bằng giờ)
+            $table->integer('duration')->default(1); // Thời lượng (tính bằng giờ)
 
             // Giá cả
             $table->decimal('cost_price', 15, 2)->default(0); // Giá vốn (0)

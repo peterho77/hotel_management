@@ -3,12 +3,12 @@
 namespace App\Services\Chatbot;
 
 use App\Models\RoomType;
-use App\Models\Goods;
+use App\Models\Product;
 use App\Models\Service;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class ProductSearchService
+class HotelSearchService
 {
     protected $isAskingPrice = false;
 
@@ -26,29 +26,29 @@ class ProductSearchService
         // Nếu sau khi lọc không còn từ khóa và không có khoảng giá -> trả về kết quả rỗng, không truy vấn DB
         if (empty($keywords) && empty($priceRange)) {
             return [
-                'medicines' => collect([]),
-                'goods'     => collect([]),
+                'rooms' => collect([]),
+                'products'     => collect([]),
                 'services'  => collect([]),
             ];
         }
 
         $result = [
-            'medicines' => collect([]),
-            'goods'     => collect([]),
+            'rooms' => collect([]),
+            'products'     => collect([]),
             'services'  => collect([]),
         ];
 
         // Truy vấn Database khi có từ khóa hoặc khoảng giá
         if ($searchType === 'product' || $searchType === 'all') {
             // Tìm thuốc
-            $result['medicines'] = $this->smartSearch($keywords, $priceRange, RoomType::class, 'ten_thuoc');
+            $result['rooms'] = $this->smartSearch($keywords, $priceRange, RoomType::class, 'name');
             // Tìm hàng hóa
-            $result['goods'] = $this->smartSearch($keywords, $priceRange, Goods::class, 'ten_hang_hoa');
+            $result['products'] = $this->smartSearch($keywords, $priceRange, Product::class, 'name');
         }
 
         if ($searchType === 'service' || $searchType === 'all') {
             // Tìm dịch vụ
-            $result['services'] = $this->smartSearch($keywords, $priceRange, Service::class, 'ten_dich_vu');
+            $result['services'] = $this->smartSearch($keywords, $priceRange, Service::class, 'name');
         }
 
         return $result;
@@ -123,7 +123,7 @@ class ProductSearchService
             'hello',
             'xin',
             'chào',
-            'shop',
+            'hotel',
             'ad',
             'admin',
             'ơi',
@@ -172,7 +172,7 @@ class ProductSearchService
     // phát hiện ý định hỏi về giá
     private function detectPriceIntent(string $message): void
     {
-        $priceKeywords = ['giá', 'tiền', 'bao nhiêu', 'nhiêu', 'cost', 'price', 'chi phí'];
+        $priceKeywords = ['giá', 'tiền', 'bao nhiêu', 'nhiêu', 'chi phí', 'cost', 'price', 'how much', 'money'];
         $message = mb_strtolower($message);
         foreach ($priceKeywords as $word) {
             if (str_contains($message, $word)) {
@@ -188,11 +188,11 @@ class ProductSearchService
     {
         $query = $modelClass::query();
 
-        // chiến lược 1 - Lọc các sản phẩm hợp lệ
-        if ($modelClass === RoomType::class || $modelClass === Goods::class) {
-            $query->where('ban_truc_tiep', true);
-        } elseif ($modelClass === Service::class) {
-            $query->where('trang_thai', 'kich_hoat');
+        // chiến lược 1 - Lọc loại phòng, hàng hóa, dịch vụ đang kinh doanh
+        if ($modelClass === RoomType::class) {
+            $query->where('status', 'active');
+        } elseif ($modelClass === Service::class || $modelClass === Product::class) {
+            $query->where('is_active', true);
         }
 
         // Sản phẩm phải chứa TẤT CẢ từ khóa
@@ -200,35 +200,37 @@ class ProductSearchService
         foreach ($keywords as $keyword) {
             $exactQuery->where(function ($q) use ($keyword, $nameColumn, $modelClass) {
                 $q->where($nameColumn, 'like', '%' . $keyword . '%');
-                // Thêm trường phụ nếu là thuốc
+                // Thêm tìm kiếm trường phụ 
                 if ($modelClass === RoomType::class) {
-                    $q->orWhere('hoat_chat', 'like', '%' . $keyword . '%');
+                    $q->orWhere('bed_type', 'like', '%' . $keyword . '%')
+                        ->orWhere('description', 'like', '%' . $keyword . '%');
                 }
             });
         }
 
         if ($priceRange) {
-            $colPrice = ($modelClass === Service::class) ? 'gia_dich_vu' : 'gia_ban';
+            $colPrice = ($modelClass === Service::class || $modelClass === Product::class) ? 'selling_price' : 'base_price';
             $exactQuery->whereBetween($colPrice, [$priceRange['min'], $priceRange['max']]);
         }
 
         $results = $exactQuery->limit(5)->get();
 
-        // chiến lược 2 - Nếu không tìm thấy kết quả, tìm sản phẩm chứa "bất kỳ" từ khóa nào
-        // Nếu tìm chính xác không ra VÀ có nhiều từ khóa -> Chuyển sang tìm sản phẩm chứa "bất kỳ" từ nào
+        // chiến lược 2 - Nếu không tìm thấy kết quả, tìm loại phòng/hàng hóa/dịch vụ chứa "bất kỳ" từ khóa nào
+        // Nếu tìm chính xác không ra VÀ có nhiều từ khóa -> Chuyển sang tìm loại phòng/hàng hóa/dịch vụ chứa "bất kỳ" từ nào
         if ($results->isEmpty() && count($keywords) > 1) {
             $fuzzyQuery = clone $query;
             $fuzzyQuery->where(function ($q) use ($keywords, $nameColumn, $modelClass) {
                 foreach ($keywords as $keyword) {
                     $q->orWhere($nameColumn, 'like', '%' . $keyword . '%');
-                    if ($modelClass === Medicine::class) {
-                        $q->orWhere('hoat_chat', 'like', '%' . $keyword . '%');
+                    if ($modelClass === RoomType::class) {
+                        $q->orWhere('bed_type', 'like', '%' . $keyword . '%')
+                            ->orWhere('description', 'like', '%' . $keyword . '%');
                     }
                 }
             });
 
             if ($priceRange) {
-                $colPrice = ($modelClass === Service::class) ? 'gia_dich_vu' : 'gia_ban';
+                $colPrice = ($modelClass === Service::class || $modelClass === Product::class) ? 'selling_price' : 'base_price';
                 $fuzzyQuery->whereBetween($colPrice, [$priceRange['min'], $priceRange['max']]);
             }
 
@@ -237,11 +239,15 @@ class ProductSearchService
 
         // Load quan hệ nếu có kết quả
         if ($results->isNotEmpty()) {
-            if ($modelClass === Medicine::class || $modelClass === Goods::class) {
-                $results->load(['category', 'manufacturer']);
-            } elseif ($modelClass === Service::class) {
-                $results->load(['category', 'doctor']);
+            if ($modelClass === RoomType::class){
+                $results->load(['rooms', 'amenities', 'room_options', 'branches']);
             }
+            // elseif ($modelClass === Product::class) {
+            //     $results->load(['category', 'doctor']);
+            // } 
+            // elseif ($modelClass === Service::class) {
+            //     $results->load(['category', 'doctor']);
+            // }
         }
 
         return $results;
@@ -264,27 +270,27 @@ class ProductSearchService
         $images = [];
 
         // 1. Lấy ảnh thuốc
-        foreach ($searchResults['medicines'] as $medicine) {
-            if (!empty($medicine->image)) {
+        foreach ($searchResults['rooms'] as $room) {
+            if (!empty($room->image)) {
                 $images[] = [
-                    'id'    => $medicine->id,
-                    'name'  => $medicine->ten_thuoc,
-                    'price' => $medicine->gia_ban_formatted ?? number_format($medicine->gia_ban) . ' đ',
-                    'image' => asset('storage/' . $medicine->image),
-                    'type'  => 'Thuốc'
+                    'id'    => $room->id,
+                    'name'  => $room->name,
+                    'price' => $room->base_price ?? number_format($room->gia_ban) . ' đ',
+                    'image' => asset('storage/' . $room->image),
+                    'type'  => 'room_type'
                 ];
             }
         }
 
         // 2. Lấy ảnh vật tư y tế
-        foreach ($searchResults['goods'] as $goods) {
-            if (!empty($goods->image)) {
+        foreach ($searchResults['products'] as $product) {
+            if (!empty($product->image)) {
                 $images[] = [
-                    'id'    => $goods->id,
-                    'name'  => $goods->ten_hang_hoa,
-                    'price' => $goods->gia_ban_formatted ?? number_format($goods->gia_ban) . ' đ',
-                    'image' => asset('storage/' . $goods->image),
-                    'type'  => 'Vật tư y tế'
+                    'id'    => $product->id,
+                    'name'  => $product->name,
+                    'price' => $product->selling_price ?? number_format($product->selling_price) . ' đ',
+                    'image' => asset('storage/' . $product->image),
+                    'type'  => 'product'
                 ];
             }
         }
@@ -297,22 +303,25 @@ class ProductSearchService
         $message = mb_strtolower($message, 'UTF-8');
 
         $productKeywords = [
-            'sản phẩm',
-            'thuốc',
+            'phòng',
+            'loại phòng',
+            'hạng phòng',
             'hàng hóa',
-            'kem',
-            'viên',
-            'siro',
+            'thức ăn',
+            'đồ uống',
+            'mì gói',
+            'bia',
+            'nước ngọt',
             'chai',
             'hộp',
-            'hũ'
         ];
         $serviceKeywords = [
             'dịch vụ',
-            'khám',
-            'tư vấn',
-            'bác sĩ',
-            'doctor'
+            'thuê',
+            'giặt',
+            'golf',
+            'xe',
+            'massage'
         ];
 
         $hasProduct = false;
@@ -347,9 +356,8 @@ class ProductSearchService
     private function filterGenericKeywords(array $keywords): array
     {
         $genericWords = [
-            'thuốc',
-            'sản',
-            'phẩm',
+            'đặt',
+            'phòng',
             'hàng',
             'hóa',
             'tìm',
@@ -371,41 +379,39 @@ class ProductSearchService
 
     public function formatForGemini(array $searchResults): string
     {
-        $formatted = "THÔNG TIN SẢN PHẨM/DỊCH VỤ LIÊN QUAN:\n\n";
+        $formatted = "THÔNG TIN PHÒNG/DỊCH VỤ LIÊN QUAN:\n\n";
 
         if ($this->isAskingPrice) {
             $formatted .= "!!! LƯU Ý QUAN TRỌNG: KHÁCH HÀNG ĐANG HỎI VỀ GIÁ TIỀN. Hãy trả lời ngắn gọn, đưa GIÁ TIỀN lên đầu câu trả lời.\n\n";
         }
         // Kiểm tra nếu tất cả đều rỗng -> Trả về thông báo không tìm thấy
         if (
-            $searchResults['medicines']->isEmpty() &&
-            $searchResults['goods']->isEmpty() &&
+            $searchResults['rooms']->isEmpty() &&
+            $searchResults['products']->isEmpty() &&
             $searchResults['services']->isEmpty()
         ) {
-            return "Không tìm thấy sản phẩm cụ thể nào trong hệ thống. Hãy tư vấn chung dựa trên kiến thức y khoa.";
+            return "Không tìm thấy thông tin cụ thể nào trong hệ thống. Hãy thử tìm kiếm từ khóa khác.";
         }
 
-        if ($searchResults['medicines']->isNotEmpty()) {
-            foreach ($searchResults['medicines'] as $index => $medicine) {
-                $formatted .= "- Sản phẩm: {$medicine->ten_thuoc}\n";
-                $formatted .= "  Giá: {$medicine->gia_ban_formatted} | Kho: " . ($medicine->ton_kho > 0 ? "Còn hàng" : "Hết") . "\n";
-                $shortDesc = Str::limit($medicine->mo_ta ?? $medicine->cong_dung ?? 'Hỗ trợ điều trị', 150);
-                $formatted .= "  Công dụng chính: {$shortDesc}\n";
-                if ($medicine->mo_ta) {
-                    $formatted .= "  [Thông tin chi tiết - Chỉ dùng khi khách hỏi sâu]: {$medicine->mo_ta}\n";
+        if ($searchResults['rooms']->isNotEmpty()) {
+            foreach ($searchResults['rooms'] as $index => $room) {
+                $formatted .= "- Phòng: {$room->name}\n";
+                $formatted .= "  Giá: {$room->base_price} | Tình trạng: " . ($room->total_quantity > 0 ? "Còn phòng" : "Hết") . "\n";
+                $shortDesc = Str::limit($room->bed_type ?? 'Không có', 150);
+                $formatted .= "  Loại giường: {$shortDesc}\n";
+                if ($room->mo_ta) {
+                    $formatted .= "  [Thông tin chi tiết - Chỉ dùng khi khách hỏi sâu]: {$room->description}\n";
                 }
                 $formatted .= "---\n";
             }
         }
 
-        if ($searchResults['goods']->isNotEmpty()) {
-            foreach ($searchResults['goods'] as $index => $goods) {
-                $formatted .= "- Sản phẩm: {$goods->ten_hang_hoa}\n";
-                $formatted .= "  Giá: {$goods->gia_ban_formatted} | Kho: " . ($goods->ton_kho > 0 ? "Còn hàng" : "Hết") . "\n";
-                $shortDesc = Str::limit($goods->mo_ta ?? 'Hỗ trợ điều trị', 150);
-                $formatted .= "  Công dụng chính: {$shortDesc}\n";
-                if ($goods->mo_ta) {
-                    $formatted .= "  [Thông tin chi tiết - Chỉ dùng khi khách hỏi sâu]: {$goods->mo_ta}\n";
+        if ($searchResults['products']->isNotEmpty()) {
+            foreach ($searchResults['products'] as $index => $product) {
+                $formatted .= "- Sản phẩm: {$product->name}\n";
+                $formatted .= "  Giá: {$product->selling_price} | Kho: " . ($product->max_inventory > 0 ? "Còn hàng" : "Hết hàng") . "\n";
+                if ($product->description) {
+                    $formatted .= "  [Thông tin chi tiết - Chỉ dùng khi khách hỏi sâu]: {$product->description}\n";
                 }
                 $formatted .= "---\n";
             }
@@ -413,16 +419,13 @@ class ProductSearchService
 
         if ($searchResults['services']->isNotEmpty()) {
             foreach ($searchResults['services'] as $index => $service) {
-                $formatted .= ($index + 1) . ". {$service->ten_dich_vu}\n";
-                $formatted .= "   - Giá: " . number_format($service->gia_dich_vu, 0, ',', '.') . " VNĐ\n";
-                if ($service->doctor) {
-                    $formatted .= "   - Bác sĩ: {$service->doctor->ten_bac_si}\n";
+                $formatted .= ($index + 1) . ". {$service->name}\n";
+                $formatted .= "   - Giá: " . number_format($service->selling_price, 0, ',', '.') . " VNĐ\n";
+                if ($service->duration) {
+                    $formatted .= "   - Thời gian: {$service->duration}h\n";
                 }
-                if ($service->thoi_gian_thuc_hien) {
-                    $formatted .= "   - Thời gian: {$service->thoi_gian_thuc_hien}\n";
-                }
-                if ($service->mo_ta) {
-                    $formatted .= "   - Mô tả: {$service->mo_ta}\n";
+                if ($service->description) {
+                    $formatted .= "   - Mô tả: {$service->description}\n";
                 }
                 $formatted .= "\n";
             }

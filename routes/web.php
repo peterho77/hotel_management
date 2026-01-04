@@ -124,6 +124,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
-
-    // Route::post('/api/chatbot/chat', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
+
+Route::post('/api/chatbot/chat', [ChatbotController::class, 'chat'])->name('chatbot.chat');

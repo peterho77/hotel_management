@@ -61,12 +61,12 @@
     </div>
 
     <div class="chat-input-area">
-      <form @submit.prevent="sendMessage">
+      <Form @submit="sendMessage">
         <div class="input-container">
           <textarea v-model="currentMessage" @keydown.enter.prevent="sendMessage" @keydown.ctrl.enter="addNewLine"
             placeholder="Nhập tin nhắn..." :disabled="isLoading" rows="1" ref="messageInput"
             class="chat-textarea"></textarea>
-<div class="input-actions">
+          <div class="input-actions">
             <button type="button" class="action-btn emoji-btn" title="Chèn emoji">
               <i class="far fa-smile"></i>
             </button>
@@ -76,13 +76,18 @@
             </button>
           </div>
         </div>
-      </form>
+      </Form>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
+
+import { Form } from '@primevue/forms';
+
+// router
+import { router } from '@inertiajs/vue3';
 
 // Reactive data
 const messages = ref([])
@@ -155,7 +160,17 @@ const sendMessage = async () => {
     // Create new EventSource connection with POST data
     const formData = new FormData()
     formData.append('message', userMessage)
-    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'))
+
+    // Lấy token an toàn hơn
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    const token = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
+    if (!token) {
+      console.error('Lỗi: Không tìm thấy CSRF token trong thẻ meta!');
+      // Có thể thông báo cho user hoặc dừng hàm tại đây
+    }
+
+    formData.append('_token', token)
 
     // Use fetch with POST method
     const response = await fetch('/api/chatbot/chat', {
@@ -164,7 +179,9 @@ const sendMessage = async () => {
     })
 
     if (!response.ok) {
-      throw new Error('Network response was not ok')
+        const errorText = await response.text(); // Đọc nội dung lỗi từ server
+        console.error(`Lỗi Server (${response.status}):`, errorText);
+        throw new Error(`Server trả về lỗi ${response.status}: ${errorText}`);
     }
 
     // Read the stream
@@ -182,7 +199,7 @@ const sendMessage = async () => {
     let currentEvent = null // biến lưu loại event đang đọc hiện tại
 
     let botResponse = ''
-let isFirstChunk = true
+    let isFirstChunk = true
 
     // 3. Vòng lặp đọc Stream
     while (true) {
@@ -500,7 +517,7 @@ onUnmounted(() => {
   gap: 12px;
   overflow-x: auto;
   padding: 5px 2px 15px 2px;
-/* Padding bottom để tránh che bóng đổ */
+  /* Padding bottom để tránh che bóng đổ */
   margin-bottom: 8px;
   max-width: 100%;
   scrollbar-width: thin;
@@ -569,6 +586,7 @@ onUnmounted(() => {
   /* Cắt dòng nếu tên quá dài */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp:2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 34px;

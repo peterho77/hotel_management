@@ -27,7 +27,7 @@ import ChatbotPopup from './Popup.vue'
 
 // Reactive data
 const isOpen = ref(false)
-const robotImageUrl = ref('/storage/chatbot/robot_18531732.png')
+const robotImageUrl = ref('/img/chatbot1.png')
 
 // Methods
 const toggleChat = () => {
