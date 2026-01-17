@@ -2,7 +2,7 @@
   <div class="chatbot-container">
     <div class="chat-messages" ref="messagesContainer">
       <div v-if="messages.length === 0" class="welcome-screen">
-        <div class="bot-avatar-large">
+        <div class="bot-avatar-large | flex items-center justify-center">
           <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="Bot" />
         </div>
         <h3>Xin chào! Tôi có thể giúp gì cho bạn?</h3>
@@ -179,9 +179,9 @@ const sendMessage = async () => {
     })
 
     if (!response.ok) {
-        const errorText = await response.text(); // Đọc nội dung lỗi từ server
-        console.error(`Lỗi Server (${response.status}):`, errorText);
-        throw new Error(`Server trả về lỗi ${response.status}: ${errorText}`);
+      const errorText = await response.text(); // Đọc nội dung lỗi từ server
+      console.error(`Lỗi Server (${response.status}):`, errorText);
+      throw new Error(`Server trả về lỗi ${response.status}: ${errorText}`);
     }
 
     // Read the stream
@@ -229,9 +229,16 @@ const sendMessage = async () => {
             }
           }
           else if (currentEvent === 'update') {
-            // Nối text
-            messages.value[botMessageIndex].content += data
-            nextTick(() => scrollToBottom())
+            try {
+              // Parse JSON để loại bỏ dấu ngoặc kép và sửa lỗi font chữ
+              const text = JSON.parse(data);
+              messages.value[botMessageIndex].content += text;
+            } catch (e) {
+              // Phòng trường hợp data không phải JSON thì nối thẳng
+              console.warn('Không parse được JSON, nối thẳng:', data);
+              messages.value[botMessageIndex].content += data;
+            }
+            nextTick(() => scrollToBottom());
           }
         }
       }
@@ -586,7 +593,7 @@ onUnmounted(() => {
   /* Cắt dòng nếu tên quá dài */
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp:2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 34px;

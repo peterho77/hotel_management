@@ -11,8 +11,7 @@
         <div class="chatbot-sidebar-header">
           <h3>Hỗ Trợ Khách Hàng</h3>
           <div class="header-buttons">
-            <!-- <button @click="clearChat" class="clear-btn"></button> -->
-            <button @click="closeChat" class="close-btn">&times;</button>
+            <Button @click="closeChat" icon="pi pi-times" severity="info" rounded variant="text" aria-label="Cancel" />
           </div>
         </div>
         <ChatbotPopup />
@@ -24,6 +23,7 @@
 <script setup>
 import { ref } from 'vue'
 import ChatbotPopup from './Popup.vue'
+import Button from 'primevue/button';
 
 // Reactive data
 const isOpen = ref(false)
@@ -119,7 +119,6 @@ const closeChat = () => {
 
 .header-buttons {
   display: flex;
-  gap: 8px;
   align-items: center;
 }
 
