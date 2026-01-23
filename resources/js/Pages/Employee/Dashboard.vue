@@ -48,15 +48,15 @@
                                 <i class="pi pi-sparkles text-[10px]"></i> Sạch
                             </div>
 
-                            <div>
-                                <i v-if="room.status !== 'maintenance'"
-                                    class="pi pi-ellipsis-v cursor-pointer p-1 rounded hover:bg-black/10 transition"
-                                    :class="room.status === 'empty' ? 'text-gray-400' : 'text-white'"
-                                    @click="toggleCleaningState(room, $event)"></i>
+                            <div class="toggle-cleaning-status-menu" v-if="room.status !== 'maintenance'"
+                                :class="{ 'active': currentActiveMenu === room.id }" @click="toggleCleaningMenu(room.id)">
+                                <i class="pi pi-ellipsis-v | cursor-pointer p-1 rounded hover:bg-black/10 transition"
+                                    :class="room.status === 'empty' ? 'text-gray-400' : 'text-white'"></i>
+                                <div class="cleaning-status-menu">
+                                    <span @click.stop="toggleCleaningState(room)">{{ room.isDirty ? 'Làm sạch' : 'Đánh dấu chưa dọn' }}</span>
+                                </div>
                             </div>
                         </div>
-
-
 
                         <div class="flex-1 flex flex-col justify-center">
                             <h3 class="text-2xl font-bold mb-1"
@@ -85,9 +85,6 @@
 
                 </div>
             </div>
-
-            <Menu ref="cleaningState" :popup="true" :model="cleaningMenu">
-            </Menu>
 
             <div v-if="floorGroups.length === 0" class="text-center py-10 text-gray-500">
                 <i class="pi pi-inbox text-4xl mb-2"></i>
@@ -137,13 +134,35 @@
 .dashboard-wrapper::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+
+/* Custom cleaning status menu */
+.toggle-cleaning-status-menu {
+    position: relative;
+}
+
+.toggle-cleaning-status-menu.active .cleaning-status-menu {
+    display: block;
+}
+
+.cleaning-status-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: -2.5rem;
+    min-width: 100%;
+    text-wrap: nowrap;
+    color: var(--neutral-color-800);
+    background: white;
+    padding: .5em .75em;
+    border-radius: .5rem;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
 </style>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
 
 import Button from 'primevue/button';
-import Menu from 'primevue/menu';
 
 import { formatCurrency } from "@/Composables/formatData";
 
@@ -169,7 +188,7 @@ const syncRoomData = () => {
 
     currentRoomList.value = props.roomList.map(room => {
         const isBooked = bookedRoomIds.has(room.id);
-        
+
         // Clone object để tách khỏi Props
         const newRoom = { ...room };
 
@@ -189,7 +208,7 @@ const syncRoomData = () => {
 };
 
 watch(
-    [() => props.roomList, () => props.roomBookingList], 
+    [() => props.roomList, () => props.roomBookingList],
     () => {
         syncRoomData();
     },
@@ -279,16 +298,21 @@ const getCardClasses = (room) => {
 };
 
 // toggle cleaning state
-const cleaningState = ref();
 const selectedRoom = ref(null);
-const cleaningMenu = ref([]);
+
+const currentActiveMenu = ref(null);
+const toggleCleaningMenu = (id) => {
+    if (currentActiveMenu.value == id) {
+        currentActiveMenu.value = null
+    }
+    else
+    {
+        currentActiveMenu.value = id;
+    }
+};
 
 // Hàm xử lý khi bấm vào dấu 3 chấm
-const toggleCleaningState = (room, event) => {
-    if (cleaningState.value) {
-        cleaningState.value.toggle(event);
-    }
-    // 1. CHẶN NẾU INACTIVE
+const toggleCleaningState = (room) => {
     // Nếu phòng đang bảo trì hoặc ngừng hoạt động -> Không làm gì cả
     if (room.status === 'inactive') {
         return;
@@ -296,30 +320,14 @@ const toggleCleaningState = (room, event) => {
 
     selectedRoom.value = room;
 
-    // 2. LOGIC MENU (Chỉ chạy khi status != inactive)
     if (room.isDirty) {
         // Nếu phòng đang bẩn -> Hiện menu "Làm sạch"
-        cleaningMenu.value = [
-            {
-                label: 'Làm sạch',
-                icon: 'pi pi-sparkles',
-                command: () => {
-                    markAsClean(room);
-                }
-            }
-        ];
+        markAsClean(room);
     } else {
         // Nếu phòng đang sạch -> Hiện menu "Đánh dấu chưa dọn"
-        cleaningMenu.value = [
-            {
-                label: 'Đánh dấu chưa dọn',
-                icon: 'pi pi-ban',
-                command: () => {
-                    markAsDirty(room);
-                }
-            }
-        ];
+        markAsDirty(room)
     }
+    currentActiveMenu.value = null;
 }
 
 // Hàm xử lý: Chuyển từ Bẩn -> Sạch

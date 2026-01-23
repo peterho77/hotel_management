@@ -2,7 +2,11 @@
     <header>
         <div class="container | flex justify-between">
             <div class="buttons-group | p-2 flex gap-3">
-                <Button label="Lịch làm việc của tôi" icon="pi pi-user" size="small" variant="text" raised />
+                <Link :href="route('employee.schedule', user.user_name)"
+                    style="text-decoration: none;">
+                    <Button label="Lịch làm việc của tôi" icon="pi pi-user" size="small" variant="text" raised />
+                </Link>
+
                 <Button label="Lịch đặt phòng" icon="pi pi-calendar" size="small" variant="text" raised />
                 <Button label="Hóa đơn" icon="" severity="success" size="small" raised />
             </div>
@@ -14,7 +18,7 @@
                 <span>{{ user.phone ?? 'NV0000' }}</span>
                 <div>
                     <div class="user-menu | flex items-center">
-                        <Button icon="pi pi-ellipsis-v" @click="toggleUserMenu" severity="success" variant="text"/>
+                        <Button icon="pi pi-ellipsis-v" @click="toggleUserMenu" severity="success" variant="text" />
                         <TieredMenu v-if="user" ref="userMenu" :popup="true" :model="userMenuItems" appendTo="self">
                             <!-- Header user info -->
                             <template #start>

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Room;
+use App\Models\EmployeeSchedule;
 use App\Models\RoomBookingItem;
 
 class EmployeeController extends Controller
@@ -47,7 +49,7 @@ class EmployeeController extends Controller
                     'price' => $room->currentBookingItem ? $room->current_booking_item->final_price : $room->room_type->price,
 
                     'room_type' => $room->room_type,
-                    
+
                     // Thông tin khách (Gọi accessor helper)
                     'guestName' => $room->current_guest_name,
                     'time' => $room->current_time_str,
@@ -60,6 +62,19 @@ class EmployeeController extends Controller
         return Inertia::render('Employee/Dashboard', [
             'roomList' => $roomList,
             'roomBookingList' => $roomBookingList,
+        ]);
+    }
+
+    public function schedule(string $user_name)
+    {
+        $userId = User::where('user_name', $user_name)->value('id');
+        $employee = Employee::where('user_id', $userId)->first();
+        $employeeSchedule = EmployeeSchedule::where('employee_id', $employee->id)
+            ->with(['employee', 'shift'])
+            ->get();
+        return Inertia::render('Employee/Schedule', [
+            'employeeSchedule' => $employeeSchedule,
+            'employee' => $employee
         ]);
     }
 }

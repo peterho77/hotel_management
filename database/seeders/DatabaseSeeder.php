@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Employee;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -36,7 +37,15 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($test_users as $user) {
-            User::factory()->create($user);
+            // Kiểm tra role: Nếu là 'employee' (hoặc 'manager') thì tạo kèm bảng Employee
+            $user = User::factory()->create($user);
+
+            // 2. Nếu là employee, lấy ID của $user vừa tạo nhét vào bảng Employee
+            if ($user['role'] == 'employee') {
+                Employee::factory()->create([
+                    'user_id' => $user->id, 
+                ]);
+            }
         }
 
         $this->call([

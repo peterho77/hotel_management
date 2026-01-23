@@ -18,7 +18,10 @@ return new class extends Migration
             $table->string('code')->nullable()->unique();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
 
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             $table->string('address')->nullable();
             $table->string('phone', 20)->nullable();
@@ -31,7 +34,7 @@ return new class extends Migration
 
             // chi nhánh làm việc
             $table->foreignId('branch_id')
-                ->default(1)
+                ->nullable()
                 ->constrained('branch')
                 ->cascadeOnDelete();
 

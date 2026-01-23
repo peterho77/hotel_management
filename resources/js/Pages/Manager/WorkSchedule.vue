@@ -716,7 +716,6 @@
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { useToast } from 'primevue/usetoast'
-import Chip from 'primevue/chip';
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 

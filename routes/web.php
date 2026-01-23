@@ -107,6 +107,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:employee')->group(function () {
         Route::prefix('employee')->name('employee.')->group(function () {
             Route::get('/{user_name}/dashboard', [EmployeeController::class, 'dashboard'])->name('index');
+            Route::get('/{user_name}/schedule', [EmployeeController::class, 'schedule'])->name('schedule');
         });
     });
 
