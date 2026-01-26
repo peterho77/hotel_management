@@ -21,7 +21,7 @@
         <!-- Week Navigation -->
         <div class="week-navigation">
           <Button icon="pi pi-chevron-left" @click="previousWeek" class="p-button-text p-button-rounded"
-            :disabled="loading" />
+            :disabled="loading || isPastWeek" />
           <div class="week-display">
             <span class="week-text">{{ weekDisplayText }}</span>
             <Button label="Tuần này" @click="goToCurrentWeek" class="p-button-text p-button-sm" :disabled="loading" />
@@ -64,7 +64,7 @@
                 <template v-for="schedule in getSchedulesForDay(employee, day.date)" :key="schedule.id">
                   <Button class="shift-block" :severity="getShiftColorClass(schedule.shift)" raised
                     @click="showUpdateScheduleDialog(schedule, employee, day.date)">
-                    <div class="flex justify-between items-center gap-2">
+                    <div class="w-full flex justify-between items-center px-2">
                       <span>{{ schedule.shift?.name || 'N/A' }}</span>
                       <i class="pi pi-times" style="font-size:.75rem"
                         @click.stop="showDeleteConfirmDialog(schedule.id)"></i>
@@ -100,7 +100,8 @@
 
     <!-- Loading -->
     <div v-if="loading" class="loading-state">
-      <ProgressSpinner />
+      <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent" animationDuration="1  s"
+        aria-label="Custom ProgressSpinner" />
       <p>Đang tải...</p>
     </div>
   </div>
@@ -685,18 +686,6 @@
 }
 
 /* Footer */
-.flex {
-  display: flex;
-}
-
-.justify-end {
-  justify-content: flex-end;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
 /* Create Schedule Modal */
 .create-schedule-modal {
   padding: 8px;
@@ -713,7 +702,7 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
@@ -724,7 +713,7 @@ import { useDialog } from 'primevue/usedialog';
 import { useConfirm } from "primevue/useconfirm";
 
 // format data
-import { formatCurrency, formatDateVN } from "@/Composables/formatData";
+import { formatCurrency, formatDateVN, formatDateLocal } from "@/Composables/formatData";
 
 const props = defineProps({
   allShifts: Array,
@@ -839,6 +828,7 @@ const showDeleteConfirmDialog = (schedule_id) => {
 // --- State (Replaces data) ---
 const loading = ref(false)
 const searchQuery = ref('')
+const currentWeekStart = ref('');
 const weekStart = ref(props.filters.week_start)
 const scheduleData = ref(props.scheduleData)
 const showScheduleModal = ref(false)
@@ -880,7 +870,6 @@ const weekDays = computed(() => {
   }
   return days
 })
-console.log(weekDays.value);
 
 const weekDisplayText = computed(() => {
   if (!weekStart.value) return ''
@@ -926,10 +915,6 @@ const filteredScheduleData = computed(() => {
 })
 console.log(filteredScheduleData.value);
 
-const scheduleModalTitle = computed(() => {
-  return editingSchedule.value ? 'Chỉnh sửa lịch làm việc' : 'Thêm lịch làm việc'
-})
-
 // --- Methods ---
 const initializeWeek = () => {
   const today = new Date()
@@ -937,10 +922,19 @@ const initializeWeek = () => {
   const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek // Monday
   const monday = new Date(today)
   monday.setDate(today.getDate() + diff)
-  monday.setHours(0, 0, 0, 0)
 
-  weekStart.value = monday.toISOString().split('T')[0]
+  const year = monday.getFullYear();
+  const month = String(monday.getMonth() + 1).padStart(2, '0');
+  const day = String(monday.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+
+  weekStart.value = dateString;
+  currentWeekStart.value = dateString;
 }
+
+const isPastWeek = computed(() => {
+  return weekStart.value <= currentWeekStart.value
+})
 
 const getWeekNumber = (date) => {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -950,13 +944,18 @@ const getWeekNumber = (date) => {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
 }
 
-// Chuyển đổi tuần (Thay thế cho changeWeek cũ)
+// Chuyển đổi tuần
+const showSpinner = ref(false);
 const changeWeek = (newWeekStart) => {
-  // Đảm bảo định dạng ngày là YYYY-MM-DD
-  // Nếu newWeekStart là đối tượng Date, chuyển nó về string
-  const dateString = new Date(newWeekStart).toISOString().split('T')[0];
+  let dateInput = newWeekStart || weekStart.value;
 
-  router.get('/manager/work-schedule',
+  const dateObj = new Date(dateInput);
+  if (isNaN(dateObj.getTime())) return;
+
+  const dateString = formatDateLocal(dateObj);
+
+  const startTime = new Date();
+  router.get(route('manager.work-schedule.index'),
     {
       week_start: dateString,
       search: searchQuery.value
@@ -966,15 +965,27 @@ const changeWeek = (newWeekStart) => {
       preserveScroll: true,
       only: ['scheduleData', 'filters'],
       onStart: () => {
-        loading.value = true
+        loading.value = true,
+          showSpinner.value = true
       },
       onFinish: () => {
-        loading.value = false
+        const endTime = new Date();
+        const minDuration = 800 //ms
+        const duration = endTime - startTime;
+        if (duration < minDuration) {
+          setTimeout(() => {
+            loading.value = false,
+            showSpinner.value = false
+          }, minDuration - duration)
+        }
+        else {
+          loading.value = false,
+          showSpinner.value = false
+        }
       }
     }
   )
 }
-
 const debounceSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -985,20 +996,25 @@ const debounceSearch = () => {
 const previousWeek = () => {
   const date = new Date(weekStart.value)
   date.setDate(date.getDate() - 7)
-  weekStart.value = date.toISOString().split('T')[0]
-  changeWeek()
+  console.log(date);
+  const dateString = formatDateLocal(date);
+  console.log(dateString);
+  weekStart.value = dateString;
+  changeWeek(dateString);
 }
 
 const nextWeek = () => {
   const date = new Date(weekStart.value)
   date.setDate(date.getDate() + 7)
-  weekStart.value = date.toISOString().split('T')[0]
-  changeWeek()
+  const dateString = formatDateLocal(date);
+
+  weekStart.value = dateString;
+  changeWeek(dateString);
 }
 
 const goToCurrentWeek = () => {
   initializeWeek()
-  changeWeek()
+  changeWeek(weekStart.value)
 }
 
 const getSchedulesForDay = (employee, dateString) => {
@@ -1027,13 +1043,6 @@ const getShiftColorClass = (shift) => {
   if (name.includes('chiều') || name.includes('afternoon')) return 'info'
   if (name.includes('tối') || name.includes('evening') || name.includes('night')) return 'success'
   return 'shift-default'
-}
-
-const editSchedule = (schedule, employee, date) => {
-  selectedEmployee.value = employee
-  selectedDate.value = date
-  editingSchedule.value = schedule
-  showScheduleModal.value = true
 }
 
 const closeScheduleModal = () => {

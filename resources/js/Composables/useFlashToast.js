@@ -6,8 +6,6 @@ export function useFlashToast() {
     const page = usePage();
     const toast = useToast();
 
-    const shownFlash = ref({ success: null, error: null });
-
     watch(
         () => page.props.flash,
         (flash) => {
@@ -21,7 +19,7 @@ export function useFlashToast() {
                     detail: flash.success,
                     life: 3000,
                 });
-                shownFlash.value.success = flash.success;
+                flash.success = null
             }
 
             // chỉ show error nếu chưa show
@@ -32,7 +30,7 @@ export function useFlashToast() {
                     detail: flash.error,
                     life: 3000,
                 });
-                shownFlash.value.error = flash.error;
+                flash.error = null
             }
         },
         { deep: true, immediate: true }

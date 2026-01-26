@@ -8,6 +8,7 @@ export function formatLabel(str) {
         .join(" ");
 }
 
+// chuyển từ ISO string hay Date Object về dd/MM/yyyy có giờ
 export function formatDateVN(input) {
     if (!input) return "";
 
@@ -33,11 +34,7 @@ export function formatDateVN(input) {
     }).format(date);
 }
 
-/**
- * Dùng để chuyển Date Object sang chuỗi dd/mm/yyyy
- * Input: Date Object (VD: Sun Dec 27 2025...)
- * Output: String "27/12/2025" (để so sánh hoặc gửi API)
- */
+// chuyển từ Date Object sang chuỗi dd/mm/yyyy không có giờ
 export function formatDateOnlyVN(dateInput) {
     if (!dateInput) return "";
     
@@ -50,6 +47,14 @@ export function formatDateOnlyVN(dateInput) {
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
+}
+
+// chuyển thành dạng yyyy-mm-dd để gửi dữ liệu lên server(api)
+export const formatDateLocal = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // format vn currency
