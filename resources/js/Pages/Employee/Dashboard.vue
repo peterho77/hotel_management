@@ -161,10 +161,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-
+import { formatCurrency } from "@/Composables/formatData";
 import Button from 'primevue/button';
 
-import { formatCurrency } from "@/Composables/formatData";
 
 const props = defineProps({
     roomList: {

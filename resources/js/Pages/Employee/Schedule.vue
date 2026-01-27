@@ -4,7 +4,7 @@
         <div class="schedule-header">
             <div class="header-left">
                 <h2 class="page-title">Lịch làm việc của tôi</h2>
-                <div v-if="employeeSchedule" class="employee-info-header | flex items-center gap-1">
+                <div v-if="schedule" class="employee-info-header | flex items-center gap-1">
                     <span class="employee-name">{{ employee.full_name }}</span>
                     <span class="employee-code">({{ employee.code }})</span>
                 </div>
@@ -76,7 +76,7 @@
             <!-- Summary -->
             <div class="schedule-summary">
                 <div class="summary-item">
-                    <span class="summary-label">Tổng số ca:</span>
+                    <span class="summary-label">Tổng số ca trong tháng:</span>
                     <span class="summary-value">{{ scheduleData.shift_count || 0 }} ca</span>
                 </div>
                 <div class="summary-item">
@@ -95,7 +95,8 @@
 
         <!-- Loading -->
         <div v-if="loading" class="loading-state">
-            <ProgressSpinner />
+            <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="8" fill="transparent"
+                animationDuration=".5s" aria-label="Custom ProgressSpinner" />
             <p>Đang tải...</p>
         </div>
     </div>
@@ -103,18 +104,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { router } from '@inertiajs/vue3'
 import { useToast } from 'primevue/usetoast'
+import { usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 
-
 // format data
-import { formatCurrency, formatDateVN } from "@/Composables/formatData";
+import { formatCurrency, formatDateVN, formatDateLocal } from "@/Composables/formatData";
 
-// 1. Định nghĩa Props
+// check authentication to show user name
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+// props
 const props = defineProps({
-    employeeSchedule: {
+    schedule: {
         type: Array,
         default: null
     },
@@ -123,18 +128,16 @@ const props = defineProps({
         required: false
     }
 })
-console.log(props.employeeSchedule);
+console.log(props.schedule);
 console.log(props.employee);
 
-// 2. Khởi tạo State (Data)
-const toast = useToast()
+// state(data)
 const loading = ref(false)
 const weekStart = ref(null)
-const currentEmployee = ref(props.employee) // Tạo biến local để lưu employee
-
+const currentWeekStart = ref(null);
 const scheduleData = ref({
-    schedules: {},
-    shift_count: 0,
+    schedules: props.schedule,
+    shift_count: props.schedule.length,
     estimated_salary: 0
 })
 
@@ -181,7 +184,7 @@ const weekDisplayText = computed(() => {
     if (!weekStart.value) return ''
 
     const start = new Date(weekStart.value)
-    
+
     const monthNames = ['Th. 1', 'Th. 2', 'Th. 3', 'Th. 4', 'Th. 5', 'Th. 6',
         'Th. 7', 'Th. 8', 'Th. 9', 'Th. 10', 'Th. 11', 'Th. 12']
 
@@ -199,56 +202,74 @@ const initializeWeek = () => {
     const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek // Monday
     const monday = new Date(today)
     monday.setDate(today.getDate() + diff)
-    monday.setHours(0, 0, 0, 0)
 
-    weekStart.value = monday.toISOString().split('T')[0]
+    const year = monday.getFullYear();
+    const month = String(monday.getMonth() + 1).padStart(2, '0');
+    const day = String(monday.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+
+    weekStart.value = dateString;
+    currentWeekStart.value = dateString;
 }
 
-const loadSchedules = async () => {
-    loading.value = true
-    try {
-        const response = await axios.get('/staff/my-schedule/api/weekly', {
-            params: {
-                week_start: weekStart.value
-            }
-        })
+const isPastWeek = computed(() => {
+    return weekStart.value < currentWeekStart.value;
+});
 
-        if (response.data.success) {
-            scheduleData.value = {
-                schedules: response.data.schedules || {},
-                shift_count: response.data.shift_count || 0,
-                estimated_salary: response.data.estimated_salary || 0
-            }
-            
-            // Cập nhật employee nếu API trả về và chưa có
-            if (response.data.employee && !currentEmployee.value) {
-                currentEmployee.value = response.data.employee
+const showSpinner = ref(false);
+const loadSchedules = (newWeekStart) => {
+    let dateInput = newWeekStart || weekStart.value;
+
+    const dateObj = new Date(dateInput);
+    if (isNaN(dateObj.getTime())) return;
+
+    const dateString = formatDateLocal(dateObj);
+
+    const startTime = new Date();
+    router.get(route('employee.schedule', user.value.user_name),
+        {
+            week_start: dateString
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['scheduleData', 'filters'],
+            onStart: () => {
+                loading.value = true,
+                    showSpinner.value = true
+            },
+            onFinish: () => {
+                const endTime = new Date();
+                const minDuration = 800 //ms
+                const duration = endTime - startTime;
+                if (duration < minDuration) {
+                    setTimeout(() => {
+                        loading.value = false,
+                            showSpinner.value = false
+                    }, minDuration - duration)
+                }
+                else {
+                    loading.value = false,
+                        showSpinner.value = false
+                }
             }
         }
-    } catch (error) {
-        console.error('Error loading schedules:', error)
-        toast.add({
-            severity: 'error',
-            summary: 'Lỗi',
-            detail: 'Không thể tải lịch làm việc',
-            life: 3000
-        })
-    } finally {
-        loading.value = false
-    }
+    )
 }
 
 const previousWeek = () => {
     const date = new Date(weekStart.value)
     date.setDate(date.getDate() - 7)
-    weekStart.value = date.toISOString().split('T')[0]
+    const dateString = formatDateLocal(date);
+    weekStart.value = dateString;
     loadSchedules()
 }
 
 const nextWeek = () => {
     const date = new Date(weekStart.value)
     date.setDate(date.getDate() + 7)
-    weekStart.value = date.toISOString().split('T')[0]
+    const dateString = formatDateLocal(date);
+    weekStart.value = dateString;
     loadSchedules()
 }
 
@@ -257,12 +278,23 @@ const goToCurrentWeek = () => {
     loadSchedules()
 }
 
-const getSchedulesForDay = (date) => {
-    if (!scheduleData.value.schedules || typeof scheduleData.value.schedules !== 'object') {
+const getSchedulesForDay = (dateString) => {
+    // kiểm tra an toàn
+    if (!props.schedule) {
         return []
     }
-    const daySchedules = scheduleData.value.schedules[date]
-    return Array.isArray(daySchedules) ? daySchedules : []
+    // lọc mảng schedules để lấy ra các ca trong ngày dateString
+    const schedules = props.schedule.filter(s => s.schedule_date === dateString)
+
+    // sắp xếp: Ca nào giờ nhỏ hơn (sớm hơn) thì đứng trước
+    return schedules.sort((a, b) => {
+        // lấy giờ bắt đầu, nếu không có thì mặc định là chuỗi rỗng
+        const timeA = a.shift?.start_time || '';
+        const timeB = b.shift?.start_time || '';
+
+        // so sánh chuỗi giờ (VD: "07:00" sẽ nhỏ hơn "14:00")
+        return timeA.localeCompare(timeB);
+    })
 }
 
 const getShiftColorClass = (shift) => {

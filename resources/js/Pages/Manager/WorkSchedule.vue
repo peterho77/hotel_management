@@ -913,7 +913,6 @@ const filteredScheduleData = computed(() => {
     }
   })
 })
-console.log(filteredScheduleData.value);
 
 // --- Methods ---
 const initializeWeek = () => {
@@ -975,17 +974,18 @@ const changeWeek = (newWeekStart) => {
         if (duration < minDuration) {
           setTimeout(() => {
             loading.value = false,
-            showSpinner.value = false
+              showSpinner.value = false
           }, minDuration - duration)
         }
         else {
           loading.value = false,
-          showSpinner.value = false
+            showSpinner.value = false
         }
       }
     }
   )
 }
+
 const debounceSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -996,9 +996,7 @@ const debounceSearch = () => {
 const previousWeek = () => {
   const date = new Date(weekStart.value)
   date.setDate(date.getDate() - 7)
-  console.log(date);
   const dateString = formatDateLocal(date);
-  console.log(dateString);
   weekStart.value = dateString;
   changeWeek(dateString);
 }
@@ -1018,20 +1016,20 @@ const goToCurrentWeek = () => {
 }
 
 const getSchedulesForDay = (employee, dateString) => {
-  // Kiểm tra an toàn
+  // kiểm tra an toàn
   if (!employee || !employee.schedules || !Array.isArray(employee.schedules)) {
     return []
   }
-  // Lọc mảng schedules để lấy ra các ca trong ngày dateString
+  // lọc mảng schedules để lấy ra các ca trong ngày dateString
   const schedules = employee.schedules.filter(s => s.schedule_date === dateString)
 
-  // 3. Sắp xếp: Ca nào giờ nhỏ hơn (sớm hơn) thì đứng trước
+  // sắp xếp: Ca nào giờ nhỏ hơn (sớm hơn) thì đứng trước
   return schedules.sort((a, b) => {
-    // Lấy giờ bắt đầu, nếu không có thì mặc định là chuỗi rỗng
+    // lấy giờ bắt đầu, nếu không có thì mặc định là chuỗi rỗng
     const timeA = a.shift?.start_time || '';
     const timeB = b.shift?.start_time || '';
 
-    // So sánh chuỗi giờ (VD: "07:00" sẽ nhỏ hơn "14:00")
+    // so sánh chuỗi giờ (VD: "07:00" sẽ nhỏ hơn "14:00")
     return timeA.localeCompare(timeB);
   })
 }

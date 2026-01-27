@@ -67,13 +67,13 @@ class EmployeeController extends Controller
 
     public function schedule(string $user_name)
     {
-        $userId = User::where('user_name', $user_name)->value('id');
-        $employee = Employee::where('user_id', $userId)->first();
-        $employeeSchedule = EmployeeSchedule::where('employee_id', $employee->id)
+        $user = User::where('user_name', $user_name)->first();
+        $employee = Employee::where('user_id', $user->id)->first();
+        $schedule = EmployeeSchedule::where('employee_id', $employee->id)
             ->with(['employee', 'shift'])
             ->get();
         return Inertia::render('Employee/Schedule', [
-            'employeeSchedule' => $employeeSchedule,
+            'schedule' => $schedule,
             'employee' => $employee
         ]);
     }
