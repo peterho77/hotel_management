@@ -15,6 +15,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\WorkScheduleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -108,6 +109,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('employee')->name('employee.')->group(function () {
             Route::get('/{user_name}/dashboard', [EmployeeController::class, 'dashboard'])->name('index');
             Route::get('/{user_name}/schedule', [EmployeeController::class, 'schedule'])->name('schedule');
+            Route::get('/{user_name}/service-order', [ServiceOrderController::class, 'index'])->name('service-order');
         });
     });
 

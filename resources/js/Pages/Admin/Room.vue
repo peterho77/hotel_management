@@ -162,7 +162,7 @@ import { useDialog } from 'primevue/usedialog';
 
 // router
 import { router, useRemember } from '@inertiajs/vue3';
-import { ref, reactive, watch, computed, defineAsyncComponent, onMounted } from 'vue';
+import { ref, reactive, watch, computed, defineAsyncComponent } from 'vue';
 
 // confirm dialog
 import { useConfirm } from "primevue/useconfirm";

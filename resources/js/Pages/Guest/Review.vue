@@ -278,7 +278,7 @@ const toggleFilterTitleKeyword = (kw) => {
         activeTitleKeywords.value.push(kw)
     }
 
-    showFilterReview();
+    showFilterReviewListDialog();
 }
 
 const isActive = (item) => {

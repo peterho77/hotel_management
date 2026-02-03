@@ -2,13 +2,13 @@
     <header>
         <div class="container | flex justify-between">
             <div class="buttons-group | p-2 flex gap-3">
-                <Link :href="route('employee.schedule', user.user_name)"
-                    style="text-decoration: none;">
-                    <Button label="Lịch làm việc của tôi" icon="pi pi-user" size="small" variant="text" raised />
+                <Link :href="route('employee.schedule', user.user_name)" style="text-decoration: none;">
+                <Button label="Lịch làm việc của tôi" icon="pi pi-user" size="small" variant="text" raised />
                 </Link>
 
                 <Button label="Lịch đặt phòng" icon="pi pi-calendar" size="small" variant="text" raised />
-                <Button label="Hóa đơn" icon="" severity="success" size="small" raised />
+                <Button label="Hóa đơn" icon="" severity="success" size="small" raised
+                    @click="router.get(route('employee.service-order', user.user_name))" />
             </div>
             <div class="setting-group | flex items-center gap-4">
                 <div class="user-avatar | flex items-center">

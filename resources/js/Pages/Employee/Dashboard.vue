@@ -10,7 +10,7 @@
                 </div>
 
                 <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-                    <Button label="Đặt phòng" icon="pi pi-plus" severity="info" class="text-sm" />
+                    <Button label="Đặt phòng" icon="pi pi-plus" severity="info" class="text-sm"/>
                 </div>
             </div>
 
