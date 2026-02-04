@@ -1,7 +1,8 @@
 <template>
     <div class="service-order-wrapper min-h-screen bg-[#f3f4f6] p-4 font-sans">
         <div class="container">
-            <div class="section | bg-white p-3 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row items-center gap-4">
+            <div
+                class="header-section | bg-white p-3 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row items-center gap-4">
                 <div class="w-64 flex-initial | flex flex-col pr-3 border-r border-gray-200">
                     <span class="text-gray-500">Khách hàng</span>
                     <div class="flex items-center justify-between">
@@ -10,11 +11,23 @@
                     </div>
                 </div>
 
-                <div class="w-54 flex-initial | flex flex-col pr-3 border-r border-gray-200">
+                <div class="relative w-54 flex-initial | flex flex-col pr-3 border-r border-gray-200">
                     <span class="text-gray-500">Kênh bán</span>
-                    <div class="flex items-center justify-between">
-                        <span class="font-medium">Khách đến trực tiếp</span>
-                        <Button icon="pi pi-angle-down" severity="secondary" size="small" variant="text" />
+                    <div class="toggle-booking-channel-menu | flex items-center justify-between"
+                        :class="{ 'active': bookingChannelMenu === true }">
+                        <span class="font-medium">{{ currentBookingChannel }}</span>
+                        <Button icon="pi pi-angle-down" severity="secondary" size="small" variant="text"
+                            @click="toggleBookingChannelsMenu" />
+                        <div class="booking-channel-menu">
+                            <template v-for="item in bookingChannelItems">
+                                <Button :label="item.label" :icon="item.icon" severity="secondary" size="small" @click="selectBookingChannel(item)" variant="text" class="justify-start">
+                                    <div class="w-full flex gap-2 items-center px-2">
+                                        <i :class="item.icon" style="font-size:.75rem"></i>
+                                        <span class="font-medium">{{ item.label }}</span>
+                                    </div>
+                                </Button>
+                            </template>
+                        </div>
                     </div>
                 </div>
 
@@ -123,6 +136,32 @@
     color: var(--neutral-color-500);
     font-weight: var(--fw-semi-bold);
 }
+
+/* Custom booking channel menu */
+.toggle-booking-channel-menu {
+    position: relative;
+}
+
+.toggle-booking-channel-menu.active .booking-channel-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-200);
+}
+
+.booking-channel-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 100;
+    min-width: 100%;
+    text-wrap: nowrap;
+    color: var(--neutral-color-800);
+    background: white;
+    padding: .5em;
+    border-radius: .5rem;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
 </style>
 
 <script setup>
@@ -191,4 +230,21 @@ const columns = [
 const totalAmount = computed(() => {
     return services.value.reduce((sum, item) => sum + (item.total || 0), 0);
 });
+
+// booking channel menu
+const currentBookingChannel = ref('Khách đến trực tiếp');
+const bookingChannelMenu = ref(false);
+const bookingChannelItems = ref([
+    { label: 'Khách đến trực tiếp', icon: 'pi pi-user' },
+    { label: 'Đặt phòng online', icon: 'pi pi-book' }
+]);
+
+const toggleBookingChannelsMenu = () => {
+    bookingChannelMenu.value = !bookingChannelMenu.value;
+};
+
+const selectBookingChannel = (channel) => {
+    currentBookingChannel.value = channel.label;
+    toggleBookingChannelsMenu();
+};
 </script>
