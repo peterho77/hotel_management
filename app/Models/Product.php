@@ -28,8 +28,9 @@ class Product extends Model
      */
     protected $casts = [
         'is_active' => 'boolean',
-        'cost_price' => 'decimal:2',
-        'selling_price' => 'decimal:2',
+        'cost_price' => 'float',
+        'selling_price' => 'float',
+        'quantity' => 'integer',
         'min_inventory' => 'integer',
         'max_inventory' => 'integer',
     ];

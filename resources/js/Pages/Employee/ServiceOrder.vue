@@ -20,10 +20,11 @@
                             @click="toggleBookingChannelsMenu" />
                         <div class="booking-channel-menu">
                             <template v-for="item in bookingChannelItems">
-                                <Button :label="item.label" :icon="item.icon" severity="secondary" size="small" @click="selectBookingChannel(item)" variant="text" class="justify-start">
-                                    <div class="w-full flex gap-2 items-center px-2">
+                                <Button :label="item.label" :icon="item.icon" severity="secondary" size="small"
+                                    @click="selectBookingChannel(item)" variant="text" class="justify-start">
+                                    <div class="w-full flex gap-2 items-center px-2 py-1">
                                         <i :class="item.icon" style="font-size:.75rem"></i>
-                                        <span class="font-medium">{{ item.label }}</span>
+                                        <span class="font-medium text-gray-600">{{ item.label }}</span>
                                     </div>
                                 </Button>
                             </template>
@@ -42,7 +43,7 @@
 
             <div class="service-order-content | flex gap-4 mt-2">
                 <div
-                    class="section-left flex-initial min-h-screen | bg-white p-3 rounded-lg shadow-sm flex flex-col gap-4">
+                    class="section-left max-w-1/3 min-h-screen | bg-white p-3 rounded-lg shadow-sm flex flex-col gap-4">
                     <!-- keyword search -->
                     <IconField>
                         <InputIcon class="pi pi-search" />
@@ -51,44 +52,50 @@
 
                     <!-- service type list -->
                     <div class="service-type-list | flex flex-wrap gap-2">
-                        <template v-for="item in serviceTypeList">
-                            <Button size="small" :label="item.label" variant="outlined" rounded />
+                        <template v-for="item in serviceCategoryList">
+                            <Button size="small" :label="item.label" variant="outlined" rounded
+                                @click="filterServiceItem(item.name)" />
                         </template>
                     </div>
 
                     <!-- service list -->
                     <div class="service-list | grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="service-item | flex items-start gap-2">
-                            <div class="w-20 shrink-0 aspect-4/3 overflow-hidden rounded-xl border border-gray-200">
-                                <img class="block w-full h-full object-cover" :src="'/img/default-blank-img.jpg'"
-                                    :alt="'Ảnh'" />
+                        <template v-for="service in allServiceList" :key="service.code">
+                            <div class="service-item | flex items-start gap-2 cursor-pointer px-2 py-3 rounded-xl | hover:bg-sky-100 transition-colors duration-300 ease-in-out"
+                                @click="addServiceToInvoice(service)">
+                                <div class="w-20 shrink-0 aspect-4/3 overflow-hidden rounded-xl border border-gray-200">
+                                    <img class="block w-full h-full object-cover" :src="'/img/default-blank-img.jpg'"
+                                        :alt="'Ảnh'" />
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="font-medium truncate">{{ service.name }}</span>
+                                    <span
+                                        class="text-sm text-gray-500">{{ formatCurrency(service.selling_price) }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col min-w-0">
-                                <span class="font-medium truncate">Dịch vụ 1</span>
-                                <span class="text-sm text-gray-500">100.000đ</span>
-                            </div>
-                        </div>
-                        <div class="service-item | flex items-start gap-2">
-                            <div class="w-20 shrink-0 aspect-4/3 overflow-hidden rounded-xl border border-gray-200">
-                                <img class="block w-full h-full object-cover" :src="'/img/default-blank-img.jpg'"
-                                    :alt="'Ảnh'" />
-                            </div>
-                            <div class="flex flex-col min-w-0">
-                                <span class="font-medium truncate">Dịch vụ 2</span>
-                                <span class="text-sm text-gray-500">100.000đ</span>
-                            </div>
-                        </div>
+                        </template>
                     </div>
                 </div>
 
                 <div class="section-right | flex-none md:flex-1 flex flex-col min-h-screen">
                     <div class="bg-white p-3 rounded-lg shadow-sm mb-4 flex-1">
                         <DataTable :value="services">
-                            <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header">
-                                <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
-                                    {{ slotProps.data[col.field].toLocaleString() }}đ
-                                </template>
-                            </Column>
+                            <template v-for="col of columns" :key="col.field">
+                                <Column :field="col.field" :header="col.header">
+                                    <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
+                                        {{ slotProps.data[col.field].toLocaleString() }}đ
+                                    </template>
+                                    <template #body="slotProps" v-if="col.field == 'quantity'">
+                                        <div class="flex items-center gap-2">
+                                            <InputNumber inputClass="w-20" v-model="slotProps.data.selected_quantity"
+                                                :min="1" :max="slotProps.data.quantity" size="small" showButtons
+                                                @value-change="() => slotProps.data.total = slotProps.data.selected_quantity * slotProps.data.price">
+                                            </InputNumber>
+                                            <span>{{ slotProps.data.unit }}</span>
+                                        </div>
+                                    </template>
+                                </Column>
+                            </template>
 
                             <ColumnGroup type="footer">
                                 <Row>
@@ -145,7 +152,6 @@
 .toggle-booking-channel-menu.active .booking-channel-menu {
     display: flex;
     flex-direction: column;
-    gap: var(--size-200);
 }
 
 .booking-channel-menu {
@@ -158,7 +164,6 @@
     text-wrap: nowrap;
     color: var(--neutral-color-800);
     background: white;
-    padding: .5em;
     border-radius: .5rem;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
@@ -170,14 +175,54 @@ import Button from 'primevue/button';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';
 import Row from 'primevue/row';
 
+import { formatCurrency } from "@/Composables/formatData";
+
 // keyword search
 import { FilterMatchMode } from '@primevue/core/api';
+
+const props = defineProps({
+    serviceList: {
+        type: Array,
+        default: () => [],
+    },
+    productList: {
+        type: Array,
+        default: () => [],
+    },
+});
+
+const allServiceList = computed(() => {
+    const combined = [...props.serviceList, ...props.productList];
+    if (selectedCategory.value === 'all') {
+        return combined;
+    };
+    return combined.filter(item => item.category === selectedCategory.value);
+});
+console.log(props.productList);
+
+const filterServiceItem = (category) => {
+    selectedCategory.value = category;
+};
+
+// add service to invoice
+const addServiceToInvoice = (service) => {
+    services.value.push({
+        id: services.value.length + 1,
+        name: service.name,
+        quantity: service.category === 'service' ? 10 : service.quantity,
+        selected_quantity: 1,
+        price: service.selling_price,
+        total: service.selling_price,
+        unit: service.unit
+    });
+}
 
 // keyword search
 const filters = ref({
@@ -185,42 +230,19 @@ const filters = ref({
 });
 
 // filter service keyword
-const serviceTypeList = ref([
+const serviceCategoryList = ref([
     { label: 'Tất cả', name: 'all' },
     { label: 'Dịch vụ', name: 'service' },
     { label: 'Đồ ăn', name: 'food' },
     { label: 'Đồ uống', name: 'drink' }
 ]);
+const selectedCategory = ref('all');
 
 // data table
-const services = ref([
-    {
-        name: 'Dịch vụ cắt tóc nam',
-        quantity: 1,
-        price: 100000,
-        total: 100000
-    },
-    {
-        name: 'Gội đầu dưỡng sinh',
-        quantity: 2,
-        price: 50000,
-        total: 100000
-    },
-    {
-        name: 'Combo chăm sóc da mặt',
-        quantity: 1,
-        price: 250000,
-        total: 250000
-    },
-    {
-        name: 'Uốn tóc tiêu chuẩn',
-        quantity: 1,
-        price: 400000,
-        total: 400000
-    }
-]);
+const services = ref([]);
 
 const columns = [
+    { field: 'id', header: 'STT' },
     { field: 'name', header: 'Hạng mục' },
     { field: 'quantity', header: 'Số lượng' },
     { field: 'price', header: 'Đơn giá' },
@@ -228,7 +250,9 @@ const columns = [
 ];
 
 const totalAmount = computed(() => {
-    return services.value.reduce((sum, item) => sum + (item.total || 0), 0);
+    let ans = services.value.reduce((sum, item) => sum + (item.total || 0), 0);
+    console.log(typeof ans);
+    return ans;
 });
 
 // booking channel menu

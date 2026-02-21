@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('name'); // Tên dịch vụ (Câu cá (Lượt))
 
             $table->string('category')->default('service');
+            $table->string('unit')->nullable();
+            $table->integer('quantity')->default(1);
 
             // Đặc thù dịch vụ
             $table->integer('duration')->default(1); // Thời lượng (tính bằng giờ)

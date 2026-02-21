@@ -18,7 +18,8 @@ class ServiceSeeder extends Seeder
         $services = [
             // --- DỊCH VỤ GIẶT LÀ ---
             [
-                'name' => 'Giặt ủi thường (Theo Kg)',
+                'name' => 'Giặt ủi thường',
+                'unit' => 'kg',
                 'duration' => 24, // 24 giờ trả đồ
                 'cost_price' => 10000, // Tiền điện, nước, bột giặt
                 'selling_price' => 50000,
@@ -26,7 +27,8 @@ class ServiceSeeder extends Seeder
                 'note' => 'Không bao gồm tẩy vết bẩn khó',
             ],
             [
-                'name' => 'Giặt hấp Vest/Váy dạ hội (Bộ)',
+                'name' => 'Giặt hấp Vest/Váy dạ hội',
+                'unit' => 'bộ',
                 'duration' => 48, // 48 giờ
                 'cost_price' => 50000,
                 'selling_price' => 150000,
@@ -36,7 +38,8 @@ class ServiceSeeder extends Seeder
 
             // --- DỊCH VỤ VẬN CHUYỂN ---
             [
-                'name' => 'Đón/Tiễn Sân Bay (4 chỗ)',
+                'name' => 'Đón/Tiễn Sân Bay',
+                'unit' => 'lượt',
                 'duration' => 2, // Khoảng 2 giờ di chuyển
                 'cost_price' => 250000, // Xăng xe + Lương tài xế
                 'selling_price' => 450000,
@@ -44,7 +47,8 @@ class ServiceSeeder extends Seeder
                 'note' => 'Cần đặt trước 4 tiếng',
             ],
             [
-                'name' => 'Thuê xe máy (Ngày)',
+                'name' => 'Thuê xe máy',
+                'unit' => 'lượt',
                 'duration' => 24, // 1 ngày
                 'cost_price' => 0, // Khấu hao xe
                 'selling_price' => 150000,
@@ -54,7 +58,8 @@ class ServiceSeeder extends Seeder
 
             // --- DỊCH VỤ SPA & GIẢI TRÍ ---
             [
-                'name' => 'Massage Body Thụy Điển (60p)',
+                'name' => 'Massage Body Thụy Điển',
+                'unit' => 'lượt',
                 'duration' => 1, // 1 giờ
                 'cost_price' => 100000, // Tip KTV + Phụ liệu
                 'selling_price' => 350000,
@@ -62,15 +67,17 @@ class ServiceSeeder extends Seeder
                 'note' => null,
             ],
             [
-                'name' => 'Vé hồ bơi (Khách vãng lai)',
-                'duration' => 0, // Không giới hạn giờ
+                'name' => 'Tắm hồ bơi',
+                'unit' => 'vé',
+                'duration' => 3, // 3 tiếng
                 'cost_price' => 0,
                 'selling_price' => 100000,
                 'description' => 'Bao gồm khăn tắm và tủ đồ.',
                 'note' => 'Miễn phí cho khách lưu trú',
             ],
             [
-                'name' => 'Câu cá giải trí (Lượt)', // Theo ảnh bạn cung cấp trước đó
+                'name' => 'Câu cá giải trí', // Theo ảnh bạn cung cấp trước đó
+                'unit' => 'lượt',
                 'duration' => 4, // Gói 4 giờ
                 'cost_price' => 50000, // Mồi câu + cần
                 'selling_price' => 200000,
@@ -81,7 +88,8 @@ class ServiceSeeder extends Seeder
             // --- DỊCH VỤ KHÁC ---
             [
                 'name' => 'Setup tiệc BBQ sân vườn',
-                'duration' => 3, // Thời gian phục vụ
+                'unit' => 'buổi',
+                'duration' => 1, // 1 buổi
                 'cost_price' => 200000, // Than + Công setup
                 'selling_price' => 500000,
                 'description' => 'Chuẩn bị bếp nướng, than và bàn ghế.',

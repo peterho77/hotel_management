@@ -18,8 +18,10 @@ return new class extends Migration
             $table->string('name'); 
             
             $table->enum('category', ['drink','food']);
+            $table->string('unit')->nullable();
             
             // Quản lý tồn kho (Định mức tồn)
+            $table->integer('quantity')->default(30); // Số lượng hiện có
             $table->integer('min_inventory')->default(0); // Định mức tồn nhỏ nhất
             $table->integer('max_inventory')->nullable(); // Định mức tồn lớn nhất (100,000)
             

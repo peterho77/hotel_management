@@ -20,6 +20,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Nước suối Dasani 350ml',
                 'category' => 'drink',
+                'unit' => 'chai',
                 'cost_price' => 3500,   // Giá nhập
                 'selling_price' => 10000, // Giá bán khách sạn (thường cao hơn)
                 'min_inventory' => 50,
@@ -30,8 +31,9 @@ class ProductSeeder extends Seeder
                 'note' => 'Hạn sử dụng 12 tháng',
             ],
             [
-                'name' => 'Bia Heineken (Lon)',
+                'name' => 'Bia Heineken',
                 'category' => 'drink',
+                'unit' => 'lon',
                 'cost_price' => 16000,
                 'selling_price' => 35000,
                 'min_inventory' => 24,
@@ -42,8 +44,9 @@ class ProductSeeder extends Seeder
                 'note' => null,
             ],
             [
-                'name' => 'Coca Cola (Lon)',
+                'name' => 'Coca Cola',
                 'category' => 'drink',
+                'unit' => 'lon',
                 'cost_price' => 9000,
                 'selling_price' => 25000,
                 'min_inventory' => 24,
@@ -54,8 +57,9 @@ class ProductSeeder extends Seeder
                 'note' => null,
             ],
             [
-                'name' => 'Rượu Vang Đà Lạt (Chai nhỏ)',
+                'name' => 'Rượu Vang Đà Lạt',
                 'category' => 'drink',
+                'unit' => 'chai',
                 'cost_price' => 45000,
                 'selling_price' => 120000,
                 'min_inventory' => 5,
@@ -70,6 +74,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Mì ly Hảo Hảo Tôm chua cay',
                 'category' => 'food',
+                'unit' => 'ly',
                 'cost_price' => 8000,
                 'selling_price' => 20000,
                 'min_inventory' => 30,
@@ -82,6 +87,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Snack khoai tây Pringles (Nhỏ)',
                 'category' => 'food',
+                'unit' => 'gói',
                 'cost_price' => 18000,
                 'selling_price' => 45000,
                 'min_inventory' => 10,
@@ -94,6 +100,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Đậu phộng da cá',
                 'category' => 'food',
+                'unit' => 'gói',
                 'cost_price' => 5000,
                 'selling_price' => 15000,
                 'min_inventory' => 20,
@@ -106,6 +113,7 @@ class ProductSeeder extends Seeder
             [
                 'name' => 'Chocolate KitKat',
                 'category' => 'food',
+                'unit' => 'gói',
                 'cost_price' => 10000,
                 'selling_price' => 25000,
                 'min_inventory' => 10,

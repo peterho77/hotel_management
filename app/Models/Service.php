@@ -19,9 +19,10 @@ class Service extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'is_active' => 'boolean',
-        'cost_price' => 'decimal:2',
-        'selling_price' => 'decimal:2',
+        'cost_price' => 'float',
+        'selling_price' => 'float',
         'duration' => 'integer',
     ];
 
