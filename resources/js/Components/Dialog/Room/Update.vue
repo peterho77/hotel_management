@@ -144,11 +144,13 @@ const ready = ref(false); // wait for data to mount
 onMounted(() => {
     const params = dialogRef.value.data;
 
+    console.log(params);
+
     if (params) {
         branchList.value = params.branchList || [];
         roomTypeList.value = params.roomTypeList || [];
 
-        const { branch, room_type, ...rest } = toRaw(params.initialData);
+        const { branch, room_type, ...rest } = toRaw(params.currentRoom);
         Object.assign(initialValues, {
             ...rest,
             branch_id: branch?.id ?? null,

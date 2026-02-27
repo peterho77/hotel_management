@@ -55,7 +55,7 @@
                                                     <span class="font-semibold text-gray-700 min-w-42">
                                                         {{ formatLabel(key) }}:
                                                     </span>
-                                                    <span v-if="key === 'branch'" class="text-gray-900 grow">
+                                                    <span v-if="key === 'branch' && value" class="text-gray-900 grow">
                                                         {{ value.name }}
                                                     </span>
                                                     <span v-else class="text-gray-900 grow">
@@ -117,6 +117,7 @@ const props = defineProps({
         required: false,
     },
 });
+console.log(props.employeeList);
 
 // hidden fields
 const hiddenColumns = reactive(
@@ -131,6 +132,7 @@ const hiddenColumns = reactive(
         'updated_at'
     ]);
 const hiddenRows = reactive([
+    'branch_id'
 ])
 
 // keyword search

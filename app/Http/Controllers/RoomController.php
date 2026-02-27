@@ -2,64 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\RoomService;
+use App\Http\Requests\StoreRoomRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Room;
-use App\Models\RoomType;
-use App\Models\Branch;
 
 class RoomController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    protected $roomService;
+
+    public function __construct(RoomService $roomService)
+    {
+        $this->roomService = $roomService;
+    }
+
     public function index()
     {
-        $roomList = Room::with(['branch', 'room_type'])
-            ->get()
-            ->makeHidden(['branch_id', 'room_type_id']);
-        if ($roomList->isNotEmpty()) {
-            $firstItem = $roomList->first();
-            $columns = array_keys($firstItem->getAttributes());
-            $columns = array_diff($columns, ['branch_id', 'room_type_id']);
-        };
-        $roomTypeList = RoomType::all();
-        $branchList = Branch::all();
+        $data = $this->roomService->getAllData();
 
-        return Inertia::render('Admin/Room', [
-            'roomList' => $roomList,
-            'roomTypeList' => $roomTypeList,
-            'branchList'   => $branchList,
-            'roomColumns'      => $columns,
-            'activeTab'    => 'room',
-        ]);
+        return Inertia::render(
+            'Admin/Room',
+            array_merge($data, [
+                'activeTab' => 'room'
+            ])
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRoomRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'area' => 'required',
-            'status' => 'required|max:50',
-            'room_type_id' => 'required',
-            'branch_id' => 'required'
-        ]);
+        $validatedData = $request->validated();
 
-        $newRoom = [
-            'name' => $request->name,
-            'area' => $request->area,
-            'status' => $request->status,
-            'note' => $request->note,
-            'room_type_id' => $request->room_type_id,
-            'branch_id' => $request->branch_id
-        ];
+        $this->roomService->createRoom($validatedData);
 
-        Room::create($newRoom);
-
-        return redirect()->route('admin.room.index');
+        return redirect()->route('admin.room.index')
+            ->with('success', 'Thêm phòng mới thành công.');;
     }
 
     /**
@@ -73,19 +55,14 @@ class RoomController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreRoomRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'name' => 'required',
-            'area' => 'required',
-            'status' => 'required|max:50',
-            'room_type_id' => 'required',
-            'branch_id' => 'required'
-        ]);
+        $validatedData = $request->validated();
 
-        $room = Room::find($id);
-        $room->update($validated);
-        return redirect()->route('admin.room.index')->with('success', 'Record updated successfully.');
+        $this->roomService->updateRoom($id, $validatedData);
+
+        return redirect()->route('admin.room.index')
+            ->with('success', 'Record updated successfully.');
     }
 
     /**
@@ -93,8 +70,9 @@ class RoomController extends Controller
      */
     public function destroy(string $id)
     {
-        $room = Room::where('id', $id)->first();
-        $room->delete();
-        return redirect()->route('admin.room.index')->with('success', 'Record deleted successfully.');
+        $this->roomService->deleteRoom($id);
+
+        return redirect()->route('admin.room.index')
+            ->with('success', 'Record deleted successfully.');
     }
 }

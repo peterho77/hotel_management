@@ -80,22 +80,20 @@
                 <div class="section-right | flex-none md:flex-1 flex flex-col min-h-screen">
                     <div class="bg-white p-3 rounded-lg shadow-sm mb-4 flex-1">
                         <DataTable :value="services">
-                            <template v-for="col of columns" :key="col.field">
-                                <Column :field="col.field" :header="col.header">
-                                    <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
-                                        {{ slotProps.data[col.field].toLocaleString() }}đ
-                                    </template>
-                                    <template #body="slotProps" v-if="col.field == 'quantity'">
-                                        <div class="flex items-center gap-2">
-                                            <InputNumber inputClass="w-20" v-model="slotProps.data.selected_quantity"
-                                                :min="1" :max="slotProps.data.quantity" size="small" showButtons
-                                                @value-change="() => slotProps.data.total = slotProps.data.selected_quantity * slotProps.data.price">
-                                            </InputNumber>
-                                            <span>{{ slotProps.data.unit }}</span>
-                                        </div>
-                                    </template>
-                                </Column>
-                            </template>
+                            <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header">
+                                <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
+                                    {{ slotProps.data[col.field].toLocaleString() }}đ
+                                </template>
+                                <template #body="slotProps" v-if="col.field == 'quantity'">
+                                    <div class="flex items-center gap-2">
+                                        <InputNumber inputClass="w-20" v-model="slotProps.data.selected_quantity"
+                                            :min="1" :max="slotProps.data.quantity" size="small" showButtons
+                                            @value-change="() => slotProps.data.total = slotProps.data.selected_quantity * slotProps.data.price">
+                                        </InputNumber>
+                                        <span>{{ slotProps.data.unit }}</span>
+                                    </div>
+                                </template>
+                            </Column>
 
                             <ColumnGroup type="footer">
                                 <Row>
@@ -110,7 +108,7 @@
                     </div>
 
                     <div class="bg-white p-4 rounded-lg shadow-sm mt-auto flex justify-end gap-4">
-                        <Button label="Thanh toán" severity="success" />
+                        <Button label="Thanh toán" severity="success" @click="showCreateRetailInvoiceDialog(services)"/>
                     </div>
                 </div>
             </div>
@@ -171,6 +169,8 @@
 
 <script setup>
 import { ref, reactive, watch, computed, defineAsyncComponent } from 'vue';
+import { useDialog } from 'primevue/usedialog';
+
 import Button from 'primevue/button';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
@@ -196,7 +196,12 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    employeeList: {
+        type: Array,
+        default: () => [],
+    },
 });
+console.log(props.employeeList);
 
 const allServiceList = computed(() => {
     const combined = [...props.serviceList, ...props.productList];
@@ -222,6 +227,7 @@ const addServiceToInvoice = (service) => {
         total: service.selling_price,
         unit: service.unit
     });
+    console.log(services.value);
 }
 
 // keyword search
@@ -250,9 +256,8 @@ const columns = [
 ];
 
 const totalAmount = computed(() => {
-    let ans = services.value.reduce((sum, item) => sum + (item.total || 0), 0);
-    console.log(typeof ans);
-    return ans;
+    let sum = services.value.reduce((sum, item) => sum + (item.total || 0), 0);
+    return sum;
 });
 
 // booking channel menu
@@ -271,4 +276,33 @@ const selectBookingChannel = (channel) => {
     currentBookingChannel.value = channel.label;
     toggleBookingChannelsMenu();
 };
+
+// dialog
+const dialog = useDialog();
+const createRetailInvoiceDialog = defineAsyncComponent(() => import('../../Components/Dialog/RetailInvoice/Create.vue'));
+
+const showCreateRetailInvoiceDialog = (services) => {
+    dialog.open(createRetailInvoiceDialog, {
+        props: {
+            header: 'Thêm mới hóa đơn',
+            blockScroll: true,
+            style: {
+                width: '60vw',
+                minHeight: '100vh',
+                minHeight: '100dvh'
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'right',
+            contentClass: 'hide-scroll'
+        },
+        data: {
+            services,
+            employeeList: props.employeeList
+        }
+    });
+}
 </script>

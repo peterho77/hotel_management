@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Service;
 use App\Models\Product;
 use App\Models\Customer;
+use App\Models\Employee;
 
 class ServiceOrderController extends Controller
 {
@@ -17,10 +18,12 @@ class ServiceOrderController extends Controller
         $serviceList = Service::get();
         $productList = Product::get();
         $customerList = Customer::get();
+        $employeeList = Employee::get();
         return Inertia::render('Employee/ServiceOrder', [
             'serviceList' => $serviceList,
             'productList' => $productList,
             'customerList' => $customerList,
+            'employeeList' => $employeeList,
         ]);
     }
 }
