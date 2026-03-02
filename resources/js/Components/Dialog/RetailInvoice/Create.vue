@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-2 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-2">
+    <div class="mt-2 grid grid-cols-1 md:grid-cols-[4fr_1fr] gap-2">
         <div class="border-r border-gray-200 pr-4 min-h-dvh">
             <DataTable :value="services">
                 <template v-for="col of columns" :key="col.field">
@@ -32,11 +32,11 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-sm">Giảm giá</span>
-                    <span>{{ totalAmount.toLocaleString() }}đ</span>
+                    <span>0đ</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-sm">Thu khác</span>
-                    <span>{{ totalAmount.toLocaleString() }}đ</span>
+                    <span>0đ</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-sm font-semibold">Tổng tiền cần trả</span>
@@ -45,9 +45,9 @@
             </div>
             <div class="grid gap-y-3 | bg-gray-200 rounded-sm p-4">
                 <h2 class="text-lg font-semibold">Phương thức thanh toán</h2>
-                <div class="flex justify-between">
+                <div class="flex justify-between items-center">
                     <span class="text-sm">Khách thanh toán</span>
-                    <span>{{ totalAmount.toLocaleString() }}đ</span>
+                    <InputNumber v-model="value1" mode="currency" currency="VND" locale="vi-VN" size="small" />
                 </div>
                 <div class="payment_method-section mt-2">
                     <div class="flex justify-between flex-wrap gap-4">
@@ -59,8 +59,12 @@
                             </div>
                         </template>
                     </div>
+                    <div class="suggested-amount | round-sm bg-white">
+
+                    </div>
                 </div>
             </div>
+            <Button label="Hoàn thành" severity="success" class="mt-auto"></Button>
         </div>
     </div>
 </template>
@@ -71,9 +75,11 @@ import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 
+import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import RadioButton from 'primevue/radiobutton';
+import Button from 'primevue/button';
 
 const columns = [
     { field: 'id', header: 'STT' },

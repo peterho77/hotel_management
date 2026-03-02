@@ -1,7 +1,7 @@
 <template>
     <div class="employee-layout">
         <Header />
-        <main>
+        <main class="flex-1">
             <slot />
         </main>
     </div>
@@ -11,7 +11,6 @@
 </template>
 
 <script setup>
-import "../../css/admin.scss";
 import Header from "../Components/Employee/Header.vue";
 
 // flash message

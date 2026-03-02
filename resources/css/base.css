@@ -121,7 +121,8 @@ header {
 }
 
 .guest-layout,
-.admin-layout {
+.admin-layout,
+.employee-layout {
     min-height: 100vh;
     min-height: 100dvh;
     display: grid;

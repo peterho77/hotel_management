@@ -1,13 +1,14 @@
 <template>
-    <div class="service-order-wrapper min-h-screen bg-[#f3f4f6] p-4 font-sans">
-        <div class="container">
-            <div
-                class="header-section | bg-white p-3 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row items-center gap-4">
+    <div class="service-order-wrapper bg-[#f3f4f6] font-sans h-full overflow-hidden">
+        <div class="container | flex flex-col h-full">
+            <header
+                class="header-section | flex-none | bg-white p-3 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row gap-4">
                 <div class="w-64 flex-initial | flex flex-col pr-3 border-r border-gray-200">
                     <span class="text-gray-500">Khách hàng</span>
                     <div class="flex items-center justify-between">
                         <span class="font-medium">Lương Duyên Hùng</span>
-                        <Button icon="pi pi-plus" severity="secondary" size="small" variant="text" />
+                        <Button icon="pi pi-plus" severity="secondary" size="small" variant="text"
+                            @click="showCreateCustomerDialog()" />
                     </div>
                 </div>
 
@@ -36,14 +37,27 @@
                     <span class="text-gray-500">Ghi chú</span>
                     <div class="flex items-center justify-between">
                         <p>Chưa có ghi chú</p>
-                        <Button icon="pi pi-pencil" severity="secondary" size="small" variant="text" />
+                        <Button icon="pi pi-pencil" severity="secondary" size="small" variant="text"
+                            @click="toggleNoteDialog = true" />
+                        <!-- Note dialog -->
+                        <Dialog v-model:visible="toggleNoteDialog" modal header="Ghi chú" :style="{ width: '30rem' }">
+                            <IftaLabel>
+                                <Textarea id="retailDescription" v-model="value" rows="7" fluid style="resize: none" />
+                                <label for="retailDescription">Nhập ghi chú</label>
+                            </IftaLabel>
+                            <div class="flex justify-end gap-2">
+                                <Button type="button" label="Cancel" severity="secondary"
+                                    @click="toggleNoteDialog = false" />
+                                <Button type="button" label="Save" severity="success"
+                                    @click="toggleNoteDialog = false" />
+                            </div>
+                        </Dialog>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <div class="service-order-content | flex gap-4 mt-2">
-                <div
-                    class="section-left max-w-1/3 min-h-screen | bg-white p-3 rounded-lg shadow-sm flex flex-col gap-4">
+            <div class="retail-content | flex-1 min-h-0 overflow-hidden | flex gap-4 mt-2">
+                <div class="section-left h-full max-w-1/3 | bg-white p-3 rounded-lg shadow-sm flex flex-col gap-4">
                     <!-- keyword search -->
                     <IconField>
                         <InputIcon class="pi pi-search" />
@@ -53,7 +67,7 @@
                     <!-- service type list -->
                     <div class="service-type-list | flex flex-wrap gap-2">
                         <template v-for="item in serviceCategoryList">
-                            <Button size="small" :label="item.label" variant="outlined" rounded
+                            <Button size="small" :label="item.label" variant="outlined" rounded text
                                 @click="filterServiceItem(item.name)" />
                         </template>
                     </div>
@@ -75,41 +89,61 @@
                             </div>
                         </template>
                     </div>
+                    <div class="mt-auto flex justify-center border-t border-gray-200 pt-4">
+                        <Paginator v-model:first="first" :rows="rowsPerPage" :totalRecords="totalCount"
+                            template="PrevPageLink PageLinks NextPageLink" class="bg-transparent"
+                            @page="onPageChange" />
+                    </div>
                 </div>
 
-                <div class="section-right | flex-none md:flex-1 flex flex-col min-h-screen">
-                    <div class="bg-white p-3 rounded-lg shadow-sm mb-4 flex-1">
-                        <DataTable :value="services">
-                            <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header">
-                                <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
-                                    {{ slotProps.data[col.field].toLocaleString() }}đ
-                                </template>
-                                <template #body="slotProps" v-if="col.field == 'quantity'">
-                                    <div class="flex items-center gap-2">
-                                        <InputNumber inputClass="w-20" v-model="slotProps.data.selected_quantity"
-                                            :min="1" :max="slotProps.data.quantity" size="small" showButtons
-                                            @value-change="() => slotProps.data.total = slotProps.data.selected_quantity * slotProps.data.price">
-                                        </InputNumber>
-                                        <span>{{ slotProps.data.unit }}</span>
-                                    </div>
-                                </template>
-                            </Column>
-
-                            <ColumnGroup type="footer">
-                                <Row>
-                                    <Column footer="Tổng cộng:" :colspan="3"
-                                        footerStyle="text-align:right; font-weight:700" />
-
-                                    <Column :footer="totalAmount.toLocaleString() + 'đ'"
-                                        footerStyle="color: #dc2626; font-size: 1.25rem; font-weight: var(--fw-semi-bold)" />
-                                </Row>
-                            </ColumnGroup>
-                        </DataTable>
-                    </div>
-
-                    <div class="bg-white p-4 rounded-lg shadow-sm mt-auto flex justify-end gap-4">
-                        <Button label="Thanh toán" severity="success" @click="showCreateRetailInvoiceDialog(services)"/>
-                    </div>
+                <div class="section-right h-full flex-none md:flex-1 flex flex-col">
+                    <template v-if="totalAmount">
+                        <div class="flex flex-col flex-1">
+                            <div class="bg-white p-3 rounded-lg shadow-sm mb-4 flex-1">
+                                <DataTable :value="services">
+                                    <Column v-for="col of columns" :key="col.field" :field="col.field"
+                                        :header="col.header">
+                                        <template #body="slotProps" v-if="['price', 'total'].includes(col.field)">
+                                            {{ slotProps.data[col.field].toLocaleString() }}đ
+                                        </template>
+                                        <template #body="slotProps" v-if="col.field == 'quantity'">
+                                            <div class="flex items-center gap-2">
+                                                <InputNumber inputClass="w-20"
+                                                    v-model="slotProps.data.selected_quantity" :min="1"
+                                                    :max="slotProps.data.quantity" size="small" showButtons
+                                                    @value-change="() => slotProps.data.total = slotProps.data.selected_quantity * slotProps.data.price">
+                                                </InputNumber>
+                                                <span>{{ slotProps.data.unit }}</span>
+                                            </div>
+                                        </template>
+                                    </Column>
+                                    <Column style="flex: 0 0 4rem">
+                                        <template #body="{ index }">
+                                            <Button type="button" text severity="secondary" size="small"
+                                                icon="pi pi-times" @click="removeServiceItem(index)" />
+                                        </template>
+                                    </Column>
+                                    <ColumnGroup type="footer">
+                                        <Row>
+                                            <Column footer="Tổng cộng:" :colspan="3"
+                                                footerStyle="text-align:right; font-weight:700" />
+                                            <Column :footer="totalAmount.toLocaleString() + 'đ'"
+                                                footerStyle="color: #dc2626; font-size: 1.25rem; font-weight: var(--fw-semi-bold)" />
+                                        </Row>
+                                    </ColumnGroup>
+                                </DataTable>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm mt-auto flex justify-end gap-4">
+                                <Button label="Thanh toán" severity="success"
+                                    @click="showCreateRetailInvoiceDialog(services)" />
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="bg-white p-4 rounded-lg shadow-sm flex-1 flex justify-center items-center h-full">
+                            <span>Chưa có dịch vụ nào được chọn</span>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -176,6 +210,10 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import IftaLabel from 'primevue/iftalabel';
+import Paginator from 'primevue/paginator';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -200,17 +238,32 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    customerTypeList: {
+        type: Array,
+        default: () => [],
+    },
+    customerGroupList: {
+        type: Array,
+        default: () => [],
+    },
 });
-console.log(props.employeeList);
+
+const totalCount = computed(() => {
+    const combined = [...props.serviceList, ...props.productList];
+    if (selectedCategory.value === 'all') {
+        return combined.length;
+    }
+    return combined.filter(item => item.category === selectedCategory.value).length;
+});
 
 const allServiceList = computed(() => {
     const combined = [...props.serviceList, ...props.productList];
-    if (selectedCategory.value === 'all') {
-        return combined;
-    };
-    return combined.filter(item => item.category === selectedCategory.value);
+    let filteredList = combined;
+    if (selectedCategory.value !== 'all') {
+        filteredList = combined.filter(item => item.category === selectedCategory.value);
+    }
+    return filteredList.slice(first.value, first.value + rowsPerPage.value);
 });
-console.log(props.productList);
 
 const filterServiceItem = (category) => {
     selectedCategory.value = category;
@@ -218,6 +271,14 @@ const filterServiceItem = (category) => {
 
 // add service to invoice
 const addServiceToInvoice = (service) => {
+    if (services.value.some(item => item.name === service.name)) {
+        const existingItem = services.value.find(item => item.name === service.name);
+        if (existingItem.selected_quantity < existingItem.quantity) {
+            existingItem.selected_quantity += 1;
+            existingItem.total = existingItem.selected_quantity * existingItem.price;
+        }
+        return;
+    }
     services.value.push({
         id: services.value.length + 1,
         name: service.name,
@@ -227,7 +288,6 @@ const addServiceToInvoice = (service) => {
         total: service.selling_price,
         unit: service.unit
     });
-    console.log(services.value);
 }
 
 // keyword search
@@ -277,9 +337,23 @@ const selectBookingChannel = (channel) => {
     toggleBookingChannelsMenu();
 };
 
+// paginator
+const rowsPerPage = ref(10); // Số lượng item hiển thị trên 1 trang (trong ảnh của bạn là khoảng 10-12)
+const first = ref(0); // Vị trí bắt đầu
+
+const onPageChange = (event) => {
+    first.value = event.first;
+};
+
+// remove service item
+const removeServiceItem = (index) => {
+    services.value.splice(index, 1);
+};
+
 // dialog
 const dialog = useDialog();
 const createRetailInvoiceDialog = defineAsyncComponent(() => import('../../Components/Dialog/RetailInvoice/Create.vue'));
+const createCustomerDialog = defineAsyncComponent(() => import('../../Components/Dialog/Customer/Create.vue'));
 
 const showCreateRetailInvoiceDialog = (services) => {
     dialog.open(createRetailInvoiceDialog, {
@@ -305,4 +379,30 @@ const showCreateRetailInvoiceDialog = (services) => {
         }
     });
 }
+
+const showCreateCustomerDialog = () => {
+    dialog.open(createCustomerDialog, {
+        props: {
+            header: 'Thêm mới khách hàng',
+            blockScroll: true,
+            style: {
+                width: '60vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+            contentClass: 'hide-scroll'
+        },
+        data: {
+            customerTypeList: props.customerTypeList,
+            customerGroupList: props.customerGroupList
+        }
+    });
+}
+
+// toggle note dialog
+const toggleNoteDialog = ref(false);
 </script>

@@ -1,6 +1,6 @@
 <template>
-    <Form class="grid grid-cols-[200px_1fr] gap-x-2" v-slot="$form" :resolver :initialValues
-        validateOnUpdate="false" :validateOnBlur="true" @submit="submit">
+    <Form class="grid grid-cols-[200px_1fr] gap-x-2" v-slot="$form" :resolver :initialValues validateOnUpdate="false"
+        :validateOnBlur="true" @submit="submit">
         <div class="upload-preview-img group relative">
             <label class="upload-btn">
                 <img :src="src || '/img/default-blank-img.jpg'" alt="" class="preview-img | object-cover" />
@@ -17,14 +17,16 @@
             </label>
         </div>
         <div class="grid gap-y-4">
-            <div class="flex flex-wrap gap-4">
+            <div class="flex flex-wrap">
                 <label for="">Customer Type:</label>
-                <div class="flex items-center gap-4">
+                <div class="ml-4 flex items-center gap-4">
                     <div v-for="item in customerTypeList" class="flex gap-2">
                         <RadioButton name="customer_type_id" :value="item.id" />
                         <label for="ingredient1">{{ item.name }}</label>
                     </div>
                 </div>
+                <Message v-if="$form.customer_type_id?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.customer_type_id.error.message }}</Message>
             </div>
 
             <div class="grid md:grid-cols-2 gap-y-5 gap-x-4">
@@ -87,7 +89,7 @@
                     <FloatLabel variant="on">
                         <Select name="customer_group_id" :options="customerGroupList" optionValue="id"
                             optionLabel="name" fluid />
-                        <label for="customer_group_id">Customer group:</label>
+                        <label for="customer_group_id">Customer group</label>
                     </FloatLabel>
                     <Message v-if="$form.customer_group_id?.invalid" severity="error" size="small" variant="simple">
                         {{ $form.customer_group_id.error.message }}</Message>
@@ -208,8 +210,20 @@ const resolver = zodResolver(z.object({
             { message: 'Số điện thoại không hợp lệ' }
         ),
 
-    customer_type_id: z.number().default(1).optional(),
-    customer_group_id: z.number().default(2).optional(),
+    customer_type_id: z.number({
+        required_error: "Vui lòng chọn loại khách",
+        invalid_type_error: "Vui lòng chọn loại khách",
+    }).nullable()
+        .refine((val) => val !== null, {
+            message: "Bạn chưa chọn loại khách", // Thông báo khi giá trị là null
+        }),
+
+    customer_group_id: z.number({ invalid_type_error: "Phải là số" })
+        .nullable()
+        .refine((val) => val !== null, {
+            message: "Bạn chưa chọn nhóm khách hàng", // Thông báo khi giá trị là null
+        }),
+
     note: z.string().nullable().optional(),
 }));
 
