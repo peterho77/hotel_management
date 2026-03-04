@@ -1,5 +1,5 @@
 <template>
-    <div class="employee-layout">
+    <div class="custom-layout">
         <Header />
         <main class="flex-1">
             <slot />

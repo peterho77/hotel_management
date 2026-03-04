@@ -1,5 +1,5 @@
 <template>
-    <div class="admin-layout">
+    <div class="admin-layout | custom-layout">
         <Header />
         <main>
             <slot />

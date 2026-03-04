@@ -120,9 +120,7 @@ header {
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 
-.guest-layout,
-.admin-layout,
-.employee-layout {
+.custom-layout{
     min-height: 100vh;
     min-height: 100dvh;
     display: grid;

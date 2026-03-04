@@ -1,5 +1,5 @@
 <template>
-    <div class="guest-layout">
+    <div class="guest-layout | custom-layout">
         <!-- Header -->
         <Header/>
         <!-- Main content -->

@@ -1,5 +1,5 @@
 <template>
-    <div class="service-order-wrapper bg-[#f3f4f6] font-sans h-full overflow-hidden">
+    <div class="service-order-wrapper bg-[#f3f4f6] font-sans h-full">
         <div class="container | flex flex-col h-full">
             <header
                 class="header-section | flex-none | bg-white p-3 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row gap-4">
@@ -67,7 +67,8 @@
                     <!-- service type list -->
                     <div class="service-type-list | flex flex-wrap gap-2">
                         <template v-for="item in serviceCategoryList">
-                            <Button size="small" :label="item.label" variant="outlined" rounded text
+                            <Button :class="['service-type-btn', { 'active': selectedCategory === item.name }]"
+                                size="small" :label="item.label" variant="outlined" rounded text
                                 @click="filterServiceItem(item.name)" />
                         </template>
                     </div>
@@ -175,6 +176,19 @@
     color: var(--neutral-color-500);
     font-weight: var(--fw-semi-bold);
 }
+
+.service-type-btn.active {
+    background-color: var(--success-color-700);
+    color: white;
+    border: none;
+}
+
+.service-type-btn.active:hover {
+    background-color: var(--success-color-700);
+    color: white;
+    border: none;
+}
+
 
 /* Custom booking channel menu */
 .toggle-booking-channel-menu {
@@ -358,12 +372,22 @@ const createCustomerDialog = defineAsyncComponent(() => import('../../Components
 const showCreateRetailInvoiceDialog = (services) => {
     dialog.open(createRetailInvoiceDialog, {
         props: {
+            pt: {
+                mask: {
+                    // Ép class hoặc style vào thẻ Mask
+                    style: 'align-items: stretch'
+                },
+            },
             header: 'Thêm mới hóa đơn',
             blockScroll: true,
             style: {
                 width: '60vw',
-                minHeight: '100vh',
-                minHeight: '100dvh'
+                minHeight: '100dvh',
+            },
+            contentStyle: {
+                flex: '1',          // Ép phần content giãn ra để đẩy nút xuống đáy
+                display: 'flex',
+                flexDirection: 'column'
             },
             breakpoints: {
                 '960px': '50vw',
@@ -373,6 +397,7 @@ const showCreateRetailInvoiceDialog = (services) => {
             position: 'right',
             contentClass: 'hide-scroll'
         },
+        contentClass: 'flex flex-col overflow-hidden',
         data: {
             services,
             employeeList: props.employeeList
