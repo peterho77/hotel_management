@@ -111,7 +111,7 @@ import { usePrimeVue } from 'primevue/config';
 import { router } from '@inertiajs/vue3';
 
 // component
-import { Form, FormField } from '@primevue/forms';
+import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Select from 'primevue/select';

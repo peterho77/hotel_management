@@ -73,14 +73,31 @@
                         <template v-for="method in paymentMethodList" :key="method.value">
                             <div class="flex items-center gap-2">
                                 <RadioButton v-model="paymentMethod" :inputId="`ingredient-${method.value}`"
-                                    :name="`payment-method-${method.value}`" :value="method.value" size="small" />
+                                    :name="`payment-method-${method.value}`" :value="method" size="small" />
                                 <label :for="`ingredient-${method.value}`">{{ method.label }}</label>
                             </div>
                         </template>
                     </div>
-                    <div class="suggested-amount | rounded-md bg-gray-100 border border-gray-200 p-4 | flex flex-wrap">
+                    <!-- <div class="payment-account | flex flex-col items-center gap-2 my-1" v-if="toggleAddPaymentAccount">
+                        <span class="text-gray-500">Bạn chưa có tài khoản</span>
+                        <Button label="Thêm tài khoản" size="small" severity="success" variant="outlined"
+                            icon="pi pi-plus" @click="showAddPaymentAccountDialog()" />
+                    </div> -->
+                    <div class="payment-account-info" v-if="toggleAddPaymentAccount">
+                        <div class="flex gap-3">
+                            <div class="qr-code | set-bg-img" :style="$getBgStyle(QRCodeImg)">
+                            </div>
+                            <div class="account-desc">
+                                <p class="mb-2">{{ Object.values(defaultAccountInfo).join(' - ') }}</p>
+                                <Button label="Hiển thị mã QR" size="small" severity="secondary" @click="showQRCode"></Button>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="suggested-amount | rounded-md bg-slate-100 border border-gray-200 p-4 | flex flex-wrap gap-2">
                         <template v-for="amount in getSuggestedAmounts(finalPay)" :key="amount">
-                            <Button class="suggested-amount-btn" variant="outlined" :label="amount.toLocaleString() + 'đ'" rounded text size="small"/>
+                            <Button class="suggested-amount-btn shadow-sm" severity="secondary" variant="outlined"
+                                :label="amount.toLocaleString() + 'đ'" rounded text size="small" />
                         </template>
                     </div>
                 </div>
@@ -92,19 +109,40 @@
 
 <style scoped>
 /* custom button color */
-:deep(.p-button-outlined) {
+.suggested-amount-btn {
     color: var(--neutral-color-500);
     font-weight: var(--fw-semi-bold);
 }
 
-.suggested-amount-btn:hover{
+.suggested-amount-btn:hover {
     color: var(--neutral-color-500);
     background-color: var(--neutral-color-300);
+}
+
+/* qr code img */
+.payment-account-info {
+    height: auto;
+    min-height: 100px;
+}
+
+.qr-code {
+    background-size: contain;
+    width: 30%;
+    aspect-ratio: 3/4;
+}
+
+.account-desc {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
+import { ref, reactive, onMounted, inject, computed, defineAsyncComponent } from 'vue';
+import { useDialog } from 'primevue/usedialog';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -148,15 +186,6 @@ const currentDateTime = new Date().toLocaleString('vi-VN');
 const totalAmount = computed(() => {
     return (services.value || []).reduce((sum, service) => sum + service.total, 0);
 });
-
-// payment method
-const paymentMethodList = [
-    { label: 'Tiền mặt', value: 'cash' },
-    { label: 'Thẻ', value: 'card' },
-    { label: 'Chuyển khoản', value: 'bank_transfer' },
-    { label: 'Ví điện tử', value: 'digital_wallet' },
-];
-const paymentMethod = ref(null);
 
 // toggle discount input
 const discountInput = ref();
@@ -216,7 +245,7 @@ const finalPay = computed(() => {
 // suggested amount
 const getSuggestedAmounts = (total) => {
     const suggestions = new Set();
-    
+
     // Thêm chính xác số tiền (Ví dụ: 102,300)
     suggestions.add(total);
 
@@ -235,4 +264,87 @@ const getSuggestedAmounts = (total) => {
         .sort((a, b) => a - b)
         .slice(0, 6); // Lấy 6 số tối ưu nhất
 };
+
+// payment method
+const paymentMethodList = [
+    {
+        label: 'Tiền mặt',
+        value: 'cash',
+    },
+    {
+        label: 'Thẻ',
+        value: 'card'
+    },
+    {
+        label: 'Chuyển khoản',
+        value: 'bank_transfer'
+    },
+    {
+        label: 'Ví điện tử',
+        value: 'digital_wallet'
+    },
+];
+const paymentMethod = ref(null);
+
+// toggle add payment account (for digital wallet and bank transfer)
+const toggleAddPaymentAccount = computed(() => {
+    return paymentMethod.value && (paymentMethod.value.value === 'digital_wallet' || paymentMethod.value.value === 'bank_transfer');
+});
+
+// add payment account
+const dialog = useDialog();
+const addPaymentAccountDialog = defineAsyncComponent(() => import('../PaymentAccount/Add.vue'));
+const showAddPaymentAccountDialog = () => {
+    dialog.open(addPaymentAccountDialog, {
+        props: {
+            header: 'Thêm tài khoản',
+            blockScroll: true,
+            style: {
+                minWidth: '30vw',
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+            contentClass: 'hide-scroll'
+        },
+        contentClass: 'flex flex-col overflow-hidden',
+        data: {
+        }
+    });
+}
+
+// default payment info
+const QRCodeImg = ref('/img/qr-code.png');
+const defaultAccountInfo = ref({
+    name: 'HO CONG THIEN DAT',
+    bank: 'BIDV',
+    number: '9624STEVENHO'
+})
+const showQRCodeDialog = defineAsyncComponent(() => import('../PaymentAccount/ShowQRCode.vue'));
+const showQRCode = () => {
+    dialog.open(showQRCodeDialog, {
+        props: {
+            header: 'Mã QR Thanh toán',
+            blockScroll: true,
+            style: {
+                width: '30vw'
+            },
+            breakpoints: {
+                '960px': '50vw',
+                '640px': '40vw'
+            },
+            modal: true,
+            position: 'center',
+            contentClass: 'hide-scroll'
+        },
+        contentClass: 'flex flex-col overflow-hidden',
+        data: {
+            QRCodeImg,
+            AccountInfo: defaultAccountInfo
+        }
+    });
+}
 </script>
