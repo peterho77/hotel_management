@@ -170,28 +170,28 @@
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                                     <FormField class="flex flex-col gap-1">
                                                         <label for="">Họ</label>
-                                                        <InputText v-model="bookerInforForm.surname" type="text" />
+                                                        <InputText v-model="bookerInfoForm.surname" type="text" />
                                                         <Message v-if="errors.surname" severity="error" size="small"
                                                             variant="simple">
                                                             {{ errors.surname }}</Message>
                                                     </FormField>
                                                     <FormField class="flex flex-col gap-1">
                                                         <label for="">Tên</label>
-                                                        <InputText v-model="bookerInforForm.firstname" type="text" />
+                                                        <InputText v-model="bookerInfoForm.firstname" type="text" />
                                                         <Message v-if="errors.firstname" severity="error" size="small"
                                                             variant="simple">
                                                             {{ errors.firstname }}</Message>
                                                     </FormField>
                                                     <FormField class="flex flex-col gap-1">
                                                         <label for="">Địa chỉ email</label>
-                                                        <InputText v-model="bookerInforForm.email" type="text" />
+                                                        <InputText v-model="bookerInfoForm.email" type="text" />
                                                         <Message v-if="errors.email" severity="error" size="small"
                                                             variant="simple">
                                                             {{ errors.email }}</Message>
                                                     </FormField>
                                                     <FormField class="flex flex-col gap-1">
                                                         <label for="">Xác nhận địa chỉ email</label>
-                                                        <InputText v-model="bookerInforForm.confirm_email"
+                                                        <InputText v-model="bookerInfoForm.confirm_email"
                                                             type="text" />
                                                         <Message v-if="errors.confirm_email" severity="error"
                                                             size="small" variant="simple">
@@ -200,13 +200,13 @@
                                                 </div>
                                                 <div class="flex flex-col gap-1">
                                                     <label for="country">Vùng/Quốc gia</label>
-                                                    <Select v-model="bookerInforForm.country" :options="countries"
+                                                    <Select v-model="bookerInfoForm.country" :options="countries"
                                                         optionLabel="name" optionValue="name"
                                                         placeholder="Select a country" />
                                                 </div>
                                                 <div class="flex flex-col gap-1">
                                                     <label for="">Số điện thoại</label>
-                                                    <InputText v-model="bookerInforForm.phone" />
+                                                    <InputText v-model="bookerInfoForm.phone" />
                                                     <Message v-if="errors.phone" severity="error" size="small"
                                                         variant="simple">
                                                         {{ errors.phone }}</Message>
@@ -270,7 +270,7 @@
                                         <div class="add-service | box flow" style="--flow-spacer:1rem">
                                             <h3 class="text-xl font-semibold">Thêm vào kỳ nghỉ</h3>
                                             <div>
-                                                <CheckboxGroup v-model="bookerInforForm.travel_services"
+                                                <CheckboxGroup v-model="bookerInfoForm.travel_services"
                                                     class="flex flex-col flex-wrap gap-4">
                                                     <div class="flex items-center gap-2">
                                                         <Checkbox value="book-airport-transfer" />
@@ -292,7 +292,7 @@
                                             <h3 class="text-xl font-semibold">Các yêu cầu đặc biệt</h3>
                                             <div class="flex flex-col gap-2">
                                                 <span>Vui lòng ghi yêu cầu của bạn vào đây.(không bắt buộc)</span>
-                                                <Textarea v-model="bookerInforForm.special_request" rows="4" cols="30"
+                                                <Textarea v-model="bookerInfoForm.special_request" rows="4" cols="30"
                                                     style="resize: none" />
                                             </div>
                                         </div>
@@ -598,7 +598,7 @@ const showAddPaymentMethodDialog = () => {
 }
 
 // add customer infor
-const bookerInforForm = reactive({
+const bookerInfoForm = reactive({
     surname: '',
     firstname: '',
     phone: '',
@@ -627,37 +627,37 @@ const emailRegex = /^\S+@\S+\.\S+$/;
 
 const validateForm = () => {
     // surname
-    errors.surname = bookerInforForm.surname.trim()
+    errors.surname = bookerInfoForm.surname.trim()
         ? null
         : "Vui lòng nhập họ";
 
     // firstname
-    errors.firstname = bookerInforForm.firstname.trim()
+    errors.firstname = bookerInfoForm.firstname.trim()
         ? null
         : "Vui lòng nhập tên";
 
     // phone
-    if (!bookerInforForm.phone.trim()) {
+    if (!bookerInfoForm.phone.trim()) {
         errors.phone = "Vui lòng nhập số điện thoại";
-    } else if (!phoneRegex.test(bookerInforForm.phone)) {
+    } else if (!phoneRegex.test(bookerInfoForm.phone)) {
         errors.phone = "Số điện thoại không hợp lệ";
     } else {
         errors.phone = null;
     }
 
     // email
-    if (!bookerInforForm.email.trim()) {
+    if (!bookerInfoForm.email.trim()) {
         errors.email = "Vui lòng nhập email";
-    } else if (!emailRegex.test(bookerInforForm.email)) {
+    } else if (!emailRegex.test(bookerInfoForm.email)) {
         errors.email = "Email không hợp lệ";
     } else {
         errors.email = null;
     }
 
     // confirm email
-    if (!bookerInforForm.confirm_email.trim()) {
+    if (!bookerInfoForm.confirm_email.trim()) {
         errors.confirm_email = "Vui lòng nhập lại email";
-    } else if (bookerInforForm.confirm_email !== bookerInforForm.email) {
+    } else if (bookerInfoForm.confirm_email !== bookerInfoForm.email) {
         errors.confirm_email = "Email xác nhận không trùng";
     } else {
         errors.confirm_email = null;
@@ -669,7 +669,7 @@ const validateForm = () => {
 
 // get payment instrument
 watch(() => selectedPayment.value, (newValue) => {
-    bookerInforForm.payment_instrument = newValue.value;
+    bookerInfoForm.payment_instrument = newValue.value;
 });
 
 const getBookerInfo = (getToNextStep) => {
@@ -679,7 +679,7 @@ const getBookerInfo = (getToNextStep) => {
 }
 
 const bookingFormData = computed(() => {
-    const { surname, firstname, ...rest } = bookerInforForm;
+    const { surname, firstname, ...rest } = bookerInfoForm;
 
     return {
         check_in: roomBookingDetail.date_range[0],

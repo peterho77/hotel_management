@@ -293,14 +293,17 @@ const addServiceToInvoice = (service) => {
         }
         return;
     }
+    console.log(service);
     services.value.push({
-        id: services.value.length + 1,
+        order: services.value.length + 1,
+        id: service.id,
         name: service.name,
         quantity: service.category === 'service' ? 10 : service.quantity,
         selected_quantity: 1,
         price: service.selling_price,
         total: service.selling_price,
-        unit: service.unit
+        unit: service.unit,
+        category: service.category
     });
 }
 
@@ -322,7 +325,7 @@ const selectedCategory = ref('all');
 const services = ref([]);
 
 const columns = [
-    { field: 'id', header: 'STT' },
+    { field: 'order', header: 'STT' },
     { field: 'name', header: 'Hạng mục' },
     { field: 'quantity', header: 'Số lượng' },
     { field: 'price', header: 'Đơn giá' },

@@ -9,7 +9,7 @@
                 <Button label="Lịch đặt phòng" icon="pi pi-calendar" size="small" variant="text" raised
                     @click="router.get(route('employee.index', user.user_name))" />
                 <Button label="Hóa đơn" icon="" severity="success" size="small" raised
-                    @click="router.get(route('employee.service-order', user.user_name))" />
+                    @click="router.get(route('employee.retail-order', user.user_name))" />
             </div>
             <div class="setting-group | flex items-center gap-4">
                 <div class="user-avatar | flex items-center">

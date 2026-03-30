@@ -35,9 +35,9 @@ class Employee extends Model
         static::created(function ($employee) {
             // Tạo mã: 'NV' nối với ID được đệm số 0 (độ dài 3 ký tự)
             $employee->code = 'NV' . str_pad($employee->id, 3, '0', STR_PAD_LEFT);
-            
+
             // Lưu lại mà không kích hoạt thêm sự kiện để tránh vòng lặp
-            $employee->saveQuietly(); 
+            $employee->saveQuietly();
         });
     }
 
@@ -54,5 +54,10 @@ class Employee extends Model
     public function schedules()
     {
         return $this->hasMany(EmployeeSchedule::class);
+    }
+    public function retailOrders()
+    {
+        // Một nhân viên có thể tạo nhiều hóa đơn bán lẻ
+        return $this->hasMany(RetailOrder::class, 'creator_id');
     }
 }

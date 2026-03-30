@@ -12,97 +12,107 @@
             </DataTable>
         </div>
         <div class="pl-4 flex flex-col gap-3 h-full border-l border-gray-200">
-            <div class="flex gap-2 justify-between">
-                <div class="flex flex-col">
-                    <span class="text-sm">Nhân viên tạo HĐ</span>
-                    <Select v-model="creator" :options="employeeList" optionLabel="full_name"
-                        :placeholder="employeeList[0]?.full_name ?? 'Chọn nhân viên'" class="w-full md:w-56"
-                        size="small" />
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-sm">Ngày tạo HĐ</span>
-                    <DatePicker v-model="createdAt" showTime :placeholder="currentDateTime" class="w-full md:w-56"
-                        size="small" />
-                </div>
-            </div>
-            <div class="grid gap-y-3 | bg-gray-200 rounded-sm p-4">
-                <div class="flex justify-between mb-1">
-                    <span class="text-sm">Tổng tiền</span>
-                    <span>{{ totalAmount.toLocaleString() }}đ</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-sm">Giảm giá ({{ discountPercent ?? 0 }}%)</span>
-                    <div class="basis-1/3 text-right | cursor-pointer border-b border-gray-300 hover:border-green-500"
-                        @click="toggleDiscountInput">
-                        <span>{{ discountAmount.toLocaleString() }}đ</span>
+            <Form class="grid gap-y-6" @submit="confirmRetailOrder">
+                <div class="flex gap-2 justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-sm">Nhân viên tạo HĐ</span>
+                        <Select v-model="retailInfoForm.creator_id" :options="employeeList" optionLabel="full_name"
+                            optionValue="id" :placeholder="employeeList[0]?.full_name ?? 'Chọn nhân viên'"
+                            class="w-full md:w-56" size="small" />
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm">Ngày tạo HĐ</span>
+                        <DatePicker v-model="retailInfoForm.created_at" showTime :placeholder="currentDateTime"
+                            class="w-full md:w-56" size="small" />
                     </div>
                 </div>
-                <Popover ref="discountInput" :pt="{
-                    root: {
-                        class: 'left-0 right-auto'
-                    }
-                }">
-                    <div class="flex gap-2">
-                        <InputNumber v-model="discountInputDisplay" :suffix="discountType === 'percent' ? '%' : 'đ'"
-                            size="small" showClear @update:modelValue="calculateDiscount"
-                            :min="discountType === 'percent' ? 1 : totalAmount * 0.01"
-                            :max="discountType === 'percent' ? 100 : totalAmount" />
-                        <SelectButton v-model="discountType" :options="discountTypeOptions" size="small"
-                            optionLabel="label" optionValue="value" @update:modelValue="switchDiscountType" />
+                <div class="grid gap-y-3 | bg-gray-200 rounded-sm p-4">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm">Tổng tiền</span>
+                        <span>{{ totalAmount.toLocaleString() }}đ</span>
                     </div>
-                </Popover>
-                <div class="flex justify-between">
-                    <span class="text-sm">Thu khác</span>
-                    <div class="basis-1/3 text-right | cursor-pointer border-b border-gray-300 hover:border-green-500">
-                        <span>0đ</span>
-                    </div>
-                </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-sm font-semibold">Tổng tiền cần trả</span>
-                    <span>{{ finalPay.toLocaleString() }}đ</span>
-                </div>
-            </div>
-            <div class="grid gap-y-3 | bg-gray-200 rounded-sm p-4">
-                <h2 class="text-lg font-semibold">Phương thức thanh toán</h2>
-                <div class="flex justify-between items-center">
-                    <span class="text-sm">Khách thanh toán</span>
-                    <InputNumber mode="currency" currency="VND" locale="vi-VN" size="small" />
-                </div>
-                <div class="payment_method-section flex flex-col gap-2 mt-2">
-                    <div class="flex justify-between flex-wrap gap-4">
-                        <template v-for="method in paymentMethodList" :key="method.value">
-                            <div class="flex items-center gap-2">
-                                <RadioButton v-model="paymentMethod" :inputId="`ingredient-${method.value}`"
-                                    :name="`payment-method-${method.value}`" :value="method" size="small" />
-                                <label :for="`ingredient-${method.value}`">{{ method.label }}</label>
-                            </div>
-                        </template>
-                    </div>
-                    <!-- <div class="payment-account | flex flex-col items-center gap-2 my-1" v-if="toggleAddPaymentAccount">
-                        <span class="text-gray-500">Bạn chưa có tài khoản</span>
-                        <Button label="Thêm tài khoản" size="small" severity="success" variant="outlined"
-                            icon="pi pi-plus" @click="showAddPaymentAccountDialog()" />
-                    </div> -->
-                    <div class="payment-account-info" v-if="toggleAddPaymentAccount">
-                        <div class="flex gap-3">
-                            <div class="qr-code | set-bg-img" :style="$getBgStyle(QRCodeImg)">
-                            </div>
-                            <div class="account-desc">
-                                <p class="mb-2">{{ Object.values(defaultAccountInfo).join(' - ') }}</p>
-                                <Button label="Hiển thị mã QR" size="small" severity="secondary" @click="showQRCode"></Button>
-                            </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm">Giảm giá ({{ discountPercent ?? 0 }}%)</span>
+                        <div class="basis-1/3 text-right | cursor-pointer border-b border-gray-300 hover:border-green-500"
+                            @click="toggleDiscountInput">
+                            <span>{{ discountAmount.toLocaleString() }}đ</span>
                         </div>
                     </div>
-                    <div
-                        class="suggested-amount | rounded-md bg-slate-100 border border-gray-200 p-4 | flex flex-wrap gap-2">
-                        <template v-for="amount in getSuggestedAmounts(finalPay)" :key="amount">
-                            <Button class="suggested-amount-btn shadow-sm" severity="secondary" variant="outlined"
-                                :label="amount.toLocaleString() + 'đ'" rounded text size="small" />
-                        </template>
+                    <Popover ref="discountInput" :pt="{
+                        root: {
+                            class: 'left-0 right-auto'
+                        }
+                    }">
+                        <div class="flex gap-2">
+                            <InputNumber v-model="discountInputDisplay" :suffix="discountType === 'percent' ? '%' : 'đ'"
+                                size="small" showClear @update:modelValue="calculateDiscount"
+                                :min="discountType === 'percent' ? 1 : totalAmount * 0.01"
+                                :max="discountType === 'percent' ? 100 : totalAmount" />
+                            <SelectButton v-model="discountType" :options="discountTypeOptions" size="small"
+                                optionLabel="label" optionValue="value" @update:modelValue="switchDiscountType" />
+                        </div>
+                    </Popover>
+                    <div class="flex justify-between">
+                        <span class="text-sm">Thu khác</span>
+                        <div
+                            class="basis-1/3 text-right | cursor-pointer border-b border-gray-300 hover:border-green-500">
+                            <span>0đ</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-1">
+                        <span class="text-sm font-semibold">Tổng tiền cần trả</span>
+                        <span>{{ finalPay.toLocaleString() }}đ</span>
                     </div>
                 </div>
-            </div>
-            <Button label="Hoàn thành" severity="success" class="mt-auto"></Button>
+                <div class="grid gap-y-3 | bg-gray-200 rounded-sm p-4">
+                    <h2 class="text-lg font-semibold">Phương thức thanh toán</h2>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm">Khách thanh toán</span>
+                        <InputNumber inputClass="text-right" v-model="paidAmount" mode="currency" currency="VND"
+                            locale="vi-VN" size="small" />
+                    </div>
+                    <div class="payment_method-section flex flex-col gap-2 mt-2">
+                        <div class="flex justify-between flex-wrap gap-4">
+                            <template v-for="method in paymentMethodList" :key="method.value">
+                                <div class="flex items-center gap-2">
+                                    <RadioButton v-model="paymentMethod" :inputId="`ingredient-${method.value}`"
+                                        :name="`payment-method-${method.value}`" :value="method" size="small" />
+                                    <label :for="`ingredient-${method.value}`">{{ method.label }}</label>
+                                </div>
+                            </template>
+                        </div>
+                        <!-- <div class="payment-account | flex flex-col items-center gap-2 my-1" v-if="toggleAddPaymentAccount">
+                            <span class="text-gray-500">Bạn chưa có tài khoản</span>
+                            <Button label="Thêm tài khoản" size="small" severity="success" variant="outlined"
+                                icon="pi pi-plus" @click="showAddPaymentAccountDialog()" />
+                        </div> -->
+                        <div class="payment-account-info" v-if="toggleAddPaymentAccount">
+                            <div class="flex gap-3">
+                                <div class="qr-code | set-bg-img" :style="$getBgStyle(QRCodeImg)">
+                                </div>
+                                <div class="account-desc">
+                                    <p class="mb-2">{{ Object.values(defaultAccountInfo).join(' - ') }}</p>
+                                    <Button label="Hiển thị mã QR" size="small" severity="secondary"
+                                        @click="showQRCode"></Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="suggested-amount | rounded-md bg-slate-100 border border-gray-200 p-4 | flex flex-wrap gap-2">
+                            <template v-for="amount in getSuggestedAmounts(finalPay)" :key="amount">
+                                <Button class="suggested-amount-btn shadow-sm" severity="secondary" variant="outlined"
+                                    :label="amount.toLocaleString() + 'đ'" rounded text size="small"
+                                    @click="paidAmount = amount" />
+                            </template>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center" v-if="changeAmount != 0">
+                        <span class="text-sm">Tiền thừa trả khách</span>
+                        <span class="text-green-600">{{ changeAmount.toLocaleString() }}đ</span>
+                    </div>
+                </div>
+                <Button label="Hoàn thành" type="submit" severity="success" class="mt-auto"></Button>
+            </Form>
         </div>
     </div>
 </template>
@@ -141,8 +151,11 @@
 </style>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed, defineAsyncComponent } from 'vue';
+import { ref, reactive, watch, onMounted, inject, computed, defineAsyncComponent } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useDialog } from 'primevue/usedialog';
+import { Form } from '@primevue/forms';
+import { router } from '@inertiajs/vue3';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -155,9 +168,8 @@ import Button from 'primevue/button';
 import Popover from 'primevue/popover';
 import SelectButton from 'primevue/selectbutton';
 
-
 const columns = [
-    { field: 'id', header: 'STT' },
+    { field: 'order', header: 'STT' },
     { field: 'name', header: 'Hạng mục' },
     { field: 'selected_quantity', header: 'Số lượng' },
     { field: 'price', header: 'Đơn giá' },
@@ -174,13 +186,9 @@ onMounted(() => {
     if (params) {
         services.value = params.services || [];
         employeeList.value = params.employeeList || [];
+        console.log(employeeList.value);
     }
 })
-
-// creator
-const creator = ref(null);
-const createdAt = ref(null);
-const currentDateTime = new Date().toLocaleString('vi-VN');
 
 // total amount
 const totalAmount = computed(() => {
@@ -251,7 +259,9 @@ const getSuggestedAmounts = (total) => {
 
     // Thêm các mốc làm tròn (Lưu ý: Tiền Việt thường lẻ ở mức 5k hoặc 10k)
     [5000, 10000, 20000, 50000, 100000].forEach(step => {
-        suggestions.add(Math.ceil(total / step) * step);
+        const suggestion = Math.ceil(total / step) * step;
+        suggestions.add(suggestion);
+        suggestions.add(suggestion + step);
     });
 
     // Thêm các tờ tiền chẵn lớn hẳn
@@ -346,5 +356,73 @@ const showQRCode = () => {
             AccountInfo: defaultAccountInfo
         }
     });
+}
+
+// amount paid and change amount
+const paidAmount = ref(0);
+watch(() => finalPay.value, (newVal) => {
+    paidAmount.value = newVal;
+}, { immediate: true });
+const changeAmount = computed(() => {
+    return paidAmount.value - totalAmount.value
+})
+
+// form post retail order
+const page = usePage();
+const currentDateTime = new Date().toLocaleString('vi-VN');
+const retailInfoForm = reactive({
+    creator_id: employeeList.value[0]?.id ?? 0,
+    created_at: new Date(),
+    total_amount: 0,
+    paid_amount: 0
+});
+
+const confirmRetailOrder = () => {
+    retailInfoForm.total_amount = finalPay.value;
+    retailInfoForm.paid_amount = paidAmount.value;
+
+    const payload = new FormData()
+
+    // duyệt qua toàn bộ field trong form
+    for (const key in retailInfoForm) {
+        const value = retailInfoForm[key];
+
+        if (value instanceof Date) {
+            payload.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
+        }
+        // Còn lại là text / number
+        else {
+            payload.append(key, value ?? '')
+        }
+    }
+    services.value.forEach((item, index) => {
+        if (item.category === 'service') {
+            payload.append(`items[${index}][service_id]`, item.id);
+        }
+        else {
+            payload.append(`items[${index}][product_id]`, item.id);
+
+        }
+        payload.append(`items[${index}][quantity]`, item.selected_quantity);
+        payload.append(`items[${index}][price]`, item.price);
+        payload.append(`items[${index}][subtotal]`, item.total);
+    });
+    console.log(retailInfoForm);
+    for (var pair of payload.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    router.post(route('employee.retail-order.create'), payload, {
+        forceFormData: true,
+        onSuccess: () => {
+            const newOrderId = page.props.flash.new_order_id;
+
+            if (newOrderId) {
+                // Tự động mở tab in hóa đơn PDF
+                window.open(route('employee.retail-order.print', { orderId: newOrderId }), '_blank');
+            }
+        },
+    })
+    dialogRef.value.close();
 }
 </script>

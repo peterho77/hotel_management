@@ -254,14 +254,14 @@ const submit = (e) => {
         }
 
         // Gửi form qua Inertia
-        // router.post('/manager/customer/add-new', data, {
-        //     forceFormData: true,
-        //     onSuccess: () => {
-        //         console.log('Tạo khách hàng thành công!')
-        //     },
-        // })
-        // toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
-        // dialogRef.value.close();
+        router.post('/manager/customer/add-new', data, {
+            forceFormData: true,
+            onSuccess: () => {
+                console.log('Tạo khách hàng thành công!')
+            },
+        })
+        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        dialogRef.value.close();
     }
 }
 

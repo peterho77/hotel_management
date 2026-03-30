@@ -109,7 +109,10 @@ Route::middleware('auth')->group(function () {
         Route::prefix('employee')->name('employee.')->group(function () {
             Route::get('/{user_name}/dashboard', [EmployeeController::class, 'dashboard'])->name('index');
             Route::get('/{user_name}/schedule', [EmployeeController::class, 'schedule'])->name('schedule');
-            Route::get('/{user_name}/retail', [RetailController::class, 'index'])->name('service-order');
+            Route::get('/{user_name}/retail', [RetailController::class, 'index'])->name('retail-order');
+            Route::post('/retail/create', [RetailController::class, 'create'])->name('retail-order.create');
+            Route::get('/retail/{orderId}/print', [RetailController::class, 'print'])
+                ->name('retail-order.print');
         });
     });
 

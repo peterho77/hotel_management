@@ -106,7 +106,7 @@ import { ref, reactive, inject, onMounted, watch } from 'vue';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import { usePrimeVue } from 'primevue/config';
-import { router } from '@inertiajs/vue3';   
+import { router } from '@inertiajs/vue3';
 
 // flash message
 import { useFlashToast } from "@/Composables/useFlashToast";
@@ -239,40 +239,38 @@ const formatSize = (bytes) => {
 };
 
 const onBookingReview = (e) => {
+    console.log(e.values);
+    console.log(reviewImages.value);
     if (e.valid) {
-        console.log(e.values);
-        console.log(reviewImages.value);
-        if (e.valid) {
-            const data = new FormData();
+        const data = new FormData();
 
-            // duyệt qua toàn bộ field trong form
-            for (const key in e.values) {
-                const value = e.values[key];
+        // duyệt qua toàn bộ field trong form
+        for (const key in e.values) {
+            const value = e.values[key];
 
-                // Nếu là date object (ví dụ birth_date)
-                if (value instanceof Date) {
-                    data.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
-                }
-                // Còn lại là text / number
-                else {
-                    data.append(key, value ?? '')
-                }
+            // Nếu là date object (ví dụ birth_date)
+            if (value instanceof Date) {
+                data.append(key, value.toISOString().split('T')[0]) // => "2025-10-26"
             }
-            if (Array.isArray(reviewImages.value) && reviewImages.value.length && reviewImages.value[0] instanceof File) {
-                reviewImages.value.forEach((file, idx) => {
-                    data.append(`images[${idx}]`, file, file.name);
-                });
+            // Còn lại là text / number
+            else {
+                data.append(key, value ?? '')
             }
-            data.append(`booking_id`, bookingId.value);
-            //Gửi form qua Inertia
-            router.post(route('review.store', { user_name: userName.value }), data, {
-                forceFormData: true,
-                onSuccess: () => {
-                    console.log('Gửi đánh giá thành công!')
-                },
-            })
-            dialogRef.value.close();
         }
+        if (Array.isArray(reviewImages.value) && reviewImages.value.length && reviewImages.value[0] instanceof File) {
+            reviewImages.value.forEach((file, idx) => {
+                data.append(`images[${idx}]`, file, file.name);
+            });
+        }
+        data.append(`booking_id`, bookingId.value);
+        //Gửi form qua Inertia
+        router.post(route('review.store', { user_name: userName.value }), data, {
+            forceFormData: true,
+            onSuccess: () => {
+                console.log('Gửi đánh giá thành công!')
+            },
+        })
+        dialogRef.value.close();
     }
 }
 
